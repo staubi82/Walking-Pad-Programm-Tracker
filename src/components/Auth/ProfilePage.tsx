@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { User, Mail, Calendar, Edit3, Save, X, LogOut, Trash2, Activity, TrendingUp, Target, Scale } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { updateUserProfile, logoutUser } from '../../firebase/auth';
+import { saveUserProfile, getUserProfile } from '../../firebase/services';
 import { useNavigate } from 'react-router-dom';
 import { UserProfile } from '../../types';
 import { calculateBMI, getBMICategory, calculateBMR, calculateTDEE, calculateIdealWeight } from '../../utils/calculations';
+import { useEffect } from 'react';
 
 export const ProfilePage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -13,12 +15,30 @@ export const ProfilePage: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [displayName, setDisplayName] = useState(currentUser?.displayName || '');
   const [userProfile, setUserProfile] = useState<UserProfile>(() => {
-    const saved = localStorage.getItem(`userProfile_${currentUser?.uid}`);
-    return saved ? JSON.parse(saved) : {};
+    return {};
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Lade Benutzerprofil beim Laden der Komponente
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (currentUser?.uid) {
+        try {
+          const profile = await getUserProfile();
+          setUserProfile(profile);
+        } catch (error) {
+          console.error('Fehler beim Laden des Profils:', error);
+          // Fallback auf localStorage
+          const saved = localStorage.getItem(`userProfile_${currentUser.uid}`);
+          setUserProfile(saved ? JSON.parse(saved) : {});
+        }
+      }
+    };
+    
+    loadProfile();
+  }, [currentUser]);
 
   const handleSave = async () => {
     if (!currentUser) return;
@@ -30,8 +50,14 @@ export const ProfilePage: React.FC = () => {
     try {
       await updateUserProfile(currentUser, { displayName });
       
-      // Speichere Benutzerprofil in localStorage
-      localStorage.setItem(`userProfile_${currentUser.uid}`, JSON.stringify(userProfile));
+      // Speichere Benutzerprofil in Firebase
+      try {
+        await saveUserProfile(userProfile);
+      } catch (firebaseError) {
+        console.warn('Firebase nicht verfügbar, speichere lokal:', firebaseError);
+        // Fallback: Speichere in localStorage
+        localStorage.setItem(`userProfile_${currentUser.uid}`, JSON.stringify(userProfile));
+      }
       
       setSuccess('Profil erfolgreich aktualisiert!');
       setIsEditing(false);
@@ -47,8 +73,19 @@ export const ProfilePage: React.FC = () => {
 
   const handleCancel = () => {
     setDisplayName(currentUser?.displayName || '');
-    const saved = localStorage.getItem(`userProfile_${currentUser?.uid}`);
-    setUserProfile(saved ? JSON.parse(saved) : {});
+    // Lade ursprüngliche Werte neu
+    const loadProfile = async () => {
+      if (currentUser?.uid) {
+        try {
+          const profile = await getUserProfile();
+          setUserProfile(profile);
+        } catch (error) {
+          const saved = localStorage.getItem(`userProfile_${currentUser.uid}`);
+          setUserProfile(saved ? JSON.parse(saved) : {});
+        }
+      }
+    };
+    loadProfile();
     setIsEditing(false);
     setError('');
   };
@@ -296,6 +333,131 @@ export const ProfilePage: React.FC = () => {
                 <div className="flex items-center space-x-2 px-3 py-2 bg-gray-700 rounded-lg">
                   <User className="w-4 h-4 text-gray-400" />
                   <span className="text-white">{currentUser.displayName || 'Nicht festgelegt'}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Körperliche Daten */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Gewicht (kg)
+              </label>
+              {isEditing ? (
+                <input
+                  type="number"
+                  min="30"
+                  max="300"
+                  value={userProfile.weight || ''}
+                  onChange={(e) => updateProfileField('weight', e.target.value ? parseFloat(e.target.value) : undefined)}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="70"
+                />
+              ) : (
+                <div className="flex items-center space-x-2 px-3 py-2 bg-gray-700 rounded-lg">
+                  <Scale className="w-4 h-4 text-gray-400" />
+                  <span className="text-white">{userProfile.weight ? `${userProfile.weight} kg` : 'Nicht festgelegt'}</span>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Größe (cm)
+              </label>
+              {isEditing ? (
+                <input
+                  type="number"
+                  min="100"
+                  max="250"
+                  value={userProfile.height || ''}
+                  onChange={(e) => updateProfileField('height', e.target.value ? parseFloat(e.target.value) : undefined)}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="175"
+                />
+              ) : (
+                <div className="flex items-center space-x-2 px-3 py-2 bg-gray-700 rounded-lg">
+                  <TrendingUp className="w-4 h-4 text-gray-400" />
+                  <span className="text-white">{userProfile.height ? `${userProfile.height} cm` : 'Nicht festgelegt'}</span>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Alter (Jahre)
+              </label>
+              {isEditing ? (
+                <input
+                  type="number"
+                  min="10"
+                  max="120"
+                  value={userProfile.age || ''}
+                  onChange={(e) => updateProfileField('age', e.target.value ? parseInt(e.target.value) : undefined)}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="30"
+                />
+              ) : (
+                <div className="flex items-center space-x-2 px-3 py-2 bg-gray-700 rounded-lg">
+                  <Calendar className="w-4 h-4 text-gray-400" />
+                  <span className="text-white">{userProfile.age ? `${userProfile.age} Jahre` : 'Nicht festgelegt'}</span>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Geschlecht
+              </label>
+              {isEditing ? (
+                <select
+                  value={userProfile.gender || ''}
+                  onChange={(e) => updateProfileField('gender', e.target.value || undefined)}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Nicht angegeben</option>
+                  <option value="male">Männlich</option>
+                  <option value="female">Weiblich</option>
+                  <option value="other">Divers</option>
+                </select>
+              ) : (
+                <div className="flex items-center space-x-2 px-3 py-2 bg-gray-700 rounded-lg">
+                  <User className="w-4 h-4 text-gray-400" />
+                  <span className="text-white">
+                    {userProfile.gender === 'male' ? 'Männlich' : 
+                     userProfile.gender === 'female' ? 'Weiblich' : 
+                     userProfile.gender === 'other' ? 'Divers' : 'Nicht angegeben'}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Aktivitätslevel
+              </label>
+              {isEditing ? (
+                <select
+                  value={userProfile.activityLevel || ''}
+                  onChange={(e) => updateProfileField('activityLevel', e.target.value || undefined)}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Nicht angegeben</option>
+                  <option value="sedentary">Wenig aktiv (Bürojob, wenig Sport)</option>
+                  <option value="light">Leicht aktiv (1-3x Sport/Woche)</option>
+                  <option value="moderate">Mäßig aktiv (3-5x Sport/Woche)</option>
+                  <option value="active">Sehr aktiv (6-7x Sport/Woche)</option>
+                  <option value="very_active">Extrem aktiv (2x täglich Training)</option>
+                </select>
+              ) : (
+                <div className="flex items-center space-x-2 px-3 py-2 bg-gray-700 rounded-lg">
+                  <Activity className="w-4 h-4 text-gray-400" />
+                  <span className="text-white">
+                    {userProfile.activityLevel === 'sedentary' ? 'Wenig aktiv' :
+                     userProfile.activityLevel === 'light' ? 'Leicht aktiv' :
+                     userProfile.activityLevel === 'moderate' ? 'Mäßig aktiv' :
+                     userProfile.activityLevel === 'active' ? 'Sehr aktiv' :
+                     userProfile.activityLevel === 'very_active' ? 'Extrem aktiv' : 'Nicht angegeben'}
+                  </span>
                 </div>
               )}
             </div>

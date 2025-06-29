@@ -59,12 +59,28 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete }) =
   
   // Lade Benutzerprofil für Kalorienberechnung
   const [userProfile, setUserProfile] = useState<UserProfile>(() => {
-    if (currentUser?.uid) {
-      const saved = localStorage.getItem(`userProfile_${currentUser.uid}`);
-      return saved ? JSON.parse(saved) : {};
-    }
     return {};
   });
+  
+  // Lade Benutzerprofil
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (currentUser?.uid) {
+        try {
+          const { getUserProfile } = await import('../firebase/services');
+          const profile = await getUserProfile();
+          setUserProfile(profile);
+        } catch (error) {
+          console.error('Fehler beim Laden des Profils:', error);
+          // Fallback auf localStorage
+          const saved = localStorage.getItem(`userProfile_${currentUser.uid}`);
+          setUserProfile(saved ? JSON.parse(saved) : {});
+        }
+      }
+    };
+    
+    loadProfile();
+  }, [currentUser]);
   
   // Session Summary State
   const [showSessionSummary, setShowSessionSummary] = useState(false);

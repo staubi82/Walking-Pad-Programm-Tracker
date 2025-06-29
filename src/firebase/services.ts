@@ -8,10 +8,58 @@ import {
   orderBy, 
   where, 
   Timestamp,
-  updateDoc
+  updateDoc,
+  getDoc,
+  setDoc
 } from 'firebase/firestore';
 import { db, auth } from './config';
 import { TrainingSession, TrainingProgram } from '../types';
+
+// User Profile Services
+export const saveUserProfile = async (profile: any) => {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error('Benutzer nicht angemeldet');
+    }
+
+    await updateDoc(doc(db, 'userProfiles', user.uid), profile);
+  } catch (error) {
+    // Wenn Dokument nicht existiert, erstelle es
+    if (error.code === 'not-found') {
+      const user = auth.currentUser;
+      if (user) {
+        await setDoc(doc(db, 'userProfiles', user.uid), profile);
+      }
+    } else {
+      console.error('Fehler beim Speichern des Benutzerprofils:', error);
+      throw error;
+    }
+  }
+};
+
+export const getUserProfile = async () => {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error('Benutzer nicht angemeldet');
+    }
+
+    const docRef = doc(db, 'userProfiles', user.uid);
+    const docSnap = await getDoc(docRef);
+    
+    if (docSnap.exists()) {
+      return docSnap.data();
+    } else {
+      return {};
+    }
+  } catch (error) {
+    console.error('Fehler beim Laden des Benutzerprofils:', error);
+    // Fallback auf localStorage
+    const saved = localStorage.getItem(`userProfile_${auth.currentUser?.uid}`);
+    return saved ? JSON.parse(saved) : {};
+  }
+};
 
 // Training Sessions
 export const saveTrainingSession = async (session: Omit<TrainingSession, 'id'>) => {

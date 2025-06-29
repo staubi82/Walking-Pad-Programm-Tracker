@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { Activity, BarChart3, History, AlertCircle, Play } from 'lucide-react';
+import { Activity, BarChart3, History, AlertCircle, Play, LogOut, Settings } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
+import { logoutUser } from './firebase/auth';
 import { ProtectedRoute } from './components/Auth/ProtectedRoute';
 import { LandingPage } from './components/LandingPage';
 import { PasswordResetPage } from './components/Auth/PasswordResetPage';
@@ -13,6 +14,7 @@ import { TrainingSession } from './types';
 import { saveTrainingSession, getTrainingSessions, deleteTrainingSession, updateTrainingSession } from './firebase/services';
 import { formatDate } from './utils/calculations';
 import { SessionEditModal } from './components/SessionEditModal';
+import { useNavigate } from 'react-router-dom';
 
 interface RecordingState {
   isRecording: boolean;
@@ -23,6 +25,7 @@ interface RecordingState {
 
 const MainApp: React.FC = () => {
   const { currentUser, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'overview' | 'tracker' | 'history' | 'stats'>('overview');
   const [sessions, setSessions] = useState<TrainingSession[]>([]);
   const [loading, setLoading] = useState(true);
@@ -222,6 +225,15 @@ const MainApp: React.FC = () => {
     }));
   };
 
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+      navigate('/');
+    } catch (error) {
+      console.error('Fehler beim Abmelden:', error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
@@ -245,20 +257,27 @@ const MainApp: React.FC = () => {
       <header className="bg-gray-800 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <Activity className="w-8 h-8 text-green-500" />
-              <h1 className="text-2xl font-bold text-white">Walking-Pad Tracker</h1>
+            <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-xl flex items-center justify-center">
+                  <Activity className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-white">Walking-Pad Tracker</h1>
+                  <p className="text-xs text-gray-400">Professionelles Training</p>
+                </div>
+              </div>
               
               {/* Recording Indicator */}
               {recordingState.isRecording && (
                 <div 
                   onClick={() => setActiveTab('tracker')}
-                  className="flex items-center space-x-3 bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg cursor-pointer transition-all animate-pulse"
+                  className="flex items-center space-x-3 bg-red-500/20 border border-red-500 hover:bg-red-500/30 px-4 py-2 rounded-xl cursor-pointer transition-all backdrop-blur-sm"
                   title="Klicken um zur laufenden Aufzeichnung zu wechseln"
                 >
-                  <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
+                  <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
                   <div className="text-white">
-                    <div className="text-sm font-medium">🔴 AUFZEICHNUNG LÄUFT</div>
+                    <div className="text-sm font-medium">🔴 Live Training</div>
                     <div className="text-xs opacity-90">
                       {recordingState.sessionName || 'Unbenanntes Training'} • {formatDuration(recordingState.duration)}
                     </div>
@@ -267,39 +286,56 @@ const MainApp: React.FC = () => {
               )}
             </div>
             
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
               {!firebaseConfigured && (
-                <div className="flex items-center space-x-2 text-yellow-400">
+                <div className="flex items-center space-x-2 text-yellow-400 bg-yellow-400/10 px-3 py-1 rounded-lg border border-yellow-400/30">
                   <AlertCircle className="w-5 h-5" />
                   <span className="text-sm">Lokale Speicherung aktiv</span>
                 </div>
               )}
               
-              {/* User Menu */}
+              {/* Quick Actions */}
+              <button
+                onClick={() => navigate('/profile')}
+                className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-all"
+                title="Profil-Einstellungen"
+              >
+                <Settings className="w-5 h-5" />
+              </button>
+              
+              <button
+                onClick={handleLogout}
+                className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+                title="Abmelden"
+              >
+                <LogOut className="w-5 h-5" />
+              </button>
+              
+              {/* User Avatar */}
               {currentUser && (
-                <div className="flex items-center space-x-3">
-                  <div className="text-right">
-                    <p className="text-sm text-white font-medium">
-                      {currentUser.displayName || 'Benutzer'}
-                    </p>
-                    <p className="text-xs text-gray-400">{currentUser.email}</p>
-                  </div>
+                <div className="flex items-center space-x-3 bg-gray-700/50 rounded-xl px-3 py-2 border border-gray-600/50">
                   <button
-                    onClick={() => window.location.href = '/profile'}
-                    className="w-10 h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center hover:from-green-500 hover:to-blue-600 transition-all"
+                    onClick={() => navigate('/profile')}
+                    className="w-8 h-8 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center hover:from-green-500 hover:to-blue-600 transition-all ring-2 ring-transparent hover:ring-white/20"
                   >
                     {currentUser.photoURL ? (
                       <img
                         src={currentUser.photoURL}
                         alt="Profil"
-                        className="w-10 h-10 rounded-full object-cover"
+                        className="w-8 h-8 rounded-full object-cover"
                       />
                     ) : (
-                      <span className="text-white font-bold text-sm">
+                      <span className="text-white font-bold text-xs">
                         {(currentUser.displayName || currentUser.email || 'U').charAt(0).toUpperCase()}
                       </span>
                     )}
                   </button>
+                  <div className="text-right">
+                    <p className="text-sm text-white font-medium leading-tight">
+                      {currentUser.displayName || 'Benutzer'}
+                    </p>
+                    <p className="text-xs text-gray-400 leading-tight">{currentUser.email}</p>
+                  </div>
                 </div>
               )}
             </div>
@@ -309,19 +345,22 @@ const MainApp: React.FC = () => {
 
       <nav className="bg-gray-800 border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8">
+          <div className="flex space-x-1">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                className={`flex items-center space-x-2 py-3 px-4 rounded-t-lg font-medium text-sm transition-all ${
                   activeTab === tab.id
-                    ? 'border-green-500 text-green-400'
-                    : 'border-transparent text-gray-300 hover:text-white hover:border-gray-300'
+                    ? 'bg-gray-700 text-green-400 border-b-2 border-green-500'
+                    : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
                 }`}
               >
                 <tab.icon className="w-5 h-5" />
                 <span>{tab.label}</span>
+                {tab.id === 'tracker' && recordingState.isRecording && (
+                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                )}
               </button>
             ))}
           </div>

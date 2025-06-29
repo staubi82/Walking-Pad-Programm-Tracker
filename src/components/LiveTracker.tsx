@@ -83,24 +83,10 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
 
   useEffect(() => {
     if (isRunning && !isPaused) {
-      // Update recording state für Header
-      onRecordingChange(true, {
-        sessionName: sessionName,
-        duration: duration,
-        currentSpeed: currentSpeed
-      });
-      
       intervalRef.current = setInterval(() => {
         const now = Date.now();
         const elapsed = Math.floor((now - startTimeRef.current - pausedTimeRef.current) / 1000);
         setDuration(elapsed);
-        
-        // Update recording state
-        onRecordingChange(true, {
-          sessionName: sessionName,
-          duration: elapsed,
-          currentSpeed: currentSpeed
-        });
         
         // Berechne verbleibende Zeit wenn Timer gesetzt ist
         if (targetDuration) {
@@ -116,7 +102,15 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
         
         setSpeedHistory(prev => [...prev, { timestamp: now, speed: currentSpeed }]);
       }, 1000);
+      
+      // Update recording state für Header
+      onRecordingChange(true, {
+        sessionName: sessionName,
+        duration: duration,
+        currentSpeed: currentSpeed
+      });
     } else {
+      // Clear interval when not running or paused
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
@@ -128,7 +122,7 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
         clearInterval(intervalRef.current);
       }
     };
-  }, [isRunning, isPaused, currentSpeed, sessionName, duration, targetDuration, onRecordingChange]);
+  }, [isRunning, isPaused, currentSpeed]);
 
   const startSession = () => {
     if (!sessionName.trim()) {
@@ -143,11 +137,6 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
     setIsRunning(true);
     setIsPaused(false);
     setDuration(0);
-    onRecordingChange(true, {
-      sessionName: sessionName,
-      duration: 0,
-      currentSpeed: currentSpeed
-    });
     setSpeedHistory([{ timestamp: now, speed: currentSpeed }]);
     
     // Setze verbleibende Zeit wenn Timer aktiv
@@ -158,18 +147,11 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
 
   const pauseSession = () => {
     setIsPaused(true);
-    onRecordingChange(false);
   };
 
   const resumeSession = () => {
-    const pauseStart = Date.now();
-    pausedTimeRef.current += pauseStart - (startTimeRef.current + duration * 1000 + pausedTimeRef.current);
+    pausedTimeRef.current += Date.now() - (startTimeRef.current + duration * 1000);
     setIsPaused(false);
-    onRecordingChange(true, {
-      sessionName: sessionName,
-      duration: duration,
-      currentSpeed: currentSpeed
-    });
   };
 
   const stopSession = () => {
@@ -203,7 +185,6 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
     // Reset
     setIsRunning(false);
     setIsPaused(false);
-    onRecordingChange(false);
     setDuration(0);
     setCurrentSpeed(1.0);
     setSpeedHistory([]);
@@ -212,6 +193,19 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
     setTargetDuration(null);
     setRemainingTime(null);
   };
+
+  // Separate useEffect für Recording State Updates
+  useEffect(() => {
+    if (isRunning && !isPaused) {
+      onRecordingChange(true, {
+        sessionName: sessionName,
+        duration: duration,
+        currentSpeed: currentSpeed
+      });
+    } else {
+      onRecordingChange(false);
+    }
+  }, [isRunning, isPaused, sessionName, duration, currentSpeed, onRecordingChange]);
 
   const handleSessionSave = (sessionData: {
     name: string;

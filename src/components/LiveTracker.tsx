@@ -603,7 +603,9 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
               </div>
               
               <div className="mt-4 p-3 bg-blue-900/30 rounded-lg border border-blue-700">
-                <p className="text-blue-300 text-sm">
+                <p className={`text-sm transition-colors duration-200 ${
+                  isDark ? 'text-blue-300' : 'text-blue-700'
+                }`}>
                   💡 <strong>So funktioniert's:</strong> 
                   <br />• Fügen Sie Zeitpunkte mit verschiedenen Geschwindigkeiten hinzu
                   <br />• Die App berechnet automatisch die Gesamtstatistiken
@@ -1075,22 +1077,52 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
             </div>
           </div>
           
-          <div className={`mt-6 p-4 rounded-lg border border-purple-700 transition-colors duration-200 ${
-            isDark ? 'bg-purple-900/30' : 'bg-purple-50'
+          <div className={`mt-6 p-4 rounded-lg transition-colors duration-200 ${
+            isDark ? 'bg-blue-900/30 border-blue-700' : 'bg-blue-50 border-blue-300'
           }`}>
-            <h5 className="text-purple-300 font-semibold mb-2">💡 Schrittziel-Empfehlungen</h5>
+            <h4 className={`text-lg font-semibold mb-2 transition-colors duration-200 ${
+              isDark ? 'text-blue-300' : 'text-blue-700'
+            }`}>💡 Gesundheitstipps</h4>
+            <div className={`text-sm space-y-1 transition-colors duration-200 ${
+              isDark ? 'text-blue-200' : 'text-blue-600'
+            }`}>
+              <p>• Regelmäßiges Walking stärkt das Herz-Kreislauf-System</p>
+              <p>• 30 Minuten täglich können das Risiko für Herzkrankheiten reduzieren</p>
+              <p>• Walking ist gelenkschonend und für alle Altersgruppen geeignet</p>
+              <p>• Bereits 2.000 zusätzliche Schritte täglich machen einen Unterschied</p>
+            </div>
+          </div>
+          
+          <div className={`mt-6 p-4 rounded-lg border transition-colors duration-200 ${
+            isDark ? 'bg-purple-900/30 border-purple-700' : 'bg-purple-50 border-purple-300'
+          }`}>
+            <h5 className={`font-semibold mb-2 transition-colors duration-200 ${
+              isDark ? 'text-purple-300' : 'text-purple-700'
+            }`}>💡 Schrittziel-Empfehlungen</h5>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
               <div className="text-center">
-                <div className="text-lg font-bold text-purple-400">5.000</div>
-                <div className="text-purple-300">Minimum täglich</div>
+                <div className={`text-lg font-bold transition-colors duration-200 ${
+                  isDark ? 'text-purple-400' : 'text-purple-600'
+                }`}>5.000</div>
+                <div className={`transition-colors duration-200 ${
+                  isDark ? 'text-purple-300' : 'text-purple-600'
+                }`}>Minimum täglich</div>
               </div>
               <div className="text-center">
-                <div className="text-lg font-bold text-purple-400">10.000</div>
-                <div className="text-purple-300">Empfohlenes Tagesziel</div>
+                <div className={`text-lg font-bold transition-colors duration-200 ${
+                  isDark ? 'text-purple-400' : 'text-purple-600'
+                }`}>10.000</div>
+                <div className={`transition-colors duration-200 ${
+                  isDark ? 'text-purple-300' : 'text-purple-600'
+                }`}>Empfohlenes Tagesziel</div>
               </div>
               <div className="text-center">
-                <div className="text-lg font-bold text-purple-400">15.000+</div>
-                <div className="text-purple-300">Sehr aktiver Lebensstil</div>
+                <div className={`text-lg font-bold transition-colors duration-200 ${
+                  isDark ? 'text-purple-400' : 'text-purple-600'
+                }`}>15.000+</div>
+                <div className={`transition-colors duration-200 ${
+                  isDark ? 'text-purple-300' : 'text-purple-600'
+                }`}>Sehr aktiver Lebensstil</div>
               </div>
             </div>
           </div>

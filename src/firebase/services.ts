@@ -139,13 +139,25 @@ export const getTrainingSessions = async (): Promise<TrainingSession[]> => {
     );
     const querySnapshot = await getDocs(q);
     
-    const sessions = querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      speedHistory: doc.data().speedHistory || [],
-      date: doc.data().date.toDate(),
-      createdAt: doc.data().createdAt.toDate()
-    })) as TrainingSession[];
+    const sessions = querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        name: data.name || '',
+        duration: Number(data.duration) || 0,
+        distance: Number(data.distance) || 0,
+        calories: Number(data.calories) || 0,
+        averageSpeed: Number(data.averageSpeed) || 0,
+        maxSpeed: Number(data.maxSpeed) || 0,
+        speedHistory: (data.speedHistory || []).map((entry: any) => ({
+          timestamp: Number(entry.timestamp) || 0,
+          speed: Number(entry.speed) || 0
+        })),
+        date: data.date.toDate(),
+        createdAt: data.createdAt.toDate(),
+        difficulty: data.difficulty || 'medium'
+      };
+    }) as TrainingSession[];
     
     // Manuell nach Datum sortieren
     return sessions.sort((a, b) => b.date.getTime() - a.date.getTime());

@@ -67,28 +67,38 @@ const MainApp: React.FC = () => {
             setFirebaseConfigured(false);
             // Lade aus localStorage wenn Firebase nicht verfügbar ist
             const localSessions = JSON.parse(localStorage.getItem('walkingPadSessions') || '[]').map((session: any) => ({
-              ...session,
+              id: session.id || Date.now().toString(),
+              name: session.name || '',
               date: new Date(session.date),
               createdAt: new Date(session.createdAt),
-              distance: session.distance || 0,
-              calories: session.calories || 0,
-              duration: session.duration || 0,
-              averageSpeed: session.averageSpeed || 0,
-              maxSpeed: session.maxSpeed || 0,
-              speedHistory: session.speedHistory || []
+              duration: Number(session.duration) || 0,
+              distance: Number(session.distance) || 0,
+              calories: Number(session.calories) || 0,
+              averageSpeed: Number(session.averageSpeed) || 0,
+              maxSpeed: Number(session.maxSpeed) || 0,
+              speedHistory: (session.speedHistory || []).map((entry: any) => ({
+                timestamp: Number(entry.timestamp) || 0,
+                speed: Number(entry.speed) || 0
+              })),
+              difficulty: session.difficulty || 'medium'
             }));
             setSessions(localSessions);
           } else {
             const localSessions = JSON.parse(localStorage.getItem('walkingPadSessions') || '[]').map((session: any) => ({
-              ...session,
+              id: session.id || Date.now().toString(),
+              name: session.name || '',
               date: new Date(session.date),
               createdAt: new Date(session.createdAt),
-              distance: session.distance || 0,
-              calories: session.calories || 0,
-              duration: session.duration || 0,
-              averageSpeed: session.averageSpeed || 0,
-              maxSpeed: session.maxSpeed || 0,
-              speedHistory: session.speedHistory || []
+              duration: Number(session.duration) || 0,
+              distance: Number(session.distance) || 0,
+              calories: Number(session.calories) || 0,
+              averageSpeed: Number(session.averageSpeed) || 0,
+              maxSpeed: Number(session.maxSpeed) || 0,
+              speedHistory: (session.speedHistory || []).map((entry: any) => ({
+                timestamp: Number(entry.timestamp) || 0,
+                speed: Number(entry.speed) || 0
+              })),
+              difficulty: session.difficulty || 'medium'
             }));
             setSessions(localSessions);
           }
@@ -96,15 +106,20 @@ const MainApp: React.FC = () => {
       } else {
         // Lade aus localStorage wenn Firebase nicht verfügbar ist
         const localSessions = JSON.parse(localStorage.getItem('walkingPadSessions') || '[]').map((session: any) => ({
-          ...session,
+          id: session.id || Date.now().toString(),
+          name: session.name || '',
           date: new Date(session.date),
           createdAt: new Date(session.createdAt),
-          distance: session.distance || 0,
-          calories: session.calories || 0,
-          duration: session.duration || 0,
-          averageSpeed: session.averageSpeed || 0,
-          maxSpeed: session.maxSpeed || 0,
-          speedHistory: session.speedHistory || []
+          duration: Number(session.duration) || 0,
+          distance: Number(session.distance) || 0,
+          calories: Number(session.calories) || 0,
+          averageSpeed: Number(session.averageSpeed) || 0,
+          maxSpeed: Number(session.maxSpeed) || 0,
+          speedHistory: (session.speedHistory || []).map((entry: any) => ({
+            timestamp: Number(entry.timestamp) || 0,
+            speed: Number(entry.speed) || 0
+          })),
+          difficulty: session.difficulty || 'medium'
         }));
         setSessions(localSessions);
       }
@@ -113,15 +128,20 @@ const MainApp: React.FC = () => {
       // Fallback auf leeres Array
       try {
         const localSessions = JSON.parse(localStorage.getItem('walkingPadSessions') || '[]').map((session: any) => ({
-          ...session,
+          id: session.id || Date.now().toString(),
+          name: session.name || '',
           date: new Date(session.date),
           createdAt: new Date(session.createdAt),
-          distance: session.distance || 0,
-          calories: session.calories || 0,
-          duration: session.duration || 0,
-          averageSpeed: session.averageSpeed || 0,
-          maxSpeed: session.maxSpeed || 0,
-          speedHistory: session.speedHistory || []
+          duration: Number(session.duration) || 0,
+          distance: Number(session.distance) || 0,
+          calories: Number(session.calories) || 0,
+          averageSpeed: Number(session.averageSpeed) || 0,
+          maxSpeed: Number(session.maxSpeed) || 0,
+          speedHistory: (session.speedHistory || []).map((entry: any) => ({
+            timestamp: Number(entry.timestamp) || 0,
+            speed: Number(entry.speed) || 0
+          })),
+          difficulty: session.difficulty || 'medium'
         }));
         setSessions(localSessions);
       } catch (parseError) {

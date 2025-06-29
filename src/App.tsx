@@ -6,7 +6,7 @@ import LoginPage from './components/Auth/LoginPage';
 import RegisterPage from './components/Auth/RegisterPage';
 import PasswordResetPage from './components/Auth/PasswordResetPage';
 import ProfilePage from './components/Auth/ProfilePage';
-import LiveTracker from './components/LiveTracker';
+import { LiveTracker } from './components/LiveTracker';
 import SessionHistory from './components/SessionHistory';
 import Statistics from './components/Statistics';
 import ThemeToggle from './components/ThemeToggle';

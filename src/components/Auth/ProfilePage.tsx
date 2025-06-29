@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { User, Mail, Calendar, Edit3, Save, X, Trash2, Activity, TrendingUp, Target, Scale, Camera, Upload } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import { updateUserProfile, PhotoUrlTooLongError } from '../../firebase/auth';
 import { saveUserProfile, getUserProfile } from '../../firebase/services';
 import { UserProfile } from '../../types';
@@ -9,6 +10,7 @@ import { useEffect } from 'react';
 
 export const ProfilePage: React.FC = () => {
   const { currentUser } = useAuth();
+  const { isDark } = useTheme();
   
   const [isEditing, setIsEditing] = useState(false);
   const [displayName, setDisplayName] = useState(currentUser?.displayName || '');

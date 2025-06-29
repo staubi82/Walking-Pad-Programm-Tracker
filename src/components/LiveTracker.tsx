@@ -35,6 +35,8 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete }) =
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [duration, setDuration] = useState(0);
+  const [targetDuration, setTargetDuration] = useState<number | null>(null); // in Sekunden
+  const [remainingTime, setRemainingTime] = useState<number | null>(null);
   const [currentSpeed, setCurrentSpeed] = useState(1.0);
   const [speedHistory, setSpeedHistory] = useState<SpeedPoint[]>([]);
   const [sessionName, setSessionName] = useState('');
@@ -53,6 +55,16 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete }) =
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number>(0);
   const pausedTimeRef = useRef<number>(0);
+  
+  // Vordefinierte Timer-Optionen
+  const timerPresets = [
+    { label: '15 Min', value: 15 * 60 },
+    { label: '20 Min', value: 20 * 60 },
+    { label: '30 Min', value: 30 * 60 },
+    { label: '45 Min', value: 45 * 60 },
+    { label: '60 Min', value: 60 * 60 },
+    { label: '90 Min', value: 90 * 60 }
+  ];
 
   useEffect(() => {
     if (isRunning && !isPaused) {
@@ -60,6 +72,18 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete }) =
         const now = Date.now();
         const elapsed = Math.floor((now - startTimeRef.current - pausedTimeRef.current) / 1000);
         setDuration(elapsed);
+        
+        // Berechne verbleibende Zeit wenn Timer gesetzt ist
+        if (targetDuration) {
+          const remaining = targetDuration - elapsed;
+          setRemainingTime(Math.max(0, remaining));
+          
+          // Automatisch stoppen wenn Zeit abgelaufen
+          if (remaining <= 0) {
+            stopSession();
+            return;
+          }
+        }
         
         setSpeedHistory(prev => [...prev, { timestamp: now, speed: currentSpeed }]);
       }, 1000);
@@ -91,6 +115,11 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete }) =
     setIsPaused(false);
     setDuration(0);
     setSpeedHistory([{ timestamp: now, speed: currentSpeed }]);
+    
+    // Setze verbleibende Zeit wenn Timer aktiv
+    if (targetDuration) {
+      setRemainingTime(targetDuration);
+    }
   };
 
   const pauseSession = () => {
@@ -137,6 +166,8 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete }) =
     setSessionName('');
     setNameError('');
     setSelectedDifficulty('');
+    setTargetDuration(null);
+    setRemainingTime(null);
   };
 
   const adjustSpeed = (delta: number) => {
@@ -246,6 +277,8 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete }) =
     setTimelineDifficulty('');
     setTimelineEntries([{ id: '1', minute: 0, speed: 1.0 }]);
     setShowManualEntry(false);
+    setTargetDuration(null);
+    setRemainingTime(null);
   };
 
   const speedButtons = [];
@@ -255,6 +288,11 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete }) =
 
   const currentDistance = calculateDistance(speedHistory);
   const currentCalories = calculateCalories(speedHistory);
+  
+  // Berechne Fortschritt in Prozent
+  const progressPercentage = targetDuration && targetDuration > 0 
+    ? Math.min(100, (duration / targetDuration) * 100)
+    : 0;
 
   return (
     <div className="space-y-6">
@@ -262,12 +300,46 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete }) =
       <div className="bg-gray-800 rounded-xl p-6 shadow-xl">
         <div className="flex items-center justify-center mb-4">
           <Clock className="w-8 h-8 text-blue-400 mr-3" />
-          <h2 className="text-3xl font-bold text-white">Stoppuhr</h2>
+          <h2 className="text-3xl font-bold text-white">
+            {targetDuration ? 'Timer' : 'Stoppuhr'}
+          </h2>
         </div>
+        
         <div className="text-center">
-          <div className="text-6xl font-mono font-bold text-green-400 mb-4">
-            {formatDuration(duration)}
+          {/* Hauptzeit-Anzeige */}
+          <div className="mb-4">
+            <div className="text-6xl font-mono font-bold text-green-400 mb-2">
+              {targetDuration && remainingTime !== null 
+                ? formatDuration(remainingTime)
+                : formatDuration(duration)
+              }
+            </div>
+            
+            {/* Zusätzliche Zeit-Info bei Timer */}
+            {targetDuration && (
+              <div className="text-lg text-gray-400">
+                <span>Verstrichene Zeit: {formatDuration(duration)}</span>
+                <span className="mx-2">•</span>
+                <span>Zielzeit: {formatDuration(targetDuration)}</span>
+              </div>
+            )}
           </div>
+          
+          {/* Fortschrittsbalken bei Timer */}
+          {targetDuration && (
+            <div className="mb-4">
+              <div className="w-full bg-gray-700 rounded-full h-3 mb-2">
+                <div 
+                  className="bg-gradient-to-r from-green-500 to-blue-500 h-3 rounded-full transition-all duration-1000 ease-out"
+                  style={{ width: `${progressPercentage}%` }}
+                ></div>
+              </div>
+              <div className="text-sm text-gray-400">
+                Fortschritt: {progressPercentage.toFixed(1)}%
+              </div>
+            </div>
+          )}
+          
           <div className="flex justify-center space-x-4">
             {!isRunning ? (
               <div className="text-gray-400">Bereit zum Start</div>
@@ -452,6 +524,100 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete }) =
           </div>
         )}
       </div>
+
+      {/* Timer-Einstellungen */}
+      {!isRunning && !showManualEntry && (
+        <div className="bg-gray-800 rounded-xl p-6 shadow-xl">
+          <h3 className="text-xl font-bold text-white mb-4">Timer-Einstellungen</h3>
+          
+          <div className="space-y-4">
+            {/* Timer Ein/Aus */}
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium text-gray-300">
+                Timer verwenden
+              </label>
+              <button
+                onClick={() => {
+                  if (targetDuration) {
+                    setTargetDuration(null);
+                    setRemainingTime(null);
+                  } else {
+                    setTargetDuration(30 * 60); // Standard: 30 Minuten
+                    setRemainingTime(30 * 60);
+                  }
+                }}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  targetDuration ? 'bg-green-600' : 'bg-gray-600'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    targetDuration ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+            
+            {/* Timer-Presets */}
+            {targetDuration && (
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-3">
+                  Zielzeit auswählen
+                </label>
+                <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                  {timerPresets.map((preset) => (
+                    <button
+                      key={preset.value}
+                      onClick={() => {
+                        setTargetDuration(preset.value);
+                        setRemainingTime(preset.value);
+                      }}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        targetDuration === preset.value
+                          ? 'bg-green-600 text-white'
+                          : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+                      }`}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+                
+                {/* Benutzerdefinierte Zeit */}
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Benutzerdefinierte Zeit (Minuten)
+                  </label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="number"
+                      min="1"
+                      max="180"
+                      value={targetDuration ? Math.round(targetDuration / 60) : 30}
+                      onChange={(e) => {
+                        const minutes = parseInt(e.target.value) || 30;
+                        const seconds = minutes * 60;
+                        setTargetDuration(seconds);
+                        setRemainingTime(seconds);
+                      }}
+                      className="w-20 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-center focus:outline-none focus:ring-2 focus:ring-green-500"
+                    />
+                    <span className="text-gray-300">Minuten</span>
+                  </div>
+                </div>
+                
+                {/* Timer-Info */}
+                <div className="mt-4 p-3 bg-blue-900/30 rounded-lg border border-blue-700">
+                  <p className="text-blue-300 text-sm">
+                    ⏰ <strong>Timer aktiv:</strong> Das Training stoppt automatisch nach {formatDuration(targetDuration)}
+                    <br />🎯 <strong>Ziel:</strong> Erreichen Sie Ihre gewünschte Trainingszeit
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Live Tracking */}
       <div className="bg-gray-800 rounded-xl p-6 shadow-xl">

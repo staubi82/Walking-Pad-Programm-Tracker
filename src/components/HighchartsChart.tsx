@@ -6,6 +6,7 @@ import { TrainingSession } from '../types';
 import { formatDuration, calculateStepsForExistingSession } from '../utils/calculations';
 import { getUserProfile } from '../firebase/services';
 import { useState, useEffect } from 'react';
+import { useTheme } from '../context/ThemeContext';
 
 interface HighchartsChartProps {
   session: TrainingSession;
@@ -34,6 +35,7 @@ const difficultyLabels = {
 export const HighchartsChart: React.FC<HighchartsChartProps> = ({ session, onDelete, onEdit }) => {
   const [userProfile, setUserProfile] = useState<any>({});
   const [calculatedSteps, setCalculatedSteps] = useState<number>(0);
+  const { isDark } = useTheme();
   
   // Lade Benutzerprofil für Schrittzähler
   useEffect(() => {
@@ -155,7 +157,7 @@ export const HighchartsChart: React.FC<HighchartsChartProps> = ({ session, onDel
   const options: Highcharts.Options = {
     chart: {
       type: 'spline',
-      backgroundColor: '#1F2937',
+      backgroundColor: isDark ? '#1F2937' : '#F9FAFB',
       borderRadius: 8,
       height: 200,
       spacing: [10, 10, 10, 10],
@@ -176,22 +178,22 @@ export const HighchartsChart: React.FC<HighchartsChartProps> = ({ session, onDel
       title: {
         text: 'Zeit (Minuten)',
         style: {
-          color: '#9CA3AF',
+          color: isDark ? '#9CA3AF' : '#6B7280',
           fontSize: '12px'
         }
       },
       labels: {
         style: {
-          color: '#9CA3AF',
+          color: isDark ? '#9CA3AF' : '#6B7280',
           fontSize: '11px'
         },
         formatter: function() {
           return `${this.value}min`;
         }
       },
-      gridLineColor: '#374151',
-      lineColor: '#6B7280',
-      tickColor: '#6B7280',
+      gridLineColor: isDark ? '#374151' : '#E5E7EB',
+      lineColor: isDark ? '#6B7280' : '#9CA3AF',
+      tickColor: isDark ? '#6B7280' : '#9CA3AF',
       plotLines: speedChanges.map(change => ({
         color: change.change > 0 ? '#10B981' : '#EF4444',
         width: 1,
@@ -218,31 +220,31 @@ export const HighchartsChart: React.FC<HighchartsChartProps> = ({ session, onDel
       title: {
         text: 'Geschwindigkeit (km/h)',
         style: {
-          color: '#9CA3AF',
+          color: isDark ? '#9CA3AF' : '#6B7280',
           fontSize: '12px'
         }
       },
       labels: {
         style: {
-          color: '#9CA3AF',
+          color: isDark ? '#9CA3AF' : '#6B7280',
           fontSize: '11px'
         },
         formatter: function() {
           return `${this.value} km/h`;
         }
       },
-      gridLineColor: '#374151',
-      lineColor: '#6B7280',
-      tickColor: '#6B7280',
+      gridLineColor: isDark ? '#374151' : '#E5E7EB',
+      lineColor: isDark ? '#6B7280' : '#9CA3AF',
+      tickColor: isDark ? '#6B7280' : '#9CA3AF',
       min: Math.max(0, Math.min(...chartData.map(d => d[1])) - 0.5),
       max: Math.max(...chartData.map(d => d[1])) + 0.5
     },
     tooltip: {
-      backgroundColor: '#1F2937',
-      borderColor: '#4B5563',
+      backgroundColor: isDark ? '#1F2937' : '#FFFFFF',
+      borderColor: isDark ? '#4B5563' : '#D1D5DB',
       borderRadius: 8,
       style: {
-        color: '#FFFFFF',
+        color: isDark ? '#FFFFFF' : '#111827',
         fontSize: '12px'
       },
       formatter: function() {
@@ -298,13 +300,21 @@ export const HighchartsChart: React.FC<HighchartsChartProps> = ({ session, onDel
   };
 
   return (
-    <div className="relative bg-gray-700 rounded-lg p-4 hover:bg-gray-600 transition-colors">
+    <div className={`relative rounded-lg p-4 transition-colors duration-200 ${
+      isDark 
+        ? 'bg-gray-700 hover:bg-gray-600' 
+        : 'bg-white hover:bg-gray-50 border border-gray-200'
+    }`}>
       {/* Action Buttons */}
       <div className="absolute top-3 right-3 flex space-x-2 z-10">
         {onEdit && (
           <button
             onClick={() => onEdit(session)}
-            className="text-blue-400 hover:text-blue-300 p-2 rounded-lg bg-gray-800/80 hover:bg-gray-700/80 transition-colors"
+            className={`p-2 rounded-lg transition-colors ${
+              isDark 
+                ? 'text-blue-400 hover:text-blue-300 bg-gray-800/80 hover:bg-gray-700/80' 
+                : 'text-blue-600 hover:text-blue-700 bg-white/80 hover:bg-gray-100/80 border border-gray-200'
+            }`}
             title="Bearbeiten"
           >
             <Edit3 className="w-4 h-4" />
@@ -312,7 +322,11 @@ export const HighchartsChart: React.FC<HighchartsChartProps> = ({ session, onDel
         )}
         <button
           onClick={() => onDelete(session.id)}
-          className="text-red-400 hover:text-red-300 p-2 rounded-lg bg-gray-800/80 hover:bg-gray-700/80 transition-colors"
+          className={`p-2 rounded-lg transition-colors ${
+            isDark 
+              ? 'text-red-400 hover:text-red-300 bg-gray-800/80 hover:bg-gray-700/80' 
+              : 'text-red-600 hover:text-red-700 bg-white/80 hover:bg-gray-100/80 border border-gray-200'
+          }`}
           title="Löschen"
         >
           <Trash2 className="w-4 h-4" />
@@ -322,8 +336,12 @@ export const HighchartsChart: React.FC<HighchartsChartProps> = ({ session, onDel
       {/* Header */}
       <div className="flex justify-between items-start mb-4 pr-20">
         <div>
-          <h3 className="text-lg font-semibold text-white mb-1">{session.name}</h3>
-          <p className="text-sm text-gray-400">
+          <h3 className={`text-lg font-semibold mb-1 transition-colors duration-200 ${
+            isDark ? 'text-white' : 'text-gray-900'
+          }`}>{session.name}</h3>
+          <p className={`text-sm transition-colors duration-200 ${
+            isDark ? 'text-gray-400' : 'text-gray-600'
+          }`}>
             {new Date(session.date).toLocaleDateString('de-DE', {
               day: '2-digit',
               month: '2-digit',
@@ -345,8 +363,12 @@ export const HighchartsChart: React.FC<HighchartsChartProps> = ({ session, onDel
       {/* Highcharts Chart */}
       <div className="mb-4">
         <div className="flex justify-between items-center mb-3">
-          <span className="text-sm text-gray-400">Geschwindigkeitsverlauf</span>
-          <div className="flex items-center space-x-4 text-xs text-gray-400">
+          <span className={`text-sm transition-colors duration-200 ${
+            isDark ? 'text-gray-400' : 'text-gray-600'
+          }`}>Geschwindigkeitsverlauf</span>
+          <div className={`flex items-center space-x-4 text-xs transition-colors duration-200 ${
+            isDark ? 'text-gray-400' : 'text-gray-600'
+          }`}>
             <span>Min: {Math.min(...chartData.map(d => d[1])).toFixed(1)} km/h</span>
             <span>Max: {Math.max(...chartData.map(d => d[1])).toFixed(1)} km/h</span>
             <span>Ø: {session.averageSpeed.toFixed(1)} km/h</span>
@@ -354,7 +376,9 @@ export const HighchartsChart: React.FC<HighchartsChartProps> = ({ session, onDel
         </div>
         
         {/* Highcharts Container */}
-        <div className="bg-gray-800 rounded-lg overflow-hidden">
+        <div className={`rounded-lg overflow-hidden transition-colors duration-200 ${
+          isDark ? 'bg-gray-800' : 'bg-gray-50'
+        }`}>
           <HighchartsReact
             highcharts={Highcharts}
             options={options}
@@ -364,7 +388,9 @@ export const HighchartsChart: React.FC<HighchartsChartProps> = ({ session, onDel
         {/* Legende für Geschwindigkeitsänderungen */}
         {speedChanges.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-2 text-xs">
-            <span className="text-gray-400">Timeline-Punkte ({speedChanges.length}):</span>
+            <span className={`transition-colors duration-200 ${
+              isDark ? 'text-gray-400' : 'text-gray-600'
+            }`}>Timeline-Punkte ({speedChanges.length}):</span>
             {speedChanges.slice(0, 6).map((change, index) => (
               <span 
                 key={index}
@@ -376,7 +402,9 @@ export const HighchartsChart: React.FC<HighchartsChartProps> = ({ session, onDel
               </span>
             ))}
             {speedChanges.length > 6 && (
-              <span className="text-gray-500">+{speedChanges.length - 6} weitere</span>
+              <span className={`transition-colors duration-200 ${
+                isDark ? 'text-gray-500' : 'text-gray-600'
+              }`}>+{speedChanges.length - 6} weitere</span>
             )}
           </div>
         )}
@@ -388,28 +416,36 @@ export const HighchartsChart: React.FC<HighchartsChartProps> = ({ session, onDel
           <Clock className="w-4 h-4 text-blue-400" />
           <div>
             <p className="text-xs text-gray-400">Dauer</p>
-            <p className="text-sm font-medium text-white">{formatDuration(session.duration)}</p>
+            <p className={`text-sm font-medium transition-colors duration-200 ${
+              isDark ? 'text-white' : 'text-gray-900'
+            }`}>{formatDuration(session.duration)}</p>
           </div>
         </div>
         <div className="flex items-center space-x-2">
           <MapPin className="w-4 h-4 text-green-400" />
           <div>
             <p className="text-xs text-gray-400">Distanz</p>
-            <p className="text-sm font-medium text-white">{session.distance.toFixed(2)} km</p>
+            <p className={`text-sm font-medium transition-colors duration-200 ${
+              isDark ? 'text-white' : 'text-gray-900'
+            }`}>{session.distance.toFixed(2)} km</p>
           </div>
         </div>
         <div className="flex items-center space-x-2">
           <Flame className="w-4 h-4 text-orange-400" />
           <div>
             <p className="text-xs text-gray-400">Kalorien</p>
-            <p className="text-sm font-medium text-white">{session.calories} kcal</p>
+            <p className={`text-sm font-medium transition-colors duration-200 ${
+              isDark ? 'text-white' : 'text-gray-900'
+            }`}>{session.calories} kcal</p>
           </div>
         </div>
         <div className="flex items-center space-x-2">
           <TrendingUp className="w-4 h-4 text-purple-400" />
           <div>
             <p className="text-xs text-gray-400">Max Speed</p>
-            <p className="text-sm font-medium text-white">{session.maxSpeed.toFixed(1)} km/h</p>
+            <p className={`text-sm font-medium transition-colors duration-200 ${
+              isDark ? 'text-white' : 'text-gray-900'
+            }`}>{session.maxSpeed.toFixed(1)} km/h</p>
           </div>
         </div>
         
@@ -419,7 +455,9 @@ export const HighchartsChart: React.FC<HighchartsChartProps> = ({ session, onDel
             <Footprints className="w-4 h-4 text-cyan-400" />
             <div>
               <p className="text-xs text-gray-400">Schritte</p>
-              <p className="text-sm font-medium text-white">
+              <p className={`text-sm font-medium transition-colors duration-200 ${
+                isDark ? 'text-white' : 'text-gray-900'
+              }`}>
                 {((session.steps || calculatedSteps) / 1000).toFixed(1)}k
               </p>
             </div>

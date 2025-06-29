@@ -239,6 +239,7 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
     maxSpeed: number;
     speedHistory: SpeedPoint[];
     difficulty?: string;
+    steps?: number;
   }) => {
     onSessionComplete(sessionData);
     setShowSessionSummary(false);

@@ -3,7 +3,9 @@ import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import { Clock, MapPin, Flame, TrendingUp, Trash2, Edit3, Footprints } from 'lucide-react';
 import { TrainingSession } from '../types';
-import { formatDuration } from '../utils/calculations';
+import { formatDuration, calculateStepsForExistingSession } from '../utils/calculations';
+import { getUserProfile } from '../firebase/services';
+import { useState, useEffect } from 'react';
 
 interface HighchartsChartProps {
   session: TrainingSession;
@@ -30,6 +32,30 @@ const difficultyLabels = {
 };
 
 export const HighchartsChart: React.FC<HighchartsChartProps> = ({ session, onDelete, onEdit }) => {
+  const [userProfile, setUserProfile] = useState<any>({});
+  const [calculatedSteps, setCalculatedSteps] = useState<number>(0);
+  
+  // Lade Benutzerprofil für Schrittzähler
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const profile = await getUserProfile();
+        setUserProfile(profile);
+        
+        // Berechne Schritte für diese Session
+        const steps = calculateStepsForExistingSession(session, profile);
+        setCalculatedSteps(steps);
+      } catch (error) {
+        console.warn('Konnte Benutzerprofil nicht laden:', error);
+        // Verwende Standardwerte
+        const steps = calculateStepsForExistingSession(session, {});
+        setCalculatedSteps(steps);
+      }
+    };
+    
+    loadProfile();
+  }, [session]);
+  
   // Erstelle Datenpunkte nur bei tatsächlichen Geschwindigkeitsänderungen
   const chartData = [];
   const speedChanges: Array<{
@@ -388,12 +414,14 @@ export const HighchartsChart: React.FC<HighchartsChartProps> = ({ session, onDel
         </div>
         
         {/* Schritte - falls verfügbar */}
-        {session.steps && (
+        {(session.steps || calculatedSteps > 0) && (
           <div className="flex items-center space-x-2">
             <Footprints className="w-4 h-4 text-cyan-400" />
             <div>
               <p className="text-xs text-gray-400">Schritte</p>
-              <p className="text-sm font-medium text-white">{(session.steps / 1000).toFixed(1)}k</p>
+              <p className="text-sm font-medium text-white">
+                {((session.steps || calculatedSteps) / 1000).toFixed(1)}k
+              </p>
             </div>
           </div>
         )}

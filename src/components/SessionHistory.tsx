@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Calendar, Clock, MapPin, Flame, Trash2, Filter, BarChart3, Edit3, ArrowUpDown, ArrowUp, ArrowDown, Footprints } from 'lucide-react';
 import { TrainingSession, FilterOptions } from '../types';
-import { formatDuration, formatDate } from '../utils/calculations';
+import { formatDuration, formatDate, calculateStepsForExistingSession } from '../utils/calculations';
 import { HighchartsChart } from './HighchartsChart';
+import { getUserProfile } from '../firebase/services';
+import { useState, useEffect } from 'react';
 
 interface SessionHistoryProps {
   sessions: TrainingSession[];
@@ -25,8 +27,24 @@ export const SessionHistory: React.FC<SessionHistoryProps> = ({
     sortBy: 'name',
     sortOrder: 'asc'
   });
+  const [userProfile, setUserProfile] = useState<any>({});
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'chart'>('chart');
+  
+  // Lade Benutzerprofil für Schrittzähler
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const profile = await getUserProfile();
+        setUserProfile(profile);
+      } catch (error) {
+        console.warn('Konnte Benutzerprofil nicht laden:', error);
+        setUserProfile({});
+      }
+    };
+    
+    loadProfile();
+  }, []);
 
   const applyFilters = (sessions: TrainingSession[]): TrainingSession[] => {
     let filtered = [...sessions];
@@ -95,7 +113,9 @@ export const SessionHistory: React.FC<SessionHistoryProps> = ({
           comparison = a.calories - b.calories;
           break;
         case 'steps':
-          comparison = (a.steps || 0) - (b.steps || 0);
+          const aSteps = a.steps || calculateStepsForExistingSession(a, userProfile);
+          const bSteps = b.steps || calculateStepsForExistingSession(b, userProfile);
+          comparison = aSteps - bSteps;
           break;
       }
       
@@ -414,10 +434,12 @@ export const SessionHistory: React.FC<SessionHistoryProps> = ({
                   </div>
                   
                   {/* Schritte - falls verfügbar */}
-                  {session.steps && (
+                  {(session.steps || calculateStepsForExistingSession(session, userProfile) > 0) && (
                     <div className="flex items-center space-x-2">
                       <Footprints className="w-4 h-4 text-cyan-400" />
-                      <span className="text-sm text-gray-300">{session.steps.toLocaleString()}</span>
+                      <span className="text-sm text-gray-300">
+                        {(session.steps || calculateStepsForExistingSession(session, userProfile)).toLocaleString()}
+                      </span>
                     </div>
                   )}
                 </div>

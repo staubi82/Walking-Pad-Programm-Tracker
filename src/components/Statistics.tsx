@@ -1,18 +1,40 @@
 import React from 'react';
 import { TrendingUp, Target, Flame, MapPin, Clock, Activity, Footprints } from 'lucide-react';
 import { TrainingSession } from '../types';
-import { formatDuration } from '../utils/calculations';
+import { formatDuration, calculateStepsForExistingSession } from '../utils/calculations';
+import { getUserProfile } from '../firebase/services';
+import { useState, useEffect } from 'react';
 
 interface StatisticsProps {
   sessions: TrainingSession[];
 }
 
 export const Statistics: React.FC<StatisticsProps> = ({ sessions }) => {
+  const [userProfile, setUserProfile] = useState<any>({});
+  
+  // Lade Benutzerprofil für Schrittzähler
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const profile = await getUserProfile();
+        setUserProfile(profile);
+      } catch (error) {
+        console.warn('Konnte Benutzerprofil nicht laden:', error);
+        setUserProfile({});
+      }
+    };
+    
+    loadProfile();
+  }, []);
+  
   const totalSessions = sessions.length;
   const totalTime = sessions.reduce((sum, session) => sum + session.duration, 0);
   const totalDistance = sessions.reduce((sum, session) => sum + session.distance, 0);
   const totalCalories = sessions.reduce((sum, session) => sum + session.calories, 0);
-  const totalSteps = sessions.reduce((sum, session) => sum + (session.steps || 0), 0);
+  const totalSteps = sessions.reduce((sum, session) => {
+    const steps = session.steps || calculateStepsForExistingSession(session, userProfile);
+    return sum + steps;
+  }, 0);
   
   const averageDistance = totalSessions > 0 ? totalDistance / totalSessions : 0;
   const averageCalories = totalSessions > 0 ? totalCalories / totalSessions : 0;
@@ -33,8 +55,14 @@ export const Statistics: React.FC<StatisticsProps> = ({ sessions }) => {
     return session.date >= monthAgo;
   });
 
-  const thisWeekSteps = thisWeekSessions.reduce((sum, s) => sum + (s.steps || 0), 0);
-  const thisMonthSteps = thisMonthSessions.reduce((sum, s) => sum + (s.steps || 0), 0);
+  const thisWeekSteps = thisWeekSessions.reduce((sum, s) => {
+    const steps = s.steps || calculateStepsForExistingSession(s, userProfile);
+    return sum + steps;
+  }, 0);
+  const thisMonthSteps = thisMonthSessions.reduce((sum, s) => {
+    const steps = s.steps || calculateStepsForExistingSession(s, userProfile);
+    return sum + steps;
+  }, 0);
 
   const statsCards = [
     {
@@ -196,7 +224,7 @@ export const Statistics: React.FC<StatisticsProps> = ({ sessions }) => {
             <div className="text-center">
               <p className="text-sm text-gray-400">Meiste Schritte</p>
               <p className="text-xl font-bold text-cyan-400">
-                {Math.max(...sessions.map(s => s.steps || 0)).toLocaleString()}
+                {Math.max(...sessions.map(s => s.steps || calculateStepsForExistingSession(s, userProfile))).toLocaleString()}
               </p>
             </div>
           </div>

@@ -1,6 +1,32 @@
 // Kalkulationen für Trainingsstatistiken
 import { UserProfile } from '../types';
 
+// Schritte für bestehende Sessions nachträglich berechnen
+export const calculateStepsForExistingSession = (session: any, userProfile?: UserProfile): number => {
+  if (session.steps && session.steps > 0) {
+    return session.steps; // Bereits vorhanden
+  }
+  
+  if (!session.speedHistory || session.speedHistory.length < 2) {
+    // Fallback-Berechnung basierend auf Distanz und geschätzter Schrittlänge
+    const height = userProfile?.height || 170;
+    const gender = userProfile?.gender || 'male';
+    let strideLength: number;
+    
+    if (gender === 'male') {
+      strideLength = height * 0.415;
+    } else {
+      strideLength = height * 0.413;
+    }
+    
+    strideLength = strideLength / 100; // zu Metern
+    const distanceMeters = (session.distance || 0) * 1000;
+    return Math.round(distanceMeters / strideLength);
+  }
+  
+  return calculateSteps(session.speedHistory, userProfile);
+};
+
 // Runde Zeit auf 30 Sekunden auf oder ab
 export const roundToNearestHalfMinute = (seconds: number): number => {
   // Runde auf nächste 30 Sekunden (0.5 Minuten)

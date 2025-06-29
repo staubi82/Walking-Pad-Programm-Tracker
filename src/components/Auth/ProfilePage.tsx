@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Mail, Calendar, Edit3, Save, X, Trash2, Activity, TrendingUp, Target, Scale } from 'lucide-react';
+import { User, Mail, Calendar, Edit3, Save, X, Trash2, Activity, TrendingUp, Target, Scale, Camera, Upload } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { updateUserProfile } from '../../firebase/auth';
 import { saveUserProfile, getUserProfile } from '../../firebase/services';
@@ -15,6 +15,8 @@ export const ProfilePage: React.FC = () => {
   const [userProfile, setUserProfile] = useState<UserProfile>(() => {
     return {};
   });
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -38,6 +40,79 @@ export const ProfilePage: React.FC = () => {
     };
     
     loadProfile();
+  }, [currentUser]);
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validierung
+    if (!file.type.startsWith('image/')) {
+      setError('Bitte wählen Sie eine gültige Bilddatei aus.');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) { // 5MB Limit
+      setError('Das Bild ist zu groß. Maximale Dateigröße: 5MB');
+      return;
+    }
+
+    setUploadingImage(true);
+    setError('');
+
+    try {
+      // Konvertiere zu Base64 für lokale Speicherung
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const base64String = e.target?.result as string;
+        
+        try {
+          // Versuche Firebase zu aktualisieren
+          await updateUserProfile(currentUser!, { photoURL: base64String });
+          setProfileImage(base64String);
+          setSuccess('Profilbild erfolgreich aktualisiert!');
+          
+          // Speichere auch lokal als Fallback
+          if (currentUser?.uid) {
+            localStorage.setItem(`profileImage_${currentUser.uid}`, base64String);
+          }
+          
+          setTimeout(() => setSuccess(''), 3000);
+        } catch (error) {
+          console.warn('Firebase-Fehler beim Speichern des Profilbilds:', error);
+          
+          // Fallback: Nur lokal speichern
+          setProfileImage(base64String);
+          if (currentUser?.uid) {
+            localStorage.setItem(`profileImage_${currentUser.uid}`, base64String);
+          }
+          setSuccess('Profilbild lokal gespeichert (Firebase nicht verfügbar)');
+          setTimeout(() => setSuccess(''), 3000);
+        }
+      };
+      
+      reader.onerror = () => {
+        setError('Fehler beim Lesen der Bilddatei.');
+      };
+      
+      reader.readAsDataURL(file);
+    } catch (error: any) {
+      setError('Fehler beim Hochladen des Bildes: ' + error.message);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  // Lade gespeichertes Profilbild
+  useEffect(() => {
+    if (currentUser?.uid) {
+      const savedImage = localStorage.getItem(`profileImage_${currentUser.uid}`);
+      if (savedImage) {
+        setProfileImage(savedImage);
+      } else if (currentUser.photoURL) {
+        setProfileImage(currentUser.photoURL);
+      }
+    }
   }, [currentUser]);
 
   const handleSave = async () => {
@@ -252,16 +327,53 @@ export const ProfilePage: React.FC = () => {
 
           {/* Profile Header */}
           <div className="flex items-center space-x-6 mb-8">
-            <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center">
-              {currentUser.photoURL ? (
-                <img
-                  src={currentUser.photoURL}
-                  alt="Profilbild"
-                  className="w-20 h-20 rounded-full object-cover"
+            <div className="relative group">
+              <div className="w-24 h-24 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center shadow-xl">
+                {profileImage || currentUser.photoURL ? (
+                  <img
+                    src={profileImage || currentUser.photoURL!}
+                    alt="Profilbild"
+                    className="w-24 h-24 rounded-full object-cover"
+                  />
+                ) : (
+                  <User className="w-12 h-12 text-white" />
+                )}
+              </div>
+              
+              {/* Upload Overlay */}
+              <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                <label htmlFor="profile-image-upload" className="cursor-pointer flex flex-col items-center">
+                  {uploadingImage ? (
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                  ) : (
+                    <>
+                      <Camera className="w-6 h-6 text-white mb-1" />
+                      <span className="text-xs text-white">Ändern</span>
+                    </>
+                  )}
+                </label>
+                <input
+                  id="profile-image-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  disabled={uploadingImage}
                 />
-              ) : (
-                <User className="w-10 h-10 text-white" />
-              )}
+              </div>
+              
+              {/* Upload Button für mobile Geräte */}
+              <button
+                onClick={() => document.getElementById('profile-image-upload')?.click()}
+                className="absolute -bottom-2 -right-2 w-8 h-8 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center text-white shadow-lg transition-colors md:hidden"
+                disabled={uploadingImage}
+              >
+                {uploadingImage ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                ) : (
+                  <Upload className="w-4 h-4" />
+                )}
+              </button>
             </div>
             
             <div className="flex-1">
@@ -312,6 +424,17 @@ export const ProfilePage: React.FC = () => {
                   </button>
                 </div>
               )}
+            </div>
+          </div>
+          
+          {/* Profilbild-Upload Info */}
+          <div className="mb-6 p-4 bg-blue-900/30 rounded-lg border border-blue-700">
+            <h4 className="text-lg font-semibold text-blue-300 mb-2">📸 Profilbild</h4>
+            <div className="text-blue-200 text-sm space-y-1">
+              <p>• Fahren Sie mit der Maus über Ihr Profilbild, um es zu ändern</p>
+              <p>• Unterstützte Formate: JPG, PNG, GIF (max. 5MB)</p>
+              <p>• Das Bild wird automatisch auf eine runde Form zugeschnitten</p>
+              <p>• Ihr Profilbild wird lokal gespeichert und in der gesamten App angezeigt</p>
             </div>
           </div>
 

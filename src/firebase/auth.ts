@@ -72,8 +72,18 @@ export const resetPassword = async (email: string) => {
 export const updateUserProfile = async (user: User, updates: { displayName?: string; photoURL?: string }) => {
   try {
     await updateProfile(user, updates);
+    
+    // Aktualisiere auch den lokalen Speicher für Offline-Verfügbarkeit
+    if (updates.photoURL) {
+      localStorage.setItem(`profileImage_${user.uid}`, updates.photoURL);
+    }
   } catch (error) {
     console.error('Fehler beim Aktualisieren des Profils:', error);
+    
+    // Fallback: Speichere nur lokal wenn Firebase nicht verfügbar
+    if (updates.photoURL) {
+      localStorage.setItem(`profileImage_${user.uid}`, updates.photoURL);
+    }
     throw error;
   }
 };

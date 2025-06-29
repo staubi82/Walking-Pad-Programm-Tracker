@@ -311,6 +311,49 @@ const MainApp: React.FC = () => {
     setMobileMenuOpen(false); // Schließe Mobile Menu beim Tab-Wechsel
   };
 
+  // Helper functions for tab styling
+  const getActiveTabStyle = (tabId: string, isDark: boolean) => {
+    const baseStyle = isDark ? 'text-white shadow-2xl' : 'text-gray-900 shadow-2xl';
+    
+    switch (tabId) {
+      case 'overview':
+        return `${baseStyle} bg-gradient-to-br from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700`;
+      case 'tracker':
+        return `${baseStyle} bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700`;
+      case 'history':
+        return `${baseStyle} bg-gradient-to-br from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700`;
+      case 'stats':
+        return `${baseStyle} bg-gradient-to-br from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700`;
+      case 'profile':
+        return `${baseStyle} bg-gradient-to-br from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700`;
+      default:
+        return `${baseStyle} bg-gradient-to-br from-gray-500 to-gray-600`;
+    }
+  };
+
+  const getInactiveTabStyle = (isDark: boolean) => {
+    return isDark
+      ? 'text-gray-300 hover:text-white hover:bg-white/10 backdrop-blur-sm'
+      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-900/10 backdrop-blur-sm';
+  };
+
+  const getTabGlowColor = (tabId: string) => {
+    switch (tabId) {
+      case 'overview':
+        return 'bg-gradient-to-br from-blue-400/20 to-purple-500/20';
+      case 'tracker':
+        return 'bg-gradient-to-br from-green-400/20 to-emerald-500/20';
+      case 'history':
+        return 'bg-gradient-to-br from-orange-400/20 to-red-500/20';
+      case 'stats':
+        return 'bg-gradient-to-br from-purple-400/20 to-pink-500/20';
+      case 'profile':
+        return 'bg-gradient-to-br from-indigo-400/20 to-blue-500/20';
+      default:
+        return 'bg-gradient-to-br from-gray-400/20 to-gray-500/20';
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
@@ -555,35 +598,64 @@ const MainApp: React.FC = () => {
       )}
 
       {/* Desktop Navigation */}
-      <nav className={`border-b hidden md:block transition-colors duration-200 ${
+      <nav className={`hidden md:block sticky top-16 z-30 backdrop-blur-xl transition-all duration-300 ${
         isDark 
-          ? 'bg-gray-800 border-gray-700' 
-          : 'bg-white border-gray-200'
+          ? 'bg-gray-900/80 border-b border-gray-700/50' 
+          : 'bg-white/80 border-b border-gray-200/50'
       }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-1">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+          <div className="flex justify-center space-x-2">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
-                className={`flex items-center space-x-2 py-3 px-4 rounded-t-lg font-medium text-sm transition-all ${
+                className={`group relative flex items-center space-x-3 py-4 px-6 rounded-2xl font-semibold text-sm transition-all duration-300 transform hover:scale-105 hover:shadow-2xl ${
                   activeTab === tab.id
-                    ? isDark 
-                      ? 'bg-gray-700 text-green-400 border-b-2 border-green-500'
-                      : 'bg-gray-100 text-green-600 border-b-2 border-green-500'
-                    : isDark
-                      ? 'text-gray-300 hover:text-white hover:bg-gray-700/50'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    ? getActiveTabStyle(tab.id, isDark)
+                    : getInactiveTabStyle(isDark)
                 }`}
               >
-                <tab.icon className="w-5 h-5" />
-                <span>{tab.label}</span>
-                {tab.id === 'tracker' && recordingState.isRecording && (
-                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                {/* Background Glow Effect */}
+                <div className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
+                  getTabGlowColor(tab.id)
+                }`}></div>
+                
+                {/* Icon with special effects */}
+                <div className="relative z-10">
+                  <tab.icon className={`w-6 h-6 transition-all duration-300 group-hover:scale-110 ${
+                    activeTab === tab.id ? 'drop-shadow-lg' : ''
+                  }`} />
+                </div>
+                
+                {/* Label */}
+                <span className="relative z-10 transition-all duration-300 group-hover:tracking-wide">
+                  {tab.label}
+                </span>
+                
+                {/* Active Indicator */}
+                {activeTab === tab.id && (
+                  <>
+                    <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-white rounded-full shadow-lg animate-pulse"></div>
+                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse"></div>
+                  </>
                 )}
+                
+                {/* Recording Indicator */}
+                {tab.id === 'tracker' && recordingState.isRecording && (
+                  <div className="absolute -top-1 -right-1 z-20">
+                    <div className="w-4 h-4 bg-red-500 rounded-full animate-ping"></div>
+                    <div className="absolute inset-0 w-4 h-4 bg-red-600 rounded-full animate-pulse"></div>
+                  </div>
+                )}
+                
+                {/* Hover Shimmer Effect */}
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 transform -skew-x-12 group-hover:animate-pulse"></div>
               </button>
             ))}
           </div>
+          
+          {/* Progress Bar at bottom */}
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 opacity-20 animate-pulse"></div>
         </div>
       </nav>
 

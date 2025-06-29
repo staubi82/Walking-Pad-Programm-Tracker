@@ -38,7 +38,7 @@ export interface TrainingProgram {
 }
 
 export interface FilterOptions {
-  sortBy: 'name' | 'difficulty' | 'date' | 'duration' | 'distance' | 'calories';
+  sortBy: 'name' | 'difficulty' | 'date' | 'duration' | 'distance' | 'calories' | 'steps';
   sortOrder: 'asc' | 'desc';
   difficulty?: string;
   dateFrom?: Date;

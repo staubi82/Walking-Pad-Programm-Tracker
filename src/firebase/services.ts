@@ -23,16 +23,39 @@ export const saveUserProfile = async (profile: any) => {
       throw new Error('Benutzer nicht angemeldet');
     }
 
-    await updateDoc(doc(db, 'userProfiles', user.uid), profile);
+    // Versuche zuerst das Dokument zu aktualisieren
+    const docRef = doc(db, 'userProfiles', user.uid);
+    await updateDoc(docRef, profile);
   } catch (error) {
-    // Wenn Dokument nicht existiert, erstelle es
+    console.warn('Firebase-Fehler beim Speichern des Benutzerprofils:', error);
+    
+    // Behandle verschiedene Fehlertypen
     if (error.code === 'not-found') {
+      // Wenn Dokument nicht existiert, erstelle es
       const user = auth.currentUser;
       if (user) {
-        await setDoc(doc(db, 'userProfiles', user.uid), profile);
+        try {
+          await setDoc(doc(db, 'userProfiles', user.uid), profile);
+        } catch (setError: any) {
+          if (setError.code === 'permission-denied' || 
+              (setError.message && setError.message.includes('Missing or insufficient permissions'))) {
+            console.warn('Firebase Firestore Security Rules müssen konfiguriert werden. Speichere lokal als Fallback.');
+            localStorage.setItem(`userProfile_${user.uid}`, JSON.stringify(profile));
+            return;
+          }
+          throw setError;
+        }
+      }
+    } else if (error.code === 'permission-denied' || 
+               (error.message && error.message.includes('Missing or insufficient permissions'))) {
+      // Berechtigungsfehler - verwende localStorage als Fallback
+      console.warn('Firebase Firestore Security Rules müssen konfiguriert werden. Speichere lokal als Fallback.');
+      const user = auth.currentUser;
+      if (user) {
+        localStorage.setItem(`userProfile_${user.uid}`, JSON.stringify(profile));
+        return;
       }
     } else {
-      console.error('Fehler beim Speichern des Benutzerprofils:', error);
       throw error;
     }
   }
@@ -54,10 +77,30 @@ export const getUserProfile = async () => {
       return {};
     }
   } catch (error) {
-    console.error('Fehler beim Laden des Benutzerprofils:', error);
-    // Fallback auf localStorage
-    const saved = localStorage.getItem(`userProfile_${auth.currentUser?.uid}`);
-    return saved ? JSON.parse(saved) : {};
+    console.warn('Firebase-Fehler beim Laden des Benutzerprofils:', error);
+    
+    // Spezifische Behandlung für Berechtigungsfehler
+    if (error.code === 'permission-denied' || 
+        (error.message && error.message.includes('Missing or insufficient permissions'))) {
+      console.warn('Firebase Firestore Security Rules müssen konfiguriert werden. Verwende lokalen Speicher als Fallback.');
+      
+      // Fallback auf localStorage
+      const user = auth.currentUser;
+      if (user) {
+        const saved = localStorage.getItem(`userProfile_${user.uid}`);
+        return saved ? JSON.parse(saved) : {};
+      }
+      return {};
+    }
+    
+    // Für andere Fehler, verwende auch localStorage als Fallback
+    const user = auth.currentUser;
+    if (user) {
+      const saved = localStorage.getItem(`userProfile_${user.uid}`);
+      return saved ? JSON.parse(saved) : {};
+    }
+    
+    throw error;
   }
 };
 

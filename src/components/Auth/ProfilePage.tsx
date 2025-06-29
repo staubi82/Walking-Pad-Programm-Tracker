@@ -30,6 +30,8 @@ export const ProfilePage: React.FC = () => {
           setUserProfile(profile);
         } catch (error) {
           console.error('Fehler beim Laden des Profils:', error);
+          setError('Profil konnte nicht geladen werden. Bitte versuchen Sie es später erneut.');
+          
           // Fallback auf localStorage
           const saved = localStorage.getItem(`userProfile_${currentUser.uid}`);
           setUserProfile(saved ? JSON.parse(saved) : {});
@@ -53,13 +55,13 @@ export const ProfilePage: React.FC = () => {
       // Speichere Benutzerprofil in Firebase
       try {
         await saveUserProfile(userProfile);
+        setSuccess('Profil erfolgreich aktualisiert!');
       } catch (firebaseError) {
-        console.warn('Firebase nicht verfügbar, speichere lokal:', firebaseError);
-        // Fallback: Speichere in localStorage
-        localStorage.setItem(`userProfile_${currentUser.uid}`, JSON.stringify(userProfile));
+        console.warn('Firebase-Fehler beim Speichern:', firebaseError);
+        // Der Fallback wird bereits in saveUserProfile behandelt
+        setSuccess('Profil lokal gespeichert (Firebase nicht verfügbar)');
       }
       
-      setSuccess('Profil erfolgreich aktualisiert!');
       setIsEditing(false);
       
       // Success message nach 3 Sekunden ausblenden

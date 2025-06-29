@@ -4,7 +4,7 @@ module.exports = {
       name: 'walking-pad-tracker',
       script: 'npx',
       args: 'serve -s dist -l 3000',
-      cwd: '/home/walkingpad/walking-pad-tracker',
+      cwd: '/var/www/Walking-Pad-Programm-Tracker',
       instances: 1,
       autorestart: true,
       watch: false,
@@ -26,13 +26,13 @@ module.exports = {
 
   deploy: {
     production: {
-      user: 'walkingpad',
+      user: 'root',
       host: 'your-server-ip',
       ref: 'origin/main',
       repo: 'https://github.com/staubi82/walking-pad-tracker.git',
-      path: '/home/walkingpad/walking-pad-tracker',
+      path: '/var/www/Walking-Pad-Programm-Tracker',
       'pre-deploy-local': '',
-      'post-deploy': 'npm install && npm run build && pm2 reload ecosystem.config.js --env production',
+      'post-deploy': 'npm install && npm run build && pm2 reload ecosystem.config.cjs --env production',
       'pre-setup': ''
     }
   }

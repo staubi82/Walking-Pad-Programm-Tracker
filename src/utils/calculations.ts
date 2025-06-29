@@ -192,3 +192,4 @@ export const formatDate = (date: Date): string => {
     hour: '2-digit',
     minute: '2-digit'
   }).format(date);
+}

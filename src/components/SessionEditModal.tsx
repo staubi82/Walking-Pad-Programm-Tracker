@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Save, Calendar, Clock, MapPin, Flame, Plus, Trash2, Edit3 } from 'lucide-react';
 import { TrainingSession, SpeedPoint } from '../types';
 import { formatDuration, calculateDistance, calculateCalories, roundToNearestHalfMinute } from '../utils/calculations';
+import { useTheme } from '../context/ThemeContext';
 
 interface SessionEditModalProps {
   session: TrainingSession;
@@ -29,6 +30,7 @@ export const SessionEditModal: React.FC<SessionEditModalProps> = ({ session, onS
   const [nameError, setNameError] = useState('');
   const [showTimelineEdit, setShowTimelineEdit] = useState(false);
   const [timelineEntries, setTimelineEntries] = useState<TimelineEntry[]>([]);
+  const { isDark } = useTheme();
 
   // Initialisiere Timeline-Einträge basierend auf der aktuellen Session
   useEffect(() => {
@@ -195,13 +197,23 @@ export const SessionEditModal: React.FC<SessionEditModalProps> = ({ session, onS
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-800 rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+      <div className={`rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto transition-colors duration-200 ${
+        isDark 
+          ? 'bg-gray-800' 
+          : 'bg-white border border-gray-200'
+      }`}>
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-white">Training bearbeiten</h2>
+          <h2 className={`text-2xl font-bold transition-colors duration-200 ${
+            isDark ? 'text-white' : 'text-gray-900'
+          }`}>Training bearbeiten</h2>
           <button
             onClick={onCancel}
-            className="text-gray-400 hover:text-white p-2 rounded-lg transition-colors"
+            className={`p-2 rounded-lg transition-colors ${
+              isDark 
+                ? 'text-gray-400 hover:text-white' 
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
           >
             <X className="w-6 h-6" />
           </button>
@@ -210,35 +222,47 @@ export const SessionEditModal: React.FC<SessionEditModalProps> = ({ session, onS
         {/* Aktuelle vs. Neue Statistiken */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           {/* Aktuelle Statistiken */}
-          <div className="p-4 bg-gray-700 rounded-lg">
-            <h3 className="text-lg font-semibold text-white mb-3">Aktuelle Werte</h3>
+          <div className={`p-4 rounded-lg transition-colors duration-200 ${
+            isDark ? 'bg-gray-700' : 'bg-gray-100'
+          }`}>
+            <h3 className={`text-lg font-semibold mb-3 transition-colors duration-200 ${
+              isDark ? 'text-white' : 'text-gray-900'
+            }`}>Aktuelle Werte</h3>
             <div className="grid grid-cols-2 gap-3">
               <div className="flex items-center space-x-2">
                 <Clock className="w-4 h-4 text-blue-400" />
                 <div>
                   <p className="text-xs text-gray-400">Dauer</p>
-                  <p className="text-sm font-medium text-white">{formatDuration(session.duration)}</p>
+                  <p className={`text-sm font-medium transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>{formatDuration(session.duration)}</p>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
                 <MapPin className="w-4 h-4 text-green-400" />
                 <div>
                   <p className="text-xs text-gray-400">Distanz</p>
-                  <p className="text-sm font-medium text-white">{session.distance.toFixed(2)} km</p>
+                  <p className={`text-sm font-medium transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>{session.distance.toFixed(2)} km</p>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
                 <Flame className="w-4 h-4 text-orange-400" />
                 <div>
                   <p className="text-xs text-gray-400">Kalorien</p>
-                  <p className="text-sm font-medium text-white">{session.calories} kcal</p>
+                  <p className={`text-sm font-medium transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>{session.calories} kcal</p>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
                 <Calendar className="w-4 h-4 text-purple-400" />
                 <div>
                   <p className="text-xs text-gray-400">Ø Speed</p>
-                  <p className="text-sm font-medium text-white">{session.averageSpeed.toFixed(1)} km/h</p>
+                  <p className={`text-sm font-medium transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>{session.averageSpeed.toFixed(1)} km/h</p>
                 </div>
               </div>
             </div>
@@ -253,28 +277,36 @@ export const SessionEditModal: React.FC<SessionEditModalProps> = ({ session, onS
                   <Clock className="w-4 h-4 text-blue-400" />
                   <div>
                     <p className="text-xs text-blue-400">Dauer</p>
-                    <p className="text-sm font-medium text-white">{formatDuration(previewSession.duration)}</p>
+                    <p className={`text-sm font-medium transition-colors duration-200 ${
+                      isDark ? 'text-white' : 'text-gray-900'
+                    }`}>{formatDuration(previewSession.duration)}</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
                   <MapPin className="w-4 h-4 text-green-400" />
                   <div>
                     <p className="text-xs text-blue-400">Distanz</p>
-                    <p className="text-sm font-medium text-white">{previewSession.distance.toFixed(2)} km</p>
+                    <p className={`text-sm font-medium transition-colors duration-200 ${
+                      isDark ? 'text-white' : 'text-gray-900'
+                    }`}>{previewSession.distance.toFixed(2)} km</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Flame className="w-4 h-4 text-orange-400" />
                   <div>
                     <p className="text-xs text-blue-400">Kalorien</p>
-                    <p className="text-sm font-medium text-white">{previewSession.calories} kcal</p>
+                    <p className={`text-sm font-medium transition-colors duration-200 ${
+                      isDark ? 'text-white' : 'text-gray-900'
+                    }`}>{previewSession.calories} kcal</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Calendar className="w-4 h-4 text-purple-400" />
                   <div>
                     <p className="text-xs text-blue-400">Ø Speed</p>
-                    <p className="text-sm font-medium text-white">{previewSession.averageSpeed.toFixed(1)} km/h</p>
+                    <p className={`text-sm font-medium transition-colors duration-200 ${
+                      isDark ? 'text-white' : 'text-gray-900'
+                    }`}>{previewSession.averageSpeed.toFixed(1)} km/h</p>
                   </div>
                 </div>
               </div>
@@ -286,14 +318,20 @@ export const SessionEditModal: React.FC<SessionEditModalProps> = ({ session, onS
         <div className="space-y-6">
           {/* Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label className={`block text-sm font-medium mb-2 transition-colors duration-200 ${
+              isDark ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               Name der Trainingseinheit
             </label>
             <input
               type="text"
               value={editedSession.name}
               onChange={(e) => handleNameChange(e.target.value)}
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 ${
+                isDark 
+                  ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                  : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+              }`}
               placeholder="z.B. Morgendliches Walking"
             />
             {nameError && (
@@ -303,13 +341,15 @@ export const SessionEditModal: React.FC<SessionEditModalProps> = ({ session, onS
 
           {/* Schwierigkeitsgrad */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-3">
+            <label className={`block text-sm font-medium mb-3 transition-colors duration-200 ${
+              isDark ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               Schwierigkeitslevel
             </label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
               <button
                 onClick={() => handleDifficultyChange('')}
-                className={`px-3 py-2 rounded-lg text-white text-sm font-medium transition-all ${
+                className={`px-3 py-2 rounded-lg text-white text-sm font-medium transition-all shadow-lg ${
                   !editedSession.difficulty 
                     ? 'bg-gray-500 ring-2 ring-white' 
                     : 'bg-gray-600 hover:bg-gray-500'
@@ -321,7 +361,7 @@ export const SessionEditModal: React.FC<SessionEditModalProps> = ({ session, onS
                 <button
                   key={level.id}
                   onClick={() => handleDifficultyChange(level.id)}
-                  className={`${level.color} hover:opacity-80 px-3 py-2 rounded-lg text-white text-sm font-medium transition-all ${
+                  className={`${level.color} hover:opacity-80 px-3 py-2 rounded-lg text-white text-sm font-medium transition-all shadow-lg ${
                     editedSession.difficulty === level.id ? 'ring-2 ring-white' : ''
                   }`}
                 >
@@ -334,7 +374,9 @@ export const SessionEditModal: React.FC<SessionEditModalProps> = ({ session, onS
           {/* Timeline-Bearbeitung */}
           <div>
             <div className="flex justify-between items-center mb-3">
-              <label className="block text-sm font-medium text-gray-300">
+              <label className={`block text-sm font-medium transition-colors duration-200 ${
+                isDark ? 'text-gray-300' : 'text-gray-700'
+              }`}>
                 Geschwindigkeits-Timeline
               </label>
               <button
@@ -349,7 +391,9 @@ export const SessionEditModal: React.FC<SessionEditModalProps> = ({ session, onS
             {showTimelineEdit && (
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <h4 className="text-lg font-semibold text-white">Timeline-Einträge</h4>
+                  <h4 className={`text-lg font-semibold transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>Timeline-Einträge</h4>
                   <button
                     onClick={addTimelineEntry}
                     className="bg-green-600 hover:bg-green-700 px-3 py-1 rounded-lg flex items-center space-x-1 text-white text-sm transition-colors"
@@ -361,20 +405,30 @@ export const SessionEditModal: React.FC<SessionEditModalProps> = ({ session, onS
                 
                 <div className="space-y-3 max-h-60 overflow-y-auto">
                   {timelineEntries.map((entry, index) => (
-                    <div key={entry.id} className="bg-gray-700 rounded-lg p-3 flex items-center space-x-4">
+                    <div key={entry.id} className={`rounded-lg p-3 flex items-center space-x-4 transition-colors duration-200 ${
+                      isDark ? 'bg-gray-700' : 'bg-gray-100'
+                    }`}>
                       <div className="flex-1 grid grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-xs text-gray-400 mb-1">Minute</label>
+                          <label className={`block text-xs mb-1 transition-colors duration-200 ${
+                            isDark ? 'text-gray-400' : 'text-gray-600'
+                          }`}>Minute</label>
                           <input
                             type="number"
                             min="0"
                             value={entry.minute}
                             onChange={(e) => updateTimelineEntry(entry.id, 'minute', parseInt(e.target.value) || 0)}
-                            className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
+                            className={`w-full px-2 py-1 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 transition-colors duration-200 ${
+                              isDark 
+                                ? 'bg-gray-600 border-gray-500 text-white' 
+                                : 'bg-white border-gray-300 text-gray-900'
+                            }`}
                           />
                         </div>
                         <div>
-                          <label className="block text-xs text-gray-400 mb-1">Geschwindigkeit (km/h)</label>
+                          <label className={`block text-xs mb-1 transition-colors duration-200 ${
+                            isDark ? 'text-gray-400' : 'text-gray-600'
+                          }`}>Geschwindigkeit (km/h)</label>
                           <input
                             type="number"
                             min="1.0"
@@ -382,7 +436,11 @@ export const SessionEditModal: React.FC<SessionEditModalProps> = ({ session, onS
                             step="0.5"
                             value={entry.speed}
                             onChange={(e) => updateTimelineEntry(entry.id, 'speed', parseFloat(e.target.value) || 1.0)}
-                            className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
+                            className={`w-full px-2 py-1 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 transition-colors duration-200 ${
+                              isDark 
+                                ? 'bg-gray-600 border-gray-500 text-white' 
+                                : 'bg-white border-gray-300 text-gray-900'
+                            }`}
                           />
                         </div>
                       </div>
@@ -390,7 +448,11 @@ export const SessionEditModal: React.FC<SessionEditModalProps> = ({ session, onS
                       {timelineEntries.length > 1 && (
                         <button
                           onClick={() => removeTimelineEntry(entry.id)}
-                          className="text-red-400 hover:text-red-300 p-1 rounded transition-colors"
+                          className={`p-1 rounded transition-colors ${
+                            isDark 
+                              ? 'text-red-400 hover:text-red-300' 
+                              : 'text-red-600 hover:text-red-700'
+                          }`}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -401,9 +463,15 @@ export const SessionEditModal: React.FC<SessionEditModalProps> = ({ session, onS
                 
                 {/* Timeline-Vorschau */}
                 {timelineEntries.length > 0 && (
-                  <div className="p-3 bg-gray-700 rounded-lg">
-                    <h5 className="text-sm font-semibold text-white mb-2">Timeline-Vorschau:</h5>
-                    <div className="text-xs text-gray-300 space-y-1 max-h-32 overflow-y-auto">
+                  <div className={`p-3 rounded-lg transition-colors duration-200 ${
+                    isDark ? 'bg-gray-700' : 'bg-gray-100'
+                  }`}>
+                    <h5 className={`text-sm font-semibold mb-2 transition-colors duration-200 ${
+                      isDark ? 'text-white' : 'text-gray-900'
+                    }`}>Timeline-Vorschau:</h5>
+                    <div className={`text-xs space-y-1 max-h-32 overflow-y-auto transition-colors duration-200 ${
+                      isDark ? 'text-gray-300' : 'text-gray-700'
+                    }`}>
                       {timelineEntries
                         .sort((a, b) => a.minute - b.minute)
                         .map((entry, index) => (
@@ -412,7 +480,9 @@ export const SessionEditModal: React.FC<SessionEditModalProps> = ({ session, onS
                             <span className="text-blue-400">{entry.speed} km/h</span>
                           </div>
                         ))}
-                      <div className="border-t border-gray-600 pt-1 mt-2 flex justify-between font-semibold">
+                      <div className={`border-t pt-1 mt-2 flex justify-between font-semibold transition-colors duration-200 ${
+                        isDark ? 'border-gray-600' : 'border-gray-300'
+                      }`}>
                         <span>Gesamtdauer:</span>
                         <span className="text-green-400">
                           {Math.max(...timelineEntries.map(e => e.minute))} Minuten
@@ -426,7 +496,9 @@ export const SessionEditModal: React.FC<SessionEditModalProps> = ({ session, onS
           </div>
 
           {/* Info Box */}
-          <div className="p-4 bg-blue-900/30 rounded-lg border border-blue-700">
+          <div className={`p-4 rounded-lg border border-blue-700 transition-colors duration-200 ${
+            isDark ? 'bg-blue-900/30' : 'bg-blue-50'
+          }`}>
             <p className="text-blue-300 text-sm">
               💡 <strong>Bearbeitungsoptionen:</strong> 
               <br />• <strong>Name & Schwierigkeit:</strong> Jederzeit änderbar

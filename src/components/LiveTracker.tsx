@@ -5,6 +5,7 @@ import { SpeedPoint } from '../types';
 import { SessionSummary } from './SessionSummary';
 import { getUserProfile } from '../firebase/services';
 import { UserProfile } from '../types';
+import { useTheme } from '../context/ThemeContext';
 
 interface TimelineEntry {
   id: string;
@@ -59,6 +60,7 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
   
   // User Profile für Schrittzähler
   const [userProfile, setUserProfile] = useState<UserProfile>({});
+  const { isDark } = useTheme();
   
   // Session Summary State
   const [showSessionSummary, setShowSessionSummary] = useState(false);
@@ -383,10 +385,14 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
   return (
     <div className="space-y-6">
       {/* Stoppuhr-Anzeige */}
-      <div className="bg-gray-800 rounded-xl p-6 shadow-xl">
+      <div className={`rounded-xl p-6 shadow-xl transition-colors duration-200 ${
+        isDark ? 'bg-gray-800' : 'bg-white border border-gray-200'
+      }`}>
         <div className="flex items-center justify-center mb-4">
           <Clock className="w-8 h-8 text-blue-400 mr-3" />
-          <h2 className="text-3xl font-bold text-white">
+          <h2 className={`text-3xl font-bold transition-colors duration-200 ${
+            isDark ? 'text-white' : 'text-gray-900'
+          }`}>
             {targetDuration ? 'Timer' : 'Stoppuhr'}
           </h2>
         </div>
@@ -403,7 +409,9 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
             
             {/* Zusätzliche Zeit-Info bei Timer */}
             {targetDuration && (
-              <div className="text-lg text-gray-400">
+              <div className={`text-lg transition-colors duration-200 ${
+                isDark ? 'text-gray-400' : 'text-gray-600'
+              }`}>
                 <span>Verstrichene Zeit: {formatDuration(duration)}</span>
                 <span className="mx-2">•</span>
                 <span>Zielzeit: {formatDuration(targetDuration)}</span>
@@ -414,13 +422,17 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
           {/* Fortschrittsbalken bei Timer */}
           {targetDuration && (
             <div className="mb-4">
-              <div className="w-full bg-gray-700 rounded-full h-3 mb-2">
+              <div className={`w-full rounded-full h-3 mb-2 transition-colors duration-200 ${
+                isDark ? 'bg-gray-700' : 'bg-gray-200'
+              }`}>
                 <div 
                   className="bg-gradient-to-r from-green-500 to-blue-500 h-3 rounded-full transition-all duration-1000 ease-out"
                   style={{ width: `${progressPercentage}%` }}
                 ></div>
               </div>
-              <div className="text-sm text-gray-400">
+              <div className={`text-sm transition-colors duration-200 ${
+                isDark ? 'text-gray-400' : 'text-gray-600'
+              }`}>
                 Fortschritt: {progressPercentage.toFixed(1)}%
               </div>
             </div>
@@ -428,7 +440,9 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
           
           <div className="flex justify-center space-x-4">
             {!isRunning ? (
-              <div className="text-gray-400">Bereit zum Start</div>
+              <div className={`transition-colors duration-200 ${
+                isDark ? 'text-gray-400' : 'text-gray-600'
+              }`}>Bereit zum Start</div>
             ) : isPaused ? (
               <div className="text-yellow-400 flex items-center">
                 <Pause className="w-4 h-4 mr-2" />
@@ -445,9 +459,13 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
       </div>
 
       {/* Timeline-Dateneingabe */}
-      <div className="bg-gray-800 rounded-xl p-6 shadow-xl">
+      <div className={`rounded-xl p-6 shadow-xl transition-colors duration-200 ${
+        isDark ? 'bg-gray-800' : 'bg-white border border-gray-200'
+      }`}>
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-bold text-white">Training Timeline erstellen</h3>
+          <h3 className={`text-xl font-bold transition-colors duration-200 ${
+            isDark ? 'text-white' : 'text-gray-900'
+          }`}>Training Timeline erstellen</h3>
           <button
             onClick={() => setShowManualEntry(!showManualEntry)}
             className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg flex items-center space-x-2 text-white transition-colors"
@@ -462,7 +480,9 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
             {/* Name und Schwierigkeit */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className={`block text-sm font-medium mb-2 transition-colors duration-200 ${
+                  isDark ? 'text-gray-300' : 'text-gray-700'
+                }`}>
                   Name der Trainingseinheit
                 </label>
                 <input
@@ -472,7 +492,11 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
                     setTimelineName(e.target.value);
                     if (timelineNameError) setTimelineNameError('');
                   }}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors duration-200 ${
+                    isDark 
+                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                  }`}
                   placeholder="z.B. Intervall-Training"
                 />
                 {timelineNameError && (
@@ -481,13 +505,19 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className={`block text-sm font-medium mb-2 transition-colors duration-200 ${
+                  isDark ? 'text-gray-300' : 'text-gray-700'
+                }`}>
                   Schwierigkeitslevel
                 </label>
                 <select
                   value={timelineDifficulty}
                   onChange={(e) => setTimelineDifficulty(e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors duration-200 ${
+                    isDark 
+                      ? 'bg-gray-700 border-gray-600 text-white' 
+                      : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                 >
                   <option value="">Schwierigkeit wählen...</option>
                   {difficultyLevels.map(level => (
@@ -500,7 +530,9 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
             {/* Timeline-Einträge */}
             <div>
               <div className="flex justify-between items-center mb-3">
-                <h4 className="text-lg font-semibold text-white">Geschwindigkeits-Timeline</h4>
+                <h4 className={`text-lg font-semibold transition-colors duration-200 ${
+                  isDark ? 'text-white' : 'text-gray-900'
+                }`}>Geschwindigkeits-Timeline</h4>
                 <div className="flex space-x-2">
                   <button
                     onClick={addTimelineEntry}
@@ -514,20 +546,30 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
               
               <div className="space-y-3 max-h-60 overflow-y-auto">
                 {timelineEntries.map((entry, index) => (
-                  <div key={entry.id} className="bg-gray-700 rounded-lg p-3 flex items-center space-x-4">
+                  <div key={entry.id} className={`rounded-lg p-3 flex items-center space-x-4 transition-colors duration-200 ${
+                    isDark ? 'bg-gray-700' : 'bg-gray-100'
+                  }`}>
                     <div className="flex-1 grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs text-gray-400 mb-1">Minute</label>
+                        <label className={`block text-xs mb-1 transition-colors duration-200 ${
+                          isDark ? 'text-gray-400' : 'text-gray-600'
+                        }`}>Minute</label>
                         <input
                           type="number"
                           min="0"
                           value={entry.minute}
                           onChange={(e) => updateTimelineEntry(entry.id, 'minute', parseInt(e.target.value) || 0)}
-                          className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
+                          className={`w-full px-2 py-1 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 transition-colors duration-200 ${
+                            isDark 
+                              ? 'bg-gray-600 border-gray-500 text-white' 
+                              : 'bg-white border-gray-300 text-gray-900'
+                          }`}
                         />
                       </div>
                       <div>
-                        <label className="block text-xs text-gray-400 mb-1">Geschwindigkeit (km/h)</label>
+                        <label className={`block text-xs mb-1 transition-colors duration-200 ${
+                          isDark ? 'text-gray-400' : 'text-gray-600'
+                        }`}>Geschwindigkeit (km/h)</label>
                         <input
                           type="number"
                           min="1.0"
@@ -535,7 +577,11 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
                           step="0.5"
                           value={entry.speed}
                           onChange={(e) => updateTimelineEntry(entry.id, 'speed', parseFloat(e.target.value) || 1.0)}
-                          className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
+                          className={`w-full px-2 py-1 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 transition-colors duration-200 ${
+                            isDark 
+                              ? 'bg-gray-600 border-gray-500 text-white' 
+                              : 'bg-white border-gray-300 text-gray-900'
+                          }`}
                         />
                       </div>
                     </div>
@@ -543,7 +589,11 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
                     {timelineEntries.length > 1 && (
                       <button
                         onClick={() => removeTimelineEntry(entry.id)}
-                        className="text-red-400 hover:text-red-300 p-1 rounded transition-colors"
+                        className={`p-1 rounded transition-colors ${
+                          isDark 
+                            ? 'text-red-400 hover:text-red-300' 
+                            : 'text-red-600 hover:text-red-700'
+                        }`}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -563,9 +613,15 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
               
               {/* Vorschau der Timeline */}
               {timelineEntries.length > 1 && (
-                <div className="mt-4 p-3 bg-gray-700 rounded-lg">
-                  <h5 className="text-sm font-semibold text-white mb-2">Timeline-Vorschau:</h5>
-                  <div className="text-xs text-gray-300 space-y-1">
+                <div className={`mt-4 p-3 rounded-lg transition-colors duration-200 ${
+                  isDark ? 'bg-gray-700' : 'bg-gray-100'
+                }`}>
+                  <h5 className={`text-sm font-semibold mb-2 transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>Timeline-Vorschau:</h5>
+                  <div className={`text-xs space-y-1 transition-colors duration-200 ${
+                    isDark ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
                     {timelineEntries
                       .sort((a, b) => a.minute - b.minute)
                       .map((entry, index) => (
@@ -574,7 +630,9 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
                           <span className="text-blue-400">{entry.speed} km/h</span>
                         </div>
                       ))}
-                    <div className="border-t border-gray-600 pt-1 mt-2 flex justify-between font-semibold">
+                    <div className={`border-t pt-1 mt-2 flex justify-between font-semibold transition-colors duration-200 ${
+                      isDark ? 'border-gray-600' : 'border-gray-300'
+                    }`}>
                       <span>Gesamtdauer:</span>
                       <span className="text-green-400">
                         {Math.max(...timelineEntries.map(e => e.minute))} Minuten
@@ -613,13 +671,19 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
 
       {/* Timer-Einstellungen */}
       {!isRunning && !showManualEntry && (
-        <div className="bg-gray-800 rounded-xl p-6 shadow-xl">
-          <h3 className="text-xl font-bold text-white mb-4">Timer-Einstellungen</h3>
+        <div className={`rounded-xl p-6 shadow-xl transition-colors duration-200 ${
+          isDark ? 'bg-gray-800' : 'bg-white border border-gray-200'
+        }`}>
+          <h3 className={`text-xl font-bold mb-4 transition-colors duration-200 ${
+            isDark ? 'text-white' : 'text-gray-900'
+          }`}>Timer-Einstellungen</h3>
           
           <div className="space-y-4">
             {/* Timer Ein/Aus */}
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-gray-300">
+              <label className={`text-sm font-medium transition-colors duration-200 ${
+                isDark ? 'text-gray-300' : 'text-gray-700'
+              }`}>
                 Timer verwenden
               </label>
               <button
@@ -647,7 +711,9 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
             {/* Timer-Presets */}
             {targetDuration && (
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-3">
+                <label className={`block text-sm font-medium mb-3 transition-colors duration-200 ${
+                  isDark ? 'text-gray-300' : 'text-gray-700'
+                }`}>
                   Zielzeit auswählen
                 </label>
                 <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
@@ -661,7 +727,9 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
                       className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                         targetDuration === preset.value
                           ? 'bg-green-600 text-white'
-                          : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+                          : isDark 
+                            ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' 
+                            : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
                       }`}
                     >
                       {preset.label}
@@ -671,7 +739,9 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
                 
                 {/* Benutzerdefinierte Zeit */}
                 <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className={`block text-sm font-medium mb-2 transition-colors duration-200 ${
+                    isDark ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
                     Benutzerdefinierte Zeit (Minuten)
                   </label>
                   <div className="flex items-center space-x-2">
@@ -686,9 +756,15 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
                         setTargetDuration(seconds);
                         setRemainingTime(seconds);
                       }}
-                      className="w-20 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-center focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className={`w-20 px-3 py-2 border rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors duration-200 ${
+                        isDark 
+                          ? 'bg-gray-700 border-gray-600 text-white' 
+                          : 'bg-white border-gray-300 text-gray-900'
+                      }`}
                     />
-                    <span className="text-gray-300">Minuten</span>
+                    <span className={`transition-colors duration-200 ${
+                      isDark ? 'text-gray-300' : 'text-gray-700'
+                    }`}>Minuten</span>
                   </div>
                 </div>
                 
@@ -715,13 +791,19 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
       )}
 
       {/* Live Tracking */}
-      <div className="bg-gray-800 rounded-xl p-6 shadow-xl">
-        <h2 className="text-2xl font-bold text-white mb-6">Live Tracking</h2>
+      <div className={`rounded-xl p-6 shadow-xl transition-colors duration-200 ${
+        isDark ? 'bg-gray-800' : 'bg-white border border-gray-200'
+      }`}>
+        <h2 className={`text-2xl font-bold mb-6 transition-colors duration-200 ${
+          isDark ? 'text-white' : 'text-gray-900'
+        }`}>Live Tracking</h2>
         
         {!isRunning && !showManualEntry && (
           <div className="space-y-4 mb-6">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className={`block text-sm font-medium mb-2 transition-colors duration-200 ${
+                isDark ? 'text-gray-300' : 'text-gray-700'
+              }`}>
                 Name der Trainingseinheit
               </label>
               <input
@@ -731,7 +813,11 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
                   setSessionName(e.target.value);
                   if (nameError) setNameError('');
                 }}
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors duration-200 ${
+                  isDark 
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                }`}
                 placeholder="z.B. Morgendliches Walking"
               />
               {nameError && (
@@ -740,7 +826,9 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-3">
+              <label className={`block text-sm font-medium mb-3 transition-colors duration-200 ${
+                isDark ? 'text-gray-300' : 'text-gray-700'
+              }`}>
                 Schwierigkeitslevel
               </label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -762,49 +850,87 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
         )}
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-gray-700 rounded-lg p-4">
-            <div className="text-sm text-gray-400">Zeit</div>
-            <div className="text-2xl font-bold text-white">{formatDuration(duration)}</div>
+          <div className={`rounded-lg p-4 transition-colors duration-200 ${
+            isDark ? 'bg-gray-700' : 'bg-gray-100'
+          }`}>
+            <div className={`text-sm transition-colors duration-200 ${
+              isDark ? 'text-gray-400' : 'text-gray-600'
+            }`}>Zeit</div>
+            <div className={`text-2xl font-bold transition-colors duration-200 ${
+              isDark ? 'text-white' : 'text-gray-900'
+            }`}>{formatDuration(duration)}</div>
           </div>
-          <div className="bg-gray-700 rounded-lg p-4">
-            <div className="text-sm text-gray-400">Distanz</div>
+          <div className={`rounded-lg p-4 transition-colors duration-200 ${
+            isDark ? 'bg-gray-700' : 'bg-gray-100'
+          }`}>
+            <div className={`text-sm transition-colors duration-200 ${
+              isDark ? 'text-gray-400' : 'text-gray-600'
+            }`}>Distanz</div>
             <div className="text-2xl font-bold text-green-400">{currentDistance.toFixed(2)} km</div>
           </div>
-          <div className="bg-gray-700 rounded-lg p-4">
-            <div className="text-sm text-gray-400">Kalorien</div>
+          <div className={`rounded-lg p-4 transition-colors duration-200 ${
+            isDark ? 'bg-gray-700' : 'bg-gray-100'
+          }`}>
+            <div className={`text-sm transition-colors duration-200 ${
+              isDark ? 'text-gray-400' : 'text-gray-600'
+            }`}>Kalorien</div>
             <div className="text-2xl font-bold text-orange-400">{currentCalories}</div>
           </div>
-          <div className="bg-gray-700 rounded-lg p-4">
-            <div className="text-sm text-gray-400">Geschwindigkeit</div>
+          <div className={`rounded-lg p-4 transition-colors duration-200 ${
+            isDark ? 'bg-gray-700' : 'bg-gray-100'
+          }`}>
+            <div className={`text-sm transition-colors duration-200 ${
+              isDark ? 'text-gray-400' : 'text-gray-600'
+            }`}>Geschwindigkeit</div>
             <div className="text-2xl font-bold text-blue-400">{currentSpeed.toFixed(1)} km/h</div>
           </div>
         </div>
 
         {/* Zusätzliche Statistiken - Schritte */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-gray-700 rounded-lg p-4">
-            <div className="text-sm text-gray-400">Schritte</div>
+          <div className={`rounded-lg p-4 transition-colors duration-200 ${
+            isDark ? 'bg-gray-700' : 'bg-gray-100'
+          }`}>
+            <div className={`text-sm transition-colors duration-200 ${
+              isDark ? 'text-gray-400' : 'text-gray-600'
+            }`}>Schritte</div>
             <div className="text-2xl font-bold text-purple-400">{currentSteps.toLocaleString()}</div>
-            <div className="text-xs text-gray-500 mt-1">Geschätzt basierend auf Körpergröße</div>
+            <div className={`text-xs mt-1 transition-colors duration-200 ${
+              isDark ? 'text-gray-500' : 'text-gray-600'
+            }`}>Geschätzt basierend auf Körpergröße</div>
           </div>
-          <div className="bg-gray-700 rounded-lg p-4">
-            <div className="text-sm text-gray-400">Schritte/Min</div>
+          <div className={`rounded-lg p-4 transition-colors duration-200 ${
+            isDark ? 'bg-gray-700' : 'bg-gray-100'
+          }`}>
+            <div className={`text-sm transition-colors duration-200 ${
+              isDark ? 'text-gray-400' : 'text-gray-600'
+            }`}>Schritte/Min</div>
             <div className="text-2xl font-bold text-cyan-400">
               {duration > 0 ? Math.round(currentSteps / (duration / 60)) : 0}
             </div>
-            <div className="text-xs text-gray-500 mt-1">Durchschnittliche Frequenz</div>
+            <div className={`text-xs mt-1 transition-colors duration-200 ${
+              isDark ? 'text-gray-500' : 'text-gray-600'
+            }`}>Durchschnittliche Frequenz</div>
           </div>
-          <div className="bg-gray-700 rounded-lg p-4">
-            <div className="text-sm text-gray-400">Tempo</div>
+          <div className={`rounded-lg p-4 transition-colors duration-200 ${
+            isDark ? 'bg-gray-700' : 'bg-gray-100'
+          }`}>
+            <div className={`text-sm transition-colors duration-200 ${
+              isDark ? 'text-gray-400' : 'text-gray-600'
+            }`}>Tempo</div>
             <div className="text-2xl font-bold text-yellow-400">
               {currentDistance > 0 ? formatDuration(Math.round((duration / currentDistance) * 60)) : '--:--'}
             </div>
-            <div className="text-xs text-gray-500 mt-1">Min/km</div>
+            <div className={`text-xs mt-1 transition-colors duration-200 ${
+              isDark ? 'text-gray-500' : 'text-gray-600'
+            }`}>Min/km</div>
           </div>
         </div>
 
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-300 mb-3">
+          <label className={`block text-sm font-medium mb-3 transition-colors duration-200 ${
+            isDark ? 'text-gray-300' : 'text-gray-700'
+          }`}>
             Geschwindigkeit einstellen
           </label>
           
@@ -827,9 +953,15 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
                   value={currentSpeed}
                   onChange={(e) => handleSpeedInputChange(e.target.value)}
                   disabled={!isRunning}
-                  className="w-20 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-center focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-600"
+                  className={`w-20 px-3 py-2 border rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors duration-200 ${
+                    isDark 
+                      ? 'bg-gray-700 border-gray-600 text-white disabled:bg-gray-600' 
+                      : 'bg-white border-gray-300 text-gray-900 disabled:bg-gray-200'
+                  }`}
                 />
-                <span className="text-gray-300 text-sm">km/h</span>
+                <span className={`text-sm transition-colors duration-200 ${
+                  isDark ? 'text-gray-300' : 'text-gray-700'
+                }`}>km/h</span>
               </div>
               
               <button
@@ -851,7 +983,9 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
                 className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   currentSpeed === speed
                     ? 'bg-green-600 text-white'
-                    : 'bg-gray-700 hover:bg-gray-600 text-gray-300 disabled:bg-gray-600 disabled:text-gray-500'
+                    : isDark 
+                      ? 'bg-gray-700 hover:bg-gray-600 text-gray-300 disabled:bg-gray-600 disabled:text-gray-500' 
+                      : 'bg-gray-200 hover:bg-gray-300 text-gray-700 disabled:bg-gray-300 disabled:text-gray-500'
                 }`}
               >
                 {speed.toFixed(1)}
@@ -902,13 +1036,21 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
       
       {/* Schrittzähler-Info */}
       {!isRunning && !showManualEntry && (
-        <div className="bg-gray-800 rounded-xl p-6 shadow-xl">
-          <h3 className="text-xl font-bold text-white mb-4">🚶‍♂️ Schrittzähler-Information</h3>
+        <div className={`rounded-xl p-6 shadow-xl transition-colors duration-200 ${
+          isDark ? 'bg-gray-800' : 'bg-white border border-gray-200'
+        }`}>
+          <h3 className={`text-xl font-bold mb-4 transition-colors duration-200 ${
+            isDark ? 'text-white' : 'text-gray-900'
+          }`}>🚶‍♂️ Schrittzähler-Information</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <h4 className="text-lg font-semibold text-white">Wie funktioniert's?</h4>
-              <div className="space-y-2 text-sm text-gray-300">
+              <h4 className={`text-lg font-semibold transition-colors duration-200 ${
+                isDark ? 'text-white' : 'text-gray-900'
+              }`}>Wie funktioniert's?</h4>
+              <div className={`space-y-2 text-sm transition-colors duration-200 ${
+                isDark ? 'text-gray-300' : 'text-gray-700'
+              }`}>
                 <p>• <strong>Automatische Berechnung:</strong> Schritte werden basierend auf Ihrer Geschwindigkeit und Körpergröße geschätzt</p>
                 <p>• <strong>Schrittlänge:</strong> Wird aus Ihrer Körpergröße berechnet (Männer: 41.5%, Frauen: 41.3%)</p>
                 <p>• <strong>Echtzeit-Tracking:</strong> Sehen Sie Ihre Schritte während des Trainings live</p>
@@ -917,8 +1059,12 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
             </div>
             
             <div className="space-y-4">
-              <h4 className="text-lg font-semibold text-white">Profil-Optimierung</h4>
-              <div className="space-y-2 text-sm text-gray-300">
+              <h4 className={`text-lg font-semibold transition-colors duration-200 ${
+                isDark ? 'text-white' : 'text-gray-900'
+              }`}>Profil-Optimierung</h4>
+              <div className={`space-y-2 text-sm transition-colors duration-200 ${
+                isDark ? 'text-gray-300' : 'text-gray-700'
+              }`}>
                 <p>• <strong>Körpergröße:</strong> {userProfile.height ? `${userProfile.height} cm` : 'Nicht festgelegt (Standard: 170 cm)'}</p>
                 <p>• <strong>Geschlecht:</strong> {userProfile.gender ? (userProfile.gender === 'male' ? 'Männlich' : userProfile.gender === 'female' ? 'Weiblich' : 'Divers') : 'Nicht festgelegt (Standard: Männlich)'}</p>
                 <p>• <strong>Schrittlänge:</strong> {userProfile.height && userProfile.gender ? 
@@ -929,7 +1075,9 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
             </div>
           </div>
           
-          <div className="mt-6 p-4 bg-purple-900/30 rounded-lg border border-purple-700">
+          <div className={`mt-6 p-4 rounded-lg border border-purple-700 transition-colors duration-200 ${
+            isDark ? 'bg-purple-900/30' : 'bg-purple-50'
+          }`}>
             <h5 className="text-purple-300 font-semibold mb-2">💡 Schrittziel-Empfehlungen</h5>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
               <div className="text-center">

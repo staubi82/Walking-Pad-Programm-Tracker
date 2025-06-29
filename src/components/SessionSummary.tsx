@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Save, X, Clock, MapPin, Flame, TrendingUp, Activity, Edit3, Footprints } from 'lucide-react';
 import { formatDuration } from '../utils/calculations';
+import { useTheme } from '../context/ThemeContext';
 
 interface SessionSummaryProps {
   sessionData: {
@@ -40,6 +41,7 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({ sessionData, onS
   const [selectedDifficulty, setSelectedDifficulty] = useState('');
   const [sessionName, setSessionName] = useState(sessionData.name);
   const [nameError, setNameError] = useState('');
+  const { isDark } = useTheme();
 
   const handleSave = () => {
     if (!sessionName.trim()) {
@@ -62,21 +64,35 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({ sessionData, onS
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-800 rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-700">
+      <div className={`rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl border transition-colors duration-200 ${
+        isDark 
+          ? 'bg-gray-800 border-gray-700' 
+          : 'bg-white border-gray-200'
+      }`}>
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+              isDark ? 'bg-green-100' : 'bg-green-100'
+            }`}>
               <Activity className="w-6 h-6 text-green-600" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-white">Training abgeschlossen!</h2>
-              <p className="text-gray-400">Überprüfen Sie Ihre Ergebnisse und wählen Sie das Schwierigkeitslevel</p>
+              <h2 className={`text-2xl font-bold transition-colors duration-200 ${
+                isDark ? 'text-white' : 'text-gray-900'
+              }`}>Training abgeschlossen!</h2>
+              <p className={`transition-colors duration-200 ${
+                isDark ? 'text-gray-400' : 'text-gray-600'
+              }`}>Überprüfen Sie Ihre Ergebnisse und wählen Sie das Schwierigkeitslevel</p>
             </div>
           </div>
           <button
             onClick={onCancel}
-            className="text-gray-400 hover:text-white p-2 rounded-lg transition-colors"
+            className={`p-2 rounded-lg transition-colors ${
+              isDark 
+                ? 'text-gray-400 hover:text-white' 
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
           >
             <X className="w-6 h-6" />
           </button>
@@ -84,14 +100,18 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({ sessionData, onS
 
         {/* Trainings-Statistiken */}
         <div className="mb-6">
-          <h3 className="text-xl font-bold text-white mb-4">📊 Ihre Trainings-Ergebnisse</h3>
+          <h3 className={`text-xl font-bold mb-4 transition-colors duration-200 ${
+            isDark ? 'text-white' : 'text-gray-900'
+          }`}>📊 Ihre Trainings-Ergebnisse</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-blue-900/30 rounded-lg p-4 border border-blue-700">
               <div className="flex items-center space-x-3">
                 <Clock className="w-8 h-8 text-blue-400" />
                 <div>
                   <p className="text-sm text-blue-300">Trainingszeit</p>
-                  <p className="text-2xl font-bold text-white">{formatDuration(sessionData.duration)}</p>
+                  <p className={`text-2xl font-bold transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>{formatDuration(sessionData.duration)}</p>
                 </div>
               </div>
             </div>
@@ -101,7 +121,9 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({ sessionData, onS
                 <MapPin className="w-8 h-8 text-green-400" />
                 <div>
                   <p className="text-sm text-green-300">Distanz</p>
-                  <p className="text-2xl font-bold text-white">{sessionData.distance.toFixed(2)} km</p>
+                  <p className={`text-2xl font-bold transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>{sessionData.distance.toFixed(2)} km</p>
                 </div>
               </div>
             </div>
@@ -111,7 +133,9 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({ sessionData, onS
                 <Flame className="w-8 h-8 text-orange-400" />
                 <div>
                   <p className="text-sm text-orange-300">Kalorien</p>
-                  <p className="text-2xl font-bold text-white">{sessionData.calories} kcal</p>
+                  <p className={`text-2xl font-bold transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>{sessionData.calories} kcal</p>
                 </div>
               </div>
             </div>
@@ -121,7 +145,9 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({ sessionData, onS
                 <TrendingUp className="w-8 h-8 text-purple-400" />
                 <div>
                   <p className="text-sm text-purple-300">Ø Geschwindigkeit</p>
-                  <p className="text-2xl font-bold text-white">{sessionData.averageSpeed.toFixed(1)} km/h</p>
+                  <p className={`text-2xl font-bold transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>{sessionData.averageSpeed.toFixed(1)} km/h</p>
                 </div>
               </div>
             </div>
@@ -133,7 +159,9 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({ sessionData, onS
                   <Footprints className="w-8 h-8 text-cyan-400" />
                   <div>
                     <p className="text-sm text-cyan-300">Schritte</p>
-                    <p className="text-2xl font-bold text-white">{sessionData.steps.toLocaleString()}</p>
+                    <p className={`text-2xl font-bold transition-colors duration-200 ${
+                      isDark ? 'text-white' : 'text-gray-900'
+                    }`}>{sessionData.steps.toLocaleString()}</p>
                     <p className="text-xs text-cyan-200">
                       {Math.round(sessionData.steps / (sessionData.duration / 60))} Schritte/Min
                     </p>
@@ -145,43 +173,77 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({ sessionData, onS
           
           {/* Zusätzliche Statistiken */}
           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-gray-700 rounded-lg p-4">
-              <h4 className="text-lg font-semibold text-white mb-2">🏃‍♂️ Geschwindigkeits-Details</h4>
+            <div className={`rounded-lg p-4 transition-colors duration-200 ${
+              isDark ? 'bg-gray-700' : 'bg-gray-100'
+            }`}>
+              <h4 className={`text-lg font-semibold mb-2 transition-colors duration-200 ${
+                isDark ? 'text-white' : 'text-gray-900'
+              }`}>🏃‍♂️ Geschwindigkeits-Details</h4>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Maximale Geschwindigkeit:</span>
-                  <span className="text-white font-medium">{sessionData.maxSpeed.toFixed(1)} km/h</span>
+                  <span className={`transition-colors duration-200 ${
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  }`}>Maximale Geschwindigkeit:</span>
+                  <span className={`font-medium transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>{sessionData.maxSpeed.toFixed(1)} km/h</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Durchschnittsgeschwindigkeit:</span>
-                  <span className="text-white font-medium">{sessionData.averageSpeed.toFixed(1)} km/h</span>
+                  <span className={`transition-colors duration-200 ${
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  }`}>Durchschnittsgeschwindigkeit:</span>
+                  <span className={`font-medium transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>{sessionData.averageSpeed.toFixed(1)} km/h</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Geschwindigkeitsänderungen:</span>
-                  <span className="text-white font-medium">{sessionData.speedHistory.length} Datenpunkte</span>
+                  <span className={`transition-colors duration-200 ${
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  }`}>Geschwindigkeitsänderungen:</span>
+                  <span className={`font-medium transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>{sessionData.speedHistory.length} Datenpunkte</span>
                 </div>
                 {sessionData.steps && (
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Schritte pro km:</span>
-                    <span className="text-white font-medium">{Math.round(sessionData.steps / sessionData.distance)} Schritte/km</span>
+                    <span className={`transition-colors duration-200 ${
+                      isDark ? 'text-gray-400' : 'text-gray-600'
+                    }`}>Schritte pro km:</span>
+                    <span className={`font-medium transition-colors duration-200 ${
+                      isDark ? 'text-white' : 'text-gray-900'
+                    }`}>{Math.round(sessionData.steps / sessionData.distance)} Schritte/km</span>
                   </div>
                 )}
               </div>
             </div>
             
-            <div className="bg-gray-700 rounded-lg p-4">
-              <h4 className="text-lg font-semibold text-white mb-2">⚡ Performance-Bewertung</h4>
+            <div className={`rounded-lg p-4 transition-colors duration-200 ${
+              isDark ? 'bg-gray-700' : 'bg-gray-100'
+            }`}>
+              <h4 className={`text-lg font-semibold mb-2 transition-colors duration-200 ${
+                isDark ? 'text-white' : 'text-gray-900'
+              }`}>⚡ Performance-Bewertung</h4>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Kalorien pro Minute:</span>
-                  <span className="text-white font-medium">{(sessionData.calories / (sessionData.duration / 60)).toFixed(1)} kcal/min</span>
+                  <span className={`transition-colors duration-200 ${
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  }`}>Kalorien pro Minute:</span>
+                  <span className={`font-medium transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>{(sessionData.calories / (sessionData.duration / 60)).toFixed(1)} kcal/min</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Distanz pro Minute:</span>
-                  <span className="text-white font-medium">{(sessionData.distance / (sessionData.duration / 60)).toFixed(3)} km/min</span>
+                  <span className={`transition-colors duration-200 ${
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  }`}>Distanz pro Minute:</span>
+                  <span className={`font-medium transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>{(sessionData.distance / (sessionData.duration / 60)).toFixed(3)} km/min</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Trainingsintensität:</span>
+                  <span className={`transition-colors duration-200 ${
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  }`}>Trainingsintensität:</span>
                   <span className={`font-medium ${
                     sessionData.averageSpeed >= 5.0 ? 'text-red-400' :
                     sessionData.averageSpeed >= 4.0 ? 'text-orange-400' :
@@ -195,7 +257,9 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({ sessionData, onS
                 </div>
                 {sessionData.steps && (
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Schritt-Effizienz:</span>
+                    <span className={`transition-colors duration-200 ${
+                      isDark ? 'text-gray-400' : 'text-gray-600'
+                    }`}>Schritt-Effizienz:</span>
                     <span className={`font-medium ${
                       sessionData.steps >= 10000 ? 'text-green-400' :
                       sessionData.steps >= 5000 ? 'text-yellow-400' :
@@ -213,7 +277,9 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({ sessionData, onS
 
         {/* Trainingsname bearbeiten */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-300 mb-2">
+          <label className={`block text-sm font-medium mb-2 transition-colors duration-200 ${
+            isDark ? 'text-gray-300' : 'text-gray-700'
+          }`}>
             <Edit3 className="w-4 h-4 inline mr-2" />
             Trainingsname anpassen
           </label>
@@ -221,7 +287,11 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({ sessionData, onS
             type="text"
             value={sessionName}
             onChange={(e) => handleNameChange(e.target.value)}
-            className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500 text-lg"
+            className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-lg transition-colors duration-200 ${
+              isDark 
+                ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+            }`}
             placeholder="z.B. Morgendliches Walking"
           />
           {nameError && (
@@ -231,7 +301,9 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({ sessionData, onS
 
         {/* Schwierigkeitslevel auswählen */}
         <div className="mb-8">
-          <label className="block text-sm font-medium text-gray-300 mb-4">
+          <label className={`block text-sm font-medium mb-4 transition-colors duration-200 ${
+            isDark ? 'text-gray-300' : 'text-gray-700'
+          }`}>
             🎯 Wie schwer war das Training für Sie?
           </label>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -279,12 +351,20 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({ sessionData, onS
         </div>
 
         {/* Motivations-Nachricht */}
-        <div className="mb-6 p-4 bg-gradient-to-r from-green-900/30 to-blue-900/30 rounded-lg border border-green-700">
+        <div className={`mb-6 p-4 rounded-lg border border-green-700 transition-colors duration-200 ${
+          isDark 
+            ? 'bg-gradient-to-r from-green-900/30 to-blue-900/30' 
+            : 'bg-gradient-to-r from-green-100/50 to-blue-100/50'
+        }`}>
           <div className="flex items-center space-x-3">
             <div className="text-3xl">🎉</div>
             <div>
-              <h4 className="text-lg font-bold text-green-300">Glückwunsch zu Ihrem Training!</h4>
-              <p className="text-green-200 text-sm">
+              <h4 className={`text-lg font-bold transition-colors duration-200 ${
+                isDark ? 'text-green-300' : 'text-green-700'
+              }`}>Glückwunsch zu Ihrem Training!</h4>
+              <p className={`text-sm transition-colors duration-200 ${
+                isDark ? 'text-green-200' : 'text-green-600'
+              }`}>
                 Sie haben {formatDuration(sessionData.duration)} trainiert und {sessionData.distance.toFixed(2)} km zurückgelegt. 
                 {sessionData.calories >= 100 && ` Dabei haben Sie ${sessionData.calories} Kalorien verbrannt!`}
                 {sessionData.averageSpeed >= 4.0 && ' Das war ein richtig intensives Training!'}
@@ -313,7 +393,9 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({ sessionData, onS
         </div>
         
         <div className="mt-4 text-center">
-          <p className="text-gray-400 text-sm">
+          <p className={`text-sm transition-colors duration-200 ${
+            isDark ? 'text-gray-400' : 'text-gray-600'
+          }`}>
             💡 Tipp: Das Schwierigkeitslevel hilft Ihnen dabei, Ihre Trainings besser zu kategorisieren und Fortschritte zu verfolgen.
           </p>
         </div>

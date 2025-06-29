@@ -4,6 +4,7 @@ import { TrainingSession } from '../types';
 import { formatDuration, calculateStepsForExistingSession } from '../utils/calculations';
 import { getUserProfile } from '../firebase/services';
 import { useState, useEffect } from 'react';
+import { useTheme } from '../context/ThemeContext';
 
 interface StatisticsProps {
   sessions: TrainingSession[];
@@ -11,6 +12,7 @@ interface StatisticsProps {
 
 export const Statistics: React.FC<StatisticsProps> = ({ sessions }) => {
   const [userProfile, setUserProfile] = useState<any>({});
+  const { isDark } = useTheme();
   
   // Lade Benutzerprofil für Schrittzähler
   useEffect(() => {
@@ -124,15 +126,23 @@ export const Statistics: React.FC<StatisticsProps> = ({ sessions }) => {
   ];
 
   return (
-    <div className="bg-gray-800 rounded-xl p-6 shadow-xl">
-      <h2 className="text-2xl font-bold text-white mb-6">Statistiken</h2>
+    <div className={`rounded-xl p-6 shadow-xl transition-colors duration-200 ${
+      isDark ? 'bg-gray-800' : 'bg-white border border-gray-200'
+    }`}>
+      <h2 className={`text-2xl font-bold mb-6 transition-colors duration-200 ${
+        isDark ? 'text-white' : 'text-gray-900'
+      }`}>Statistiken</h2>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         {statsCards.map((stat, index) => (
-          <div key={index} className={`${stat.bgColor} rounded-lg p-4 border border-gray-700`}>
+          <div key={index} className={`${stat.bgColor} rounded-lg p-4 border transition-colors duration-200 ${
+            isDark ? 'border-gray-700' : 'border-gray-200'
+          }`}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-400 mb-1">{stat.title}</p>
+                <p className={`text-sm mb-1 transition-colors duration-200 ${
+                  isDark ? 'text-gray-400' : 'text-gray-600'
+                }`}>{stat.title}</p>
                 <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
               </div>
               <stat.icon className={`w-8 h-8 ${stat.color}`} />
@@ -142,27 +152,41 @@ export const Statistics: React.FC<StatisticsProps> = ({ sessions }) => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-gray-700 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-white mb-3">Diese Woche</h3>
+        <div className={`rounded-lg p-4 transition-colors duration-200 ${
+          isDark ? 'bg-gray-700' : 'bg-gray-100'
+        }`}>
+          <h3 className={`text-lg font-semibold mb-3 transition-colors duration-200 ${
+            isDark ? 'text-white' : 'text-gray-900'
+          }`}>Diese Woche</h3>
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-gray-400">Einheiten:</span>
-              <span className="text-white font-medium">{thisWeekSessions.length}</span>
+              <span className={`transition-colors duration-200 ${
+                isDark ? 'text-gray-400' : 'text-gray-600'
+              }`}>Einheiten:</span>
+              <span className={`font-medium transition-colors duration-200 ${
+                isDark ? 'text-white' : 'text-gray-900'
+              }`}>{thisWeekSessions.length}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-400">Distanz:</span>
+              <span className={`transition-colors duration-200 ${
+                isDark ? 'text-gray-400' : 'text-gray-600'
+              }`}>Distanz:</span>
               <span className="text-green-400 font-medium">
                 {thisWeekSessions.reduce((sum, s) => sum + s.distance, 0).toFixed(1)} km
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-400">Kalorien:</span>
+              <span className={`transition-colors duration-200 ${
+                isDark ? 'text-gray-400' : 'text-gray-600'
+              }`}>Kalorien:</span>
               <span className="text-orange-400 font-medium">
                 {thisWeekSessions.reduce((sum, s) => sum + s.calories, 0)} kcal
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-400">Schritte:</span>
+              <span className={`transition-colors duration-200 ${
+                isDark ? 'text-gray-400' : 'text-gray-600'
+              }`}>Schritte:</span>
               <span className="text-cyan-400 font-medium">
                 {thisWeekSteps.toLocaleString()}
               </span>
@@ -170,27 +194,41 @@ export const Statistics: React.FC<StatisticsProps> = ({ sessions }) => {
           </div>
         </div>
 
-        <div className="bg-gray-700 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-white mb-3">Diesen Monat</h3>
+        <div className={`rounded-lg p-4 transition-colors duration-200 ${
+          isDark ? 'bg-gray-700' : 'bg-gray-100'
+        }`}>
+          <h3 className={`text-lg font-semibold mb-3 transition-colors duration-200 ${
+            isDark ? 'text-white' : 'text-gray-900'
+          }`}>Diesen Monat</h3>
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-gray-400">Einheiten:</span>
-              <span className="text-white font-medium">{thisMonthSessions.length}</span>
+              <span className={`transition-colors duration-200 ${
+                isDark ? 'text-gray-400' : 'text-gray-600'
+              }`}>Einheiten:</span>
+              <span className={`font-medium transition-colors duration-200 ${
+                isDark ? 'text-white' : 'text-gray-900'
+              }`}>{thisMonthSessions.length}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-400">Distanz:</span>
+              <span className={`transition-colors duration-200 ${
+                isDark ? 'text-gray-400' : 'text-gray-600'
+              }`}>Distanz:</span>
               <span className="text-green-400 font-medium">
                 {thisMonthSessions.reduce((sum, s) => sum + s.distance, 0).toFixed(1)} km
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-400">Kalorien:</span>
+              <span className={`transition-colors duration-200 ${
+                isDark ? 'text-gray-400' : 'text-gray-600'
+              }`}>Kalorien:</span>
               <span className="text-orange-400 font-medium">
                 {thisMonthSessions.reduce((sum, s) => sum + s.calories, 0)} kcal
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-400">Schritte:</span>
+              <span className={`transition-colors duration-200 ${
+                isDark ? 'text-gray-400' : 'text-gray-600'
+              }`}>Schritte:</span>
               <span className="text-cyan-400 font-medium">
                 {thisMonthSteps.toLocaleString()}
               </span>
@@ -200,29 +238,41 @@ export const Statistics: React.FC<StatisticsProps> = ({ sessions }) => {
       </div>
 
       {sessions.length > 0 && (
-        <div className="mt-6 bg-gray-700 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-white mb-3">Persönliche Rekorde</h3>
+        <div className={`mt-6 rounded-lg p-4 transition-colors duration-200 ${
+          isDark ? 'bg-gray-700' : 'bg-gray-100'
+        }`}>
+          <h3 className={`text-lg font-semibold mb-3 transition-colors duration-200 ${
+            isDark ? 'text-white' : 'text-gray-900'
+          }`}>Persönliche Rekorde</h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="text-center">
-              <p className="text-sm text-gray-400">Längste Distanz</p>
+              <p className={`text-sm transition-colors duration-200 ${
+                isDark ? 'text-gray-400' : 'text-gray-600'
+              }`}>Längste Distanz</p>
               <p className="text-xl font-bold text-green-400">
                 {Math.max(...sessions.map(s => s.distance)).toFixed(2)} km
               </p>
             </div>
             <div className="text-center">
-              <p className="text-sm text-gray-400">Meiste Kalorien</p>
+              <p className={`text-sm transition-colors duration-200 ${
+                isDark ? 'text-gray-400' : 'text-gray-600'
+              }`}>Meiste Kalorien</p>
               <p className="text-xl font-bold text-orange-400">
                 {Math.max(...sessions.map(s => s.calories))} kcal
               </p>
             </div>
             <div className="text-center">
-              <p className="text-sm text-gray-400">Längste Zeit</p>
+              <p className={`text-sm transition-colors duration-200 ${
+                isDark ? 'text-gray-400' : 'text-gray-600'
+              }`}>Längste Zeit</p>
               <p className="text-xl font-bold text-blue-400">
                 {formatDuration(Math.max(...sessions.map(s => s.duration)))}
               </p>
             </div>
             <div className="text-center">
-              <p className="text-sm text-gray-400">Meiste Schritte</p>
+              <p className={`text-sm transition-colors duration-200 ${
+                isDark ? 'text-gray-400' : 'text-gray-600'
+              }`}>Meiste Schritte</p>
               <p className="text-xl font-bold text-cyan-400">
                 {Math.max(...sessions.map(s => s.steps || calculateStepsForExistingSession(s, userProfile))).toLocaleString()}
               </p>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, Square, Plus, Minus, Clock, Edit3, Trash2, CheckCircle } from 'lucide-react';
-import { calculateDistance, calculateCalories, formatDuration } from '../utils/calculations';
+import { calculateDistance, calculateCalories, formatDuration, roundToNearestHalfMinute } from '../utils/calculations';
 import { SpeedPoint } from '../types';
 
 interface TimelineEntry {
@@ -109,6 +109,9 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete }) =
       return;
     }
 
+    // Runde die Dauer auf nächste 30 Sekunden
+    const roundedDuration = roundToNearestHalfMinute(duration);
+
     const distance = calculateDistance(speedHistory);
     const calories = calculateCalories(speedHistory);
     const averageSpeed = speedHistory.reduce((sum, point) => sum + point.speed, 0) / speedHistory.length;
@@ -116,7 +119,7 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete }) =
 
     onSessionComplete({
       name: sessionName,
-      duration,
+      duration: roundedDuration,
       distance,
       calories,
       averageSpeed: Math.round(averageSpeed * 10) / 10,
@@ -187,7 +190,8 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete }) =
     }
 
     const maxMinute = Math.max(...sortedEntries.map(entry => entry.minute));
-    if (maxMinute < 1) {
+    // Runde die Dauer auf nächste 30 Sekunden
+    const newDuration = roundToNearestHalfMinute(maxMinute * 60);
       alert('Training muss mindestens 1 Minute dauern.');
       return;
     }

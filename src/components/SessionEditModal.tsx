@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save, Calendar, Clock, MapPin, Flame, Plus, Trash2, Edit3 } from 'lucide-react';
 import { TrainingSession, SpeedPoint } from '../types';
-import { formatDuration, calculateDistance, calculateCalories } from '../utils/calculations';
+import { formatDuration, calculateDistance, calculateCalories, roundToNearestHalfMinute } from '../utils/calculations';
 
 interface SessionEditModalProps {
   session: TrainingSession;
@@ -96,7 +96,8 @@ export const SessionEditModal: React.FC<SessionEditModalProps> = ({ session, onS
     }
 
     const maxMinute = Math.max(...sortedEntries.map(entry => entry.minute));
-    const newDuration = maxMinute * 60;
+    // Runde die Dauer auf nächste 30 Sekunden
+    const newDuration = roundToNearestHalfMinute(maxMinute * 60);
     
     // Erstelle neuen Geschwindigkeitsverlauf
     const now = Date.now();

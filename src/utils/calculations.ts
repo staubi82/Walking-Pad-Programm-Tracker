@@ -1,5 +1,11 @@
 // Kalkulationen für Trainingsstatistiken
 
+// Runde Zeit auf 30 Sekunden auf oder ab
+export const roundToNearestHalfMinute = (seconds: number): number => {
+  // Runde auf nächste 30 Sekunden (0.5 Minuten)
+  return Math.round(seconds / 30) * 30;
+};
+
 export const calculateDistance = (speedHistory: Array<{timestamp: number, speed: number}>): number => {
   if (speedHistory.length < 2) return 0;
   

@@ -171,10 +171,13 @@ export const HighchartsChart: React.FC<HighchartsChartProps> = ({ session, onDel
           style: {
             color: change.change > 0 ? '#10B981' : '#EF4444',
             fontSize: '10px',
-            fontWeight: 'bold'
+            fontWeight: 'bold',
+            textAlign: 'center'
           },
           verticalAlign: 'top',
-          y: 15
+          y: 15,
+          rotation: 0,
+          textAlign: 'center'
         }
       }))
     },

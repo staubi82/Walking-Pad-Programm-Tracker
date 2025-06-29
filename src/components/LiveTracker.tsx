@@ -192,6 +192,7 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete }) =
     const maxMinute = Math.max(...sortedEntries.map(entry => entry.minute));
     // Runde die Dauer auf nächste 30 Sekunden
     const newDuration = roundToNearestHalfMinute(maxMinute * 60);
+    if (maxMinute < 1) {
       alert('Training muss mindestens 1 Minute dauern.');
       return;
     }
@@ -599,7 +600,7 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete }) =
                   onClick={pauseSession}
                   className="bg-yellow-600 hover:bg-yellow-700 px-6 py-3 rounded-lg flex items-center space-x-2 text-white font-medium transition-colors"
                 >
-                  <Pause className="w-5 h-5" />
+                  <Pause className="w-4 h-4 mr-2" />
                   <span>Pausieren</span>
                 </button>
               )}

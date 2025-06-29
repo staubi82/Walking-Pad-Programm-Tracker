@@ -602,9 +602,11 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
                 ))}
               </div>
               
-              <div className="mt-4 p-3 bg-blue-900/30 rounded-lg border border-blue-700">
+              <div className={`mt-4 p-3 rounded-lg border transition-colors duration-200 ${
+                isDark ? 'bg-blue-900/30 border-blue-700' : 'bg-blue-50 border-blue-300'
+              }`}>
                 <p className={`text-sm transition-colors duration-200 ${
-                  isDark ? 'text-blue-300' : 'text-blue-700'
+                  isDark ? 'text-blue-300' : 'text-blue-800'
                 }`}>
                   💡 <strong>So funktioniert's:</strong> 
                   <br />• Fügen Sie Zeitpunkte mit verschiedenen Geschwindigkeiten hinzu

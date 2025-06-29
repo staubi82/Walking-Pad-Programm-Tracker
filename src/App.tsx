@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { Activity, BarChart3, History, AlertCircle, Play, LogOut, Settings, User } from 'lucide-react';
+import { Activity, BarChart3, History, AlertCircle, Play, LogOut, User } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
 import { logoutUser } from './firebase/auth';
 import { LandingPage } from './components/LandingPage';
@@ -294,48 +294,44 @@ const MainApp: React.FC = () => {
                 </div>
               )}
               
-              {/* Quick Actions */}
-              <button
-                onClick={() => setActiveTab('profile')}
-                className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-all"
-                title="Profil-Einstellungen"
-              >
-                <Settings className="w-5 h-5" />
-              </button>
-              
-              <button
-                onClick={handleLogout}
-                className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
-                title="Abmelden"
-              >
-                <LogOut className="w-5 h-5" />
-              </button>
-              
               {/* User Avatar */}
               {currentUser && (
-                <div className="flex items-center space-x-3 bg-gray-700/50 rounded-xl px-3 py-2 border border-gray-600/50">
-                  <button
-                    onClick={() => setActiveTab('profile')}
-                    className="w-8 h-8 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center hover:from-green-500 hover:to-blue-600 transition-all ring-2 ring-transparent hover:ring-white/20"
-                  >
-                    {currentUser.photoURL ? (
-                      <img
-                        src={currentUser.photoURL}
-                        alt="Profil"
-                        className="w-8 h-8 rounded-full object-cover"
-                      />
-                    ) : (
-                      <span className="text-white font-bold text-xs">
-                        {(currentUser.displayName || currentUser.email || 'U').charAt(0).toUpperCase()}
-                      </span>
-                    )}
-                  </button>
-                  <div className="text-right">
+                <div className="flex items-center space-x-4">
+                  {/* User Info Card */}
+                  <div className="hidden md:flex flex-col items-end">
                     <p className="text-sm text-white font-medium leading-tight">
                       {currentUser.displayName || 'Benutzer'}
                     </p>
                     <p className="text-xs text-gray-400 leading-tight">{currentUser.email}</p>
                   </div>
+                  
+                  {/* Avatar with Dropdown */}
+                  <button
+                    onClick={() => setActiveTab('profile')}
+                    className="relative w-10 h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center hover:from-green-500 hover:to-blue-600 transition-all ring-2 ring-transparent hover:ring-white/20 shadow-lg"
+                    title="Profil öffnen"
+                  >
+                    {currentUser.photoURL ? (
+                      <img
+                        src={currentUser.photoURL}
+                        alt="Profil"
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-white font-bold text-sm">
+                        {(currentUser.displayName || currentUser.email || 'U').charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                  </button>
+                  
+                  {/* Logout Button */}
+                  <button
+                    onClick={handleLogout}
+                    className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all group"
+                    title="Abmelden"
+                  >
+                    <LogOut className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                  </button>
                 </div>
               )}
             </div>

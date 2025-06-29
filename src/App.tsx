@@ -66,14 +66,31 @@ const MainApp: React.FC = () => {
           if (firebaseError.message.includes('Missing or insufficient permissions')) {
             setFirebaseConfigured(false);
             // Lade aus localStorage wenn Firebase nicht verfügbar ist
-            const localSessions = JSON.parse(localStorage.getItem('walkingPadSessions') || '[]');
+            const localSessions = JSON.parse(localStorage.getItem('walkingPadSessions') || '[]').map((session: any) => ({
+              ...session,
+              date: new Date(session.date),
+              createdAt: new Date(session.createdAt),
+              distance: session.distance || 0,
+              calories: session.calories || 0,
+              duration: session.duration || 0,
+              averageSpeed: session.averageSpeed || 0,
+              maxSpeed: session.maxSpeed || 0,
+              speedHistory: session.speedHistory || []
+            }));
             setSessions(localSessions);
           } else {
-          const localSessions = JSON.parse(localStorage.getItem('walkingPadSessions') || '[]').map((session: any) => ({
-            ...session,
-            date: new Date(session.date),
-            createdAt: new Date(session.createdAt)
-          }));
+            const localSessions = JSON.parse(localStorage.getItem('walkingPadSessions') || '[]').map((session: any) => ({
+              ...session,
+              date: new Date(session.date),
+              createdAt: new Date(session.createdAt),
+              distance: session.distance || 0,
+              calories: session.calories || 0,
+              duration: session.duration || 0,
+              averageSpeed: session.averageSpeed || 0,
+              maxSpeed: session.maxSpeed || 0,
+              speedHistory: session.speedHistory || []
+            }));
+            setSessions(localSessions);
           }
         }
       } else {
@@ -81,19 +98,36 @@ const MainApp: React.FC = () => {
         const localSessions = JSON.parse(localStorage.getItem('walkingPadSessions') || '[]').map((session: any) => ({
           ...session,
           date: new Date(session.date),
-          createdAt: new Date(session.createdAt)
+          createdAt: new Date(session.createdAt),
+          distance: session.distance || 0,
+          calories: session.calories || 0,
+          duration: session.duration || 0,
+          averageSpeed: session.averageSpeed || 0,
+          maxSpeed: session.maxSpeed || 0,
+          speedHistory: session.speedHistory || []
         }));
         setSessions(localSessions);
       }
     } catch (error) {
       console.error('Allgemeiner Fehler beim Laden der Trainingseinheiten:', error);
       // Fallback auf leeres Array
-      const localSessions = JSON.parse(localStorage.getItem('walkingPadSessions') || '[]').map((session: any) => ({
-        ...session,
-        date: new Date(session.date),
-        createdAt: new Date(session.createdAt)
-      }));
-      setSessions(localSessions);
+      try {
+        const localSessions = JSON.parse(localStorage.getItem('walkingPadSessions') || '[]').map((session: any) => ({
+          ...session,
+          date: new Date(session.date),
+          createdAt: new Date(session.createdAt),
+          distance: session.distance || 0,
+          calories: session.calories || 0,
+          duration: session.duration || 0,
+          averageSpeed: session.averageSpeed || 0,
+          maxSpeed: session.maxSpeed || 0,
+          speedHistory: session.speedHistory || []
+        }));
+        setSessions(localSessions);
+      } catch (parseError) {
+        console.error('Fehler beim Parsen der lokalen Daten:', parseError);
+        setSessions([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -518,7 +552,7 @@ const MainApp: React.FC = () => {
                     <div>
                       <p className="text-sm sm:text-base text-gray-300 truncate">{sessions[0].name}</p>
                       <p className="text-xs sm:text-sm text-gray-400">{formatDate(sessions[0].date)}</p>
-                      <p className="text-sm sm:text-base text-green-400 font-medium">{sessions[0].distance.toFixed(2)} km</p>
+                      <p className="text-sm sm:text-base text-green-400 font-medium">{(sessions[0].distance || 0).toFixed(2)} km</p>
                     </div>
                   ) : (
                     <p className="text-sm sm:text-base text-gray-400">Noch keine Trainings absolviert</p>

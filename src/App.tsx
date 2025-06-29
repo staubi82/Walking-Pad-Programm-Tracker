@@ -3,8 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { Activity, BarChart3, History, AlertCircle, Play } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
 import { ProtectedRoute } from './components/Auth/ProtectedRoute';
-import { LoginPage } from './components/Auth/LoginPage';
-import { RegisterPage } from './components/Auth/RegisterPage';
+import { LandingPage } from './components/LandingPage';
 import { PasswordResetPage } from './components/Auth/PasswordResetPage';
 import { ProfilePage } from './components/Auth/ProfilePage';
 import { LiveTracker } from './components/LiveTracker';
@@ -451,8 +450,8 @@ function App() {
   return (
     <Routes>
       {/* Public Routes */}
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/login" element={<LandingPage />} />
+      <Route path="/register" element={<LandingPage />} />
       <Route path="/forgot-password" element={<PasswordResetPage />} />
       
       {/* Protected Routes */}
@@ -463,13 +462,18 @@ function App() {
       } />
       
       <Route path="/" element={
-        <ProtectedRoute>
-          <MainApp />
-        </ProtectedRoute>
+        <Routes>
+          <Route index element={
+            <ProtectedRoute>
+              <MainApp />
+            </ProtectedRoute>
+          } />
+          <Route path="*" element={<LandingPage />} />
+        </Routes>
       } />
       
       {/* Redirect unknown routes to home */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<LandingPage />} />
     </Routes>
   );
 }

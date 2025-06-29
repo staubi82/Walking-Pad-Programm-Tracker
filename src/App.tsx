@@ -330,25 +330,6 @@ const MainApp: React.FC = () => {
                 </div>
               </div>
               
-              {/* Recording Indicator - Kompakt für Mobile */}
-              {recordingState.isRecording && (
-                <div 
-                  onClick={() => handleTabChange('tracker')}
-                  className="flex items-center space-x-2 bg-red-500/20 border border-red-500 hover:bg-red-500/30 px-2 sm:px-4 py-1 sm:py-2 rounded-lg cursor-pointer transition-all backdrop-blur-sm flex-shrink-0"
-                  title="Klicken um zur laufenden Aufzeichnung zu wechseln"
-                >
-                  <div className="w-2 h-2 sm:w-3 sm:h-3 bg-red-500 rounded-full animate-pulse"></div>
-                  <div className="text-white hidden sm:block">
-                    <div className="text-sm font-medium">🔴 Live Training</div>
-                    <div className="text-xs opacity-90">
-                      {recordingState.sessionName || 'Unbenanntes Training'} • {formatDuration(recordingState.duration)}
-                    </div>
-                  </div>
-                  <div className="text-white sm:hidden">
-                    <div className="text-xs font-medium">🔴 Live</div>
-                  </div>
-                </div>
-              )}
             </div>
             
             {/* Right Side */}

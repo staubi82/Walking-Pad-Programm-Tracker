@@ -11,6 +11,7 @@ export interface TrainingSession {
   createdAt: Date;
   difficulty?: string;
   weight?: number; // Gewicht zum Zeitpunkt des Trainings
+  steps?: number; // Geschätzte Schritte
 }
 
 export interface SpeedPoint {

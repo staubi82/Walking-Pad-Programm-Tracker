@@ -21,6 +21,69 @@ export const calculateDistance = (speedHistory: Array<{timestamp: number, speed:
   return Math.round(totalDistance * 1000) / 1000; // Runde auf 3 Dezimalstellen
 };
 
+// Schrittzähler-Berechnung basierend auf Geschwindigkeit und Zeit
+export const calculateSteps = (speedHistory: Array<{timestamp: number, speed: number}>, userProfile?: UserProfile): number => {
+  if (speedHistory.length < 2) return 0;
+  
+  // Durchschnittliche Schrittlänge basierend auf Körpergröße
+  const height = userProfile?.height || 170; // Standard-Größe in cm
+  const gender = userProfile?.gender || 'male';
+  
+  // Schrittlänge berechnen (Faustregeln)
+  let strideLength: number;
+  if (gender === 'male') {
+    strideLength = height * 0.415; // Männer: ~41.5% der Körpergröße
+  } else {
+    strideLength = height * 0.413; // Frauen: ~41.3% der Körpergröße
+  }
+  
+  // Konvertiere zu Metern
+  strideLength = strideLength / 100;
+  
+  let totalSteps = 0;
+  
+  for (let i = 1; i < speedHistory.length; i++) {
+    const timeInterval = (speedHistory[i].timestamp - speedHistory[i - 1].timestamp) / 1000; // in Sekunden
+    const speed = speedHistory[i - 1].speed; // km/h
+    
+    // Konvertiere Geschwindigkeit zu m/s
+    const speedMeterPerSecond = (speed * 1000) / 3600;
+    
+    // Berechne zurückgelegte Distanz in Metern
+    const distanceMeters = speedMeterPerSecond * timeInterval;
+    
+    // Berechne Schritte basierend auf Schrittlänge
+    const steps = distanceMeters / strideLength;
+    
+    totalSteps += steps;
+  }
+  
+  return Math.round(totalSteps);
+};
+
+// Schritte pro Minute berechnen
+export const calculateStepsPerMinute = (steps: number, durationSeconds: number): number => {
+  if (durationSeconds === 0) return 0;
+  const minutes = durationSeconds / 60;
+  return Math.round(steps / minutes);
+};
+
+// Geschätzte Schrittfrequenz basierend auf Geschwindigkeit
+export const estimateStepFrequency = (speed: number): number => {
+  // Empirische Formel: Schritte pro Minute basierend auf km/h
+  // Langsames Gehen (3 km/h): ~100 Schritte/min
+  // Normales Gehen (5 km/h): ~120 Schritte/min
+  // Schnelles Gehen (6 km/h): ~140 Schritte/min
+  
+  if (speed <= 0) return 0;
+  if (speed <= 3) return Math.round(80 + (speed / 3) * 20); // 80-100 Schritte/min
+  if (speed <= 5) return Math.round(100 + ((speed - 3) / 2) * 20); // 100-120 Schritte/min
+  if (speed <= 6) return Math.round(120 + ((speed - 5) / 1) * 20); // 120-140 Schritte/min
+  
+  // Für höhere Geschwindigkeiten (Joggen/Laufen)
+  return Math.round(140 + ((speed - 6) * 5)); // 140+ Schritte/min
+};
+
 // Verbesserte Kalorienberechnung mit Benutzerprofil
 export const calculateCalories = (
   speedHistory: Array<{timestamp: number, speed: number}>, 

@@ -22,7 +22,11 @@ interface LiveTrackerProps {
     difficulty?: string;
   }) => void;
   isRecording: boolean;
-  onRecordingChange: (recording: boolean) => void;
+  onRecordingChange: (isRecording: boolean, sessionData?: {
+    sessionName: string;
+    duration: number;
+    currentSpeed: number;
+  }) => void;
 }
 
 const difficultyLevels = [
@@ -35,32 +39,50 @@ const difficultyLevels = [
 ];
 
 export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, isRecording, onRecordingChange }) => {
-  const [currentSpeed, setCurrentSpeed] = useState(0);
-  const [elapsedTime, setElapsedTime] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const [duration, setDuration] = useState(0);
+  const [currentSpeed, setCurrentSpeed] = useState(1.0);
   const [speedHistory, setSpeedHistory] = useState<SpeedPoint[]>([]);
-  const [timeline, setTimeline] = useState<TimelineEntry[]>([]);
   const [sessionName, setSessionName] = useState('');
-  const [selectedDifficulty, setSelectedDifficulty] = useState<string>('');
+  const [nameError, setNameError] = useState('');
+  const [showManualEntry, setShowManualEntry] = useState(false);
+  const [selectedDifficulty, setSelectedDifficulty] = useState('');
   const [showSummary, setShowSummary] = useState(false);
   const [sessionData, setSessionData] = useState<any>(null);
-  const [editingEntry, setEditingEntry] = useState<string | null>(null);
-  const [editSpeed, setEditSpeed] = useState('');
+  
+  // Timeline-Eingabe
+  const [timelineEntries, setTimelineEntries] = useState<TimelineEntry[]>([
+    { id: '1', minute: 0, speed: 1.0 }
+  ]);
+  const [timelineName, setTimelineName] = useState('');
+  const [timelineNameError, setTimelineNameError] = useState('');
+  const [timelineDifficulty, setTimelineDifficulty] = useState('');
   
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const startTimeRef = useRef<number | null>(null);
+  const startTimeRef = useRef<number>(0);
+  const pausedTimeRef = useRef<number>(0);
+
+  // Update Recording State für Header
+  useEffect(() => {
+    if (isRecording && !isPaused) {
+      onRecordingChange(true, {
+        sessionName: sessionName || 'Unbenanntes Training',
+        duration,
+        currentSpeed
+      });
+    } else {
+      onRecordingChange(false);
+    }
+  }, [isRecording, isPaused, sessionName, duration, currentSpeed, onRecordingChange]);
 
   useEffect(() => {
-    if (isRecording) {
-      startTimeRef.current = Date.now() - elapsedTime * 1000;
+    if (isRecording && !isPaused) {
       intervalRef.current = setInterval(() => {
-        if (startTimeRef.current) {
-          const now = Date.now();
-          const elapsed = Math.floor((now - startTimeRef.current) / 1000);
-          setElapsedTime(elapsed);
-          
-          // Add speed point every second
-          setSpeedHistory(prev => [...prev, { time: elapsed, speed: currentSpeed }]);
-        }
+        const now = Date.now();
+        const elapsed = Math.floor((now - startTimeRef.current - pausedTimeRef.current) / 1000);
+        setDuration(elapsed);
+        
+        setSpeedHistory(prev => [...prev, { timestamp: now, speed: currentSpeed }]);
       }, 1000);
     } else {
       if (intervalRef.current) {
@@ -74,39 +96,63 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, isR
         clearInterval(intervalRef.current);
       }
     };
-  }, [isRecording, currentSpeed, elapsedTime]);
+  }, [isRecording, isPaused, currentSpeed]);
 
-  const handleStart = () => {
+  const startSession = () => {
     if (!sessionName.trim()) {
-      alert('Bitte geben Sie einen Session-Namen ein!');
+      setNameError('Bitte geben Sie einen Namen für die Trainingseinheit ein.');
       return;
     }
-    onRecordingChange(true);
-  };
-
-  const handlePause = () => {
-    onRecordingChange(false);
-  };
-
-  const handleStop = () => {
-    onRecordingChange(false);
     
-    if (speedHistory.length === 0) {
-      alert('Keine Daten zum Speichern vorhanden!');
+    setNameError('');
+    const now = Date.now();
+    startTimeRef.current = now;
+    pausedTimeRef.current = 0;
+    onRecordingChange(true, {
+      sessionName,
+      duration: 0,
+      currentSpeed
+    });
+    setIsPaused(false);
+    setDuration(0);
+    setSpeedHistory([{ timestamp: now, speed: currentSpeed }]);
+  };
+
+  const pauseSession = () => {
+    setIsPaused(true);
+    onRecordingChange(false);
+  };
+
+  const resumeSession = () => {
+    const pauseStart = Date.now();
+    pausedTimeRef.current += pauseStart - (startTimeRef.current + duration * 1000 + pausedTimeRef.current);
+    setIsPaused(false);
+    onRecordingChange(true, {
+      sessionName,
+      duration,
+      currentSpeed
+    });
+  };
+
+  const stopSession = () => {
+    if (speedHistory.length < 2) {
+      alert('Trainingseinheit zu kurz. Mindestens 1 Minute Training erforderlich.');
       return;
     }
+
+    onRecordingChange(false);
 
     const distance = calculateDistance(speedHistory);
-    const calories = calculateCalories(speedHistory, 70); // 70kg default weight
+    const calories = calculateCalories(speedHistory);
     const averageSpeed = speedHistory.reduce((sum, point) => sum + point.speed, 0) / speedHistory.length;
     const maxSpeed = Math.max(...speedHistory.map(point => point.speed));
 
     const finalSessionData = {
       name: sessionName,
-      duration: elapsedTime,
+      duration,
       distance,
       calories,
-      averageSpeed,
+      averageSpeed: Math.round(averageSpeed * 10) / 10,
       maxSpeed,
       speedHistory,
       difficulty: selectedDifficulty
@@ -116,316 +162,477 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, isR
     setShowSummary(true);
   };
 
-  const handleReset = () => {
+  const handleSummaryClose = (save: boolean, finalData?: any) => {
+    if (save && finalData) {
+      onSessionComplete(finalData);
+    }
+    
+    // Reset alles
     onRecordingChange(false);
-    setElapsedTime(0);
-    setCurrentSpeed(0);
+    setIsPaused(false);
+    setDuration(0);
+    setCurrentSpeed(1.0);
     setSpeedHistory([]);
-    setTimeline([]);
     setSessionName('');
+    setNameError('');
     setSelectedDifficulty('');
     setShowSummary(false);
     setSessionData(null);
-    startTimeRef.current = null;
   };
 
+  const adjustSpeed = (delta: number) => {
+    setCurrentSpeed(prev => Math.max(1.0, Math.min(6.0, prev + delta)));
+  };
+
+  const handleSpeedInputChange = (value: string) => {
+    const numValue = parseFloat(value);
+    if (!isNaN(numValue) && numValue >= 1.0 && numValue <= 6.0) {
+      setCurrentSpeed(numValue);
+    }
+  };
+
+  // Timeline-Funktionen
   const addTimelineEntry = () => {
-    const minute = roundToNearestHalfMinute(elapsedTime / 60);
-    const newEntry: TimelineEntry = {
+    const lastEntry = timelineEntries[timelineEntries.length - 1];
+    const newMinute = lastEntry ? lastEntry.minute + 1 : 0;
+    
+    setTimelineEntries(prev => [...prev, {
       id: Date.now().toString(),
-      minute,
-      speed: currentSpeed
-    };
-    setTimeline(prev => [...prev, newEntry]);
+      minute: newMinute,
+      speed: 1.0
+    }]);
   };
 
   const removeTimelineEntry = (id: string) => {
-    setTimeline(prev => prev.filter(entry => entry.id !== id));
-  };
-
-  const startEditEntry = (entry: TimelineEntry) => {
-    setEditingEntry(entry.id);
-    setEditSpeed(entry.speed.toString());
-  };
-
-  const saveEditEntry = (id: string) => {
-    const newSpeed = parseFloat(editSpeed);
-    if (!isNaN(newSpeed) && newSpeed >= 0) {
-      setTimeline(prev => prev.map(entry => 
-        entry.id === id ? { ...entry, speed: newSpeed } : entry
-      ));
+    if (timelineEntries.length > 1) {
+      setTimelineEntries(prev => prev.filter(entry => entry.id !== id));
     }
-    setEditingEntry(null);
-    setEditSpeed('');
   };
 
-  const cancelEdit = () => {
-    setEditingEntry(null);
-    setEditSpeed('');
+  const updateTimelineEntry = (id: string, field: 'minute' | 'speed', value: number) => {
+    setTimelineEntries(prev => prev.map(entry => 
+      entry.id === id ? { ...entry, [field]: value } : entry
+    ));
   };
 
-  const handleSummaryClose = (save: boolean) => {
-    if (save && sessionData) {
-      onSessionComplete(sessionData);
+  const submitTimelineTraining = () => {
+    if (!timelineName.trim()) {
+      setTimelineNameError('Bitte geben Sie einen Namen für die Trainingseinheit ein.');
+      return;
     }
-    setShowSummary(false);
-    handleReset();
+
+    // Sortiere Einträge nach Minuten
+    const sortedEntries = [...timelineEntries].sort((a, b) => a.minute - b.minute);
+    
+    // Validierung
+    if (sortedEntries.length < 2) {
+      alert('Mindestens 2 Timeline-Einträge erforderlich.');
+      return;
+    }
+
+    const maxMinute = Math.max(...sortedEntries.map(entry => entry.minute));
+    if (maxMinute < 1) {
+      alert('Training muss mindestens 1 Minute dauern.');
+      return;
+    }
+
+    setTimelineNameError('');
+
+    // Erstelle Geschwindigkeitsverlauf basierend auf Timeline
+    const now = Date.now();
+    const simulatedHistory: SpeedPoint[] = [];
+    
+    for (let minute = 0; minute <= maxMinute; minute++) {
+      // Finde die Geschwindigkeit für diese Minute
+      let currentSpeedForMinute = 1.0;
+      
+      // Finde den letzten Eintrag vor oder bei dieser Minute
+      for (let i = sortedEntries.length - 1; i >= 0; i--) {
+        if (sortedEntries[i].minute <= minute) {
+          currentSpeedForMinute = sortedEntries[i].speed;
+          break;
+        }
+      }
+      
+      // Füge Datenpunkte für diese Minute hinzu (alle 10 Sekunden)
+      for (let second = 0; second < 60; second += 10) {
+        simulatedHistory.push({
+          timestamp: now + (minute * 60 + second) * 1000,
+          speed: currentSpeedForMinute
+        });
+      }
+    }
+
+    const distance = calculateDistance(simulatedHistory);
+    const calories = calculateCalories(simulatedHistory);
+    const averageSpeed = simulatedHistory.reduce((sum, point) => sum + point.speed, 0) / simulatedHistory.length;
+    const maxSpeed = Math.max(...simulatedHistory.map(point => point.speed));
+
+    const finalSessionData = {
+      name: timelineName,
+      duration: maxMinute * 60,
+      distance,
+      calories,
+      averageSpeed: Math.round(averageSpeed * 10) / 10,
+      maxSpeed,
+      speedHistory: simulatedHistory,
+      difficulty: timelineDifficulty
+    };
+
+    setSessionData(finalSessionData);
+    setShowSummary(true);
   };
 
-  const distance = calculateDistance(speedHistory);
-  const calories = calculateCalories(speedHistory, 70);
-  const averageSpeed = speedHistory.length > 0 
-    ? speedHistory.reduce((sum, point) => sum + point.speed, 0) / speedHistory.length 
-    : 0;
+  const speedButtons = [];
+  for (let speed = 1.0; speed <= 6.0; speed += 0.5) {
+    speedButtons.push(speed);
+  }
 
+  const currentDistance = calculateDistance(speedHistory);
+  const currentCalories = calculateCalories(speedHistory);
+
+  // Zeige Summary Modal
   if (showSummary && sessionData) {
     return (
       <SessionSummary
         sessionData={sessionData}
-        onClose={handleSummaryClose}
+        onSave={(finalData) => handleSummaryClose(true, finalData)}
+        onCancel={() => handleSummaryClose(false)}
       />
     );
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6 space-y-6">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Live Training Tracker</h2>
-        <p className="text-gray-600">Verfolgen Sie Ihr Training in Echtzeit</p>
-      </div>
-
-      {/* Session Name Input */}
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">
-          Session Name
-        </label>
-        <input
-          type="text"
-          value={sessionName}
-          onChange={(e) => setSessionName(e.target.value)}
-          placeholder="z.B. Morgen-Lauf im Park"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          disabled={isRecording}
-        />
-      </div>
-
-      {/* Difficulty Selection */}
-      <div className="space-y-3">
-        <label className="block text-sm font-medium text-gray-700">
-          Schwierigkeitsgrad
-        </label>
-        <div className="grid grid-cols-2 gap-2">
-          {difficultyLevels.map((level) => (
-            <button
-              key={level.id}
-              onClick={() => setSelectedDifficulty(level.id)}
-              disabled={isRecording}
-              className={`p-3 rounded-lg text-white text-sm font-medium transition-all duration-200 ${
-                selectedDifficulty === level.id 
-                  ? `${level.color} ring-2 ring-offset-2 ring-blue-500` 
-                  : `${level.color} opacity-70 hover:opacity-100`
-              } ${isRecording ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
-            >
-              <div className="font-semibold">{level.label}</div>
-              <div className="text-xs opacity-90">{level.description}</div>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Current Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-blue-50 p-4 rounded-lg text-center">
-          <div className="text-2xl font-bold text-blue-600">{formatDuration(elapsedTime)}</div>
-          <div className="text-sm text-blue-500">Zeit</div>
-        </div>
-        <div className="bg-green-50 p-4 rounded-lg text-center">
-          <div className="text-2xl font-bold text-green-600">{currentSpeed.toFixed(1)}</div>
-          <div className="text-sm text-green-500">km/h</div>
-        </div>
-        <div className="bg-purple-50 p-4 rounded-lg text-center">
-          <div className="text-2xl font-bold text-purple-600">{distance.toFixed(2)}</div>
-          <div className="text-sm text-purple-500">km</div>
-        </div>
-        <div className="bg-orange-50 p-4 rounded-lg text-center">
-          <div className="text-2xl font-bold text-orange-600">{Math.round(calories)}</div>
-          <div className="text-sm text-orange-500">kcal</div>
-        </div>
-      </div>
-
-      {/* Speed Control */}
-      <div className="space-y-4">
-        <label className="block text-sm font-medium text-gray-700">
-          Aktuelle Geschwindigkeit: {currentSpeed.toFixed(1)} km/h
-        </label>
-        <div className="flex items-center space-x-4">
+    <div className="space-y-6">
+      {/* Timeline-Dateneingabe */}
+      <div className="bg-gray-800 rounded-xl p-6 shadow-xl">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-xl font-bold text-white">Training Timeline erstellen</h3>
           <button
-            onClick={() => setCurrentSpeed(Math.max(0, currentSpeed - 0.5))}
-            className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
-            disabled={!isRecording}
+            onClick={() => setShowManualEntry(!showManualEntry)}
+            className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg flex items-center space-x-2 text-white transition-colors"
           >
-            <Minus className="w-5 h-5" />
-          </button>
-          <input
-            type="range"
-            min="0"
-            max="25"
-            step="0.1"
-            value={currentSpeed}
-            onChange={(e) => setCurrentSpeed(parseFloat(e.target.value))}
-            className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-            disabled={!isRecording}
-          />
-          <button
-            onClick={() => setCurrentSpeed(Math.min(25, currentSpeed + 0.5))}
-            className="p-2 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors"
-            disabled={!isRecording}
-          >
-            <Plus className="w-5 h-5" />
+            <Edit3 className="w-4 h-4" />
+            <span>{showManualEntry ? 'Ausblenden' : 'Timeline-Eingabe'}</span>
           </button>
         </div>
-        <div className="text-center">
-          <input
-            type="number"
-            value={currentSpeed}
-            onChange={(e) => setCurrentSpeed(Math.max(0, Math.min(25, parseFloat(e.target.value) || 0)))}
-            className="w-24 px-3 py-1 text-center border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            disabled={!isRecording}
-            step="0.1"
-            min="0"
-            max="25"
-          />
-        </div>
-      </div>
 
-      {/* Timeline */}
-      {timeline.length > 0 && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-800">Timeline</h3>
-            <button
-              onClick={addTimelineEntry}
-              className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-              disabled={!isRecording}
-            >
-              <Plus className="w-4 h-4 inline mr-1" />
-              Punkt hinzufügen
-            </button>
-          </div>
-          <div className="max-h-40 overflow-y-auto space-y-2">
-            {timeline.map((entry) => (
-              <div key={entry.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <Clock className="w-4 h-4 text-gray-500" />
-                  <span className="text-sm font-medium">Min {entry.minute}</span>
-                  {editingEntry === entry.id ? (
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="number"
-                        value={editSpeed}
-                        onChange={(e) => setEditSpeed(e.target.value)}
-                        className="w-20 px-2 py-1 text-sm border border-gray-300 rounded"
-                        step="0.1"
-                        min="0"
-                        max="25"
-                      />
-                      <button
-                        onClick={() => saveEditEntry(entry.id)}
-                        className="p-1 text-green-600 hover:bg-green-100 rounded"
-                      >
-                        <CheckCircle className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={cancelEdit}
-                        className="p-1 text-gray-600 hover:bg-gray-100 rounded"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  ) : (
-                    <span className="text-sm text-gray-600">{entry.speed.toFixed(1)} km/h</span>
-                  )}
-                </div>
-                {editingEntry !== entry.id && (
-                  <div className="flex items-center space-x-1">
-                    <button
-                      onClick={() => startEditEntry(entry)}
-                      className="p-1 text-blue-600 hover:bg-blue-100 rounded"
-                    >
-                      <Edit3 className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => removeTimelineEntry(entry.id)}
-                      className="p-1 text-red-600 hover:bg-red-100 rounded"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
+        {showManualEntry && (
+          <div className="space-y-6">
+            {/* Name und Schwierigkeit */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Name der Trainingseinheit
+                </label>
+                <input
+                  type="text"
+                  value={timelineName}
+                  onChange={(e) => {
+                    setTimelineName(e.target.value);
+                    if (timelineNameError) setTimelineNameError('');
+                  }}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="z.B. Intervall-Training"
+                />
+                {timelineNameError && (
+                  <p className="mt-1 text-sm text-red-400">{timelineNameError}</p>
                 )}
               </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Schwierigkeitslevel
+                </label>
+                <select
+                  value={timelineDifficulty}
+                  onChange={(e) => setTimelineDifficulty(e.target.value)}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="">Schwierigkeit wählen...</option>
+                  {difficultyLevels.map(level => (
+                    <option key={level.id} value={level.id}>{level.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Timeline-Einträge */}
+            <div>
+              <div className="flex justify-between items-center mb-3">
+                <h4 className="text-lg font-semibold text-white">Geschwindigkeits-Timeline</h4>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={addTimelineEntry}
+                    className="bg-green-600 hover:bg-green-700 px-3 py-1 rounded-lg flex items-center space-x-1 text-white text-sm transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Hinzufügen</span>
+                  </button>
+                </div>
+              </div>
+              
+              <div className="space-y-3 max-h-60 overflow-y-auto">
+                {timelineEntries.map((entry, index) => (
+                  <div key={entry.id} className="bg-gray-700 rounded-lg p-3 flex items-center space-x-4">
+                    <div className="flex-1 grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs text-gray-400 mb-1">Minute</label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={entry.minute}
+                          onChange={(e) => updateTimelineEntry(entry.id, 'minute', parseInt(e.target.value) || 0)}
+                          className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-400 mb-1">Geschwindigkeit (km/h)</label>
+                        <input
+                          type="number"
+                          min="1.0"
+                          max="6.0"
+                          step="0.5"
+                          value={entry.speed}
+                          onChange={(e) => updateTimelineEntry(entry.id, 'speed', parseFloat(e.target.value) || 1.0)}
+                          className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
+                        />
+                      </div>
+                    </div>
+                    
+                    {timelineEntries.length > 1 && (
+                      <button
+                        onClick={() => removeTimelineEntry(entry.id)}
+                        className="text-red-400 hover:text-red-300 p-1 rounded transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-4 p-3 bg-blue-900/30 rounded-lg border border-blue-700">
+                <p className="text-blue-300 text-sm">
+                  💡 <strong>So funktioniert's:</strong> 
+                  <br />• Fügen Sie Zeitpunkte mit verschiedenen Geschwindigkeiten hinzu
+                  <br />• Die App berechnet automatisch die Gesamtstatistiken
+                  <br />• Klicken Sie "Timeline-Training hinzufügen" um die Aufzeichnung zu beenden
+                </p>
+              </div>
+              
+              {/* Vorschau der Timeline */}
+              {timelineEntries.length > 1 && (
+                <div className="mt-4 p-3 bg-gray-700 rounded-lg">
+                  <h5 className="text-sm font-semibold text-white mb-2">Timeline-Vorschau:</h5>
+                  <div className="text-xs text-gray-300 space-y-1">
+                    {timelineEntries
+                      .sort((a, b) => a.minute - b.minute)
+                      .map((entry, index) => (
+                        <div key={entry.id} className="flex justify-between">
+                          <span>Minute {entry.minute}:</span>
+                          <span className="text-blue-400">{entry.speed} km/h</span>
+                        </div>
+                      ))}
+                    <div className="border-t border-gray-600 pt-1 mt-2 flex justify-between font-semibold">
+                      <span>Gesamtdauer:</span>
+                      <span className="text-green-400">
+                        {Math.max(...timelineEntries.map(e => e.minute))} Minuten
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex space-x-4">
+              <button
+                onClick={submitTimelineTraining}
+                className="flex-1 bg-purple-600 hover:bg-purple-700 px-4 py-3 rounded-lg flex items-center justify-center space-x-2 text-white font-medium transition-colors"
+              >
+                <CheckCircle className="w-5 h-5" />
+                <span>Training beenden & speichern</span>
+              </button>
+              
+              <button
+                onClick={() => {
+                  setTimelineName('');
+                  setTimelineNameError('');
+                  setTimelineDifficulty('');
+                  setTimelineEntries([{ id: '1', minute: 0, speed: 1.0 }]);
+                  setShowManualEntry(false);
+                }}
+                className="px-4 py-3 bg-gray-600 hover:bg-gray-500 rounded-lg text-white font-medium transition-colors"
+              >
+                Abbrechen
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Live Tracking */}
+      <div className="bg-gray-800 rounded-xl p-6 shadow-xl">
+        <h2 className="text-2xl font-bold text-white mb-6">Live Tracking</h2>
+        
+        {!isRecording && !showManualEntry && (
+          <div className="space-y-4 mb-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Name der Trainingseinheit
+              </label>
+              <input
+                type="text"
+                value={sessionName}
+                onChange={(e) => {
+                  setSessionName(e.target.value);
+                  if (nameError) setNameError('');
+                }}
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="z.B. Morgendliches Walking"
+              />
+              {nameError && (
+                <p className="mt-1 text-sm text-red-400">{nameError}</p>
+              )}
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-3">
+                Schwierigkeitslevel
+              </label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {difficultyLevels.map(level => (
+                  <button
+                    key={level.id}
+                    onClick={() => setSelectedDifficulty(level.id)}
+                    className={`${level.color} hover:opacity-80 px-3 py-2 rounded-lg text-white text-sm font-medium transition-all ${
+                      selectedDifficulty === level.id ? 'ring-2 ring-white' : ''
+                    }`}
+                    title={level.description}
+                  >
+                    {level.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div className="bg-gray-700 rounded-lg p-4">
+            <div className="text-sm text-gray-400">Zeit</div>
+            <div className="text-2xl font-bold text-white">{formatDuration(duration)}</div>
+          </div>
+          <div className="bg-gray-700 rounded-lg p-4">
+            <div className="text-sm text-gray-400">Distanz</div>
+            <div className="text-2xl font-bold text-green-400">{currentDistance.toFixed(2)} km</div>
+          </div>
+          <div className="bg-gray-700 rounded-lg p-4">
+            <div className="text-sm text-gray-400">Kalorien</div>
+            <div className="text-2xl font-bold text-orange-400">{currentCalories}</div>
+          </div>
+          <div className="bg-gray-700 rounded-lg p-4">
+            <div className="text-sm text-gray-400">Geschwindigkeit</div>
+            <div className="text-2xl font-bold text-blue-400">{currentSpeed.toFixed(1)} km/h</div>
+          </div>
+        </div>
+
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-300 mb-3">
+            Geschwindigkeit einstellen
+          </label>
+          
+          <div className="mb-4">
+            <div className="flex items-center justify-center space-x-4">
+              <button
+                onClick={() => adjustSpeed(-0.5)}
+                disabled={!isRecording || currentSpeed <= 1.0}
+                className="bg-red-600 hover:bg-red-700 disabled:bg-gray-600 p-2 rounded-lg transition-colors"
+              >
+                <Minus className="w-4 h-4 text-white" />
+              </button>
+              
+              <div className="flex items-center space-x-2">
+                <input
+                  type="number"
+                  min="1.0"
+                  max="6.0"
+                  step="0.5"
+                  value={currentSpeed}
+                  onChange={(e) => handleSpeedInputChange(e.target.value)}
+                  disabled={!isRecording}
+                  className="w-20 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-center focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-600"
+                />
+                <span className="text-gray-300 text-sm">km/h</span>
+              </div>
+              
+              <button
+                onClick={() => adjustSpeed(0.5)}
+                disabled={!isRecording || currentSpeed >= 6.0}
+                className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 p-2 rounded-lg transition-colors"
+              >
+                <Plus className="w-4 h-4 text-white" />
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-6 md:grid-cols-11 gap-2">
+            {speedButtons.map((speed) => (
+              <button
+                key={speed}
+                onClick={() => setCurrentSpeed(speed)}
+                disabled={!isRecording}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  currentSpeed === speed
+                    ? 'bg-green-600 text-white'
+                    : 'bg-gray-700 hover:bg-gray-600 text-gray-300 disabled:bg-gray-600 disabled:text-gray-500'
+                }`}
+              >
+                {speed.toFixed(1)}
+              </button>
             ))}
           </div>
         </div>
-      )}
 
-      {/* Control Buttons */}
-      <div className="flex justify-center space-x-4">
-        {!isRecording ? (
-          <button
-            onClick={handleStart}
-            className="flex items-center space-x-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
-          >
-            <Play className="w-5 h-5" />
-            <span>Start</span>
-          </button>
-        ) : (
-          <button
-            onClick={handlePause}
-            className="flex items-center space-x-2 px-6 py-3 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors font-medium"
-          >
-            <Pause className="w-5 h-5" />
-            <span>Pause</span>
-          </button>
-        )}
-        
-        <button
-          onClick={handleStop}
-          className="flex items-center space-x-2 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
-          disabled={speedHistory.length === 0}
-        >
-          <Square className="w-5 h-5" />
-          <span>Stop</span>
-        </button>
-        
-        <button
-          onClick={handleReset}
-          className="flex items-center space-x-2 px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium"
-        >
-          <span>Reset</span>
-        </button>
+        <div className="flex justify-center space-x-4">
+          {!isRecording ? (
+            <button
+              onClick={startSession}
+              className="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg flex items-center space-x-2 text-white font-medium transition-colors"
+            >
+              <Play className="w-5 h-5" />
+              <span>Training starten</span>
+            </button>
+          ) : (
+            <>
+              {isPaused ? (
+                <button
+                  onClick={resumeSession}
+                  className="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg flex items-center space-x-2 text-white font-medium transition-colors"
+                >
+                  <Play className="w-5 h-5" />
+                  <span>Fortsetzen</span>
+                </button>
+              ) : (
+                <button
+                  onClick={pauseSession}
+                  className="bg-yellow-600 hover:bg-yellow-700 px-6 py-3 rounded-lg flex items-center space-x-2 text-white font-medium transition-colors"
+                >
+                  <Pause className="w-5 h-5" />
+                  <span>Pausieren</span>
+                </button>
+              )}
+              <button
+                onClick={stopSession}
+                className="bg-red-600 hover:bg-red-700 px-6 py-3 rounded-lg flex items-center space-x-2 text-white font-medium transition-colors"
+              >
+                <Square className="w-5 h-5" />
+                <span>Training beenden</span>
+              </button>
+            </>
+          )}
+        </div>
       </div>
-
-      {/* Add Timeline Entry Button */}
-      {isRecording && (
-        <div className="text-center">
-          <button
-            onClick={addTimelineEntry}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Plus className="w-4 h-4 inline mr-2" />
-            Timeline-Punkt hinzufügen
-          </button>
-        </div>
-      )}
-
-      {/* Average Speed Display */}
-      {speedHistory.length > 0 && (
-        <div className="text-center p-4 bg-gray-50 rounded-lg">
-          <div className="text-lg font-semibold text-gray-800">
-            Durchschnittsgeschwindigkeit: {averageSpeed.toFixed(1)} km/h
-          </div>
-        </div>
-      )}
     </div>
   );
 };

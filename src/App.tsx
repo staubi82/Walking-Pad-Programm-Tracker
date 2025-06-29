@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { Activity, BarChart3, History, AlertCircle, Play, LogOut, User } from 'lucide-react';
+import { Activity, BarChart3, History, AlertCircle, Play, LogOut, User, Menu, X } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
 import { logoutUser } from './firebase/auth';
 import { LandingPage } from './components/LandingPage';
@@ -26,6 +26,7 @@ const MainApp: React.FC = () => {
   const { currentUser, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'overview' | 'tracker' | 'history' | 'stats' | 'profile'>('overview');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sessions, setSessions] = useState<TrainingSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [firebaseConfigured, setFirebaseConfigured] = useState(true);
@@ -233,6 +234,11 @@ const MainApp: React.FC = () => {
     }
   };
 
+  const handleTabChange = (tab: typeof activeTab) => {
+    setActiveTab(tab);
+    setMobileMenuOpen(false); // Schließe Mobile Menu beim Tab-Wechsel
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
@@ -245,107 +251,204 @@ const MainApp: React.FC = () => {
   }
 
   const tabs = [
-    { id: 'overview', label: 'Übersicht', icon: Activity },
-    { id: 'tracker', label: 'Live Tracking', icon: Play },
-    { id: 'history', label: 'Programme', icon: History },
-    { id: 'stats', label: 'Statistiken', icon: BarChart3 },
-    { id: 'profile', label: 'Profil', icon: User }
+    { id: 'overview', label: 'Übersicht', icon: Activity, shortLabel: 'Home' },
+    { id: 'tracker', label: 'Live Tracking', icon: Play, shortLabel: 'Live' },
+    { id: 'history', label: 'Programme', icon: History, shortLabel: 'Programme' },
+    { id: 'stats', label: 'Statistiken', icon: BarChart3, shortLabel: 'Stats' },
+    { id: 'profile', label: 'Profil', icon: User, shortLabel: 'Profil' }
   ] as const;
 
   return (
     <div className="min-h-screen bg-gray-900">
-      <header className="bg-gray-800 shadow-lg">
+      {/* Header */}
+      <header className="bg-gray-800 shadow-lg sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-6">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-xl flex items-center justify-center">
-                  <Activity className="w-6 h-6 text-white" />
+          <div className="flex justify-between items-center h-14 sm:h-16">
+            {/* Logo & Title */}
+            <div className="flex items-center space-x-3 sm:space-x-6 flex-1 min-w-0">
+              <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+                  <Activity className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
                 </div>
-                <div>
-                  <h1 className="text-xl font-bold text-white">Walking-Pad Tracker</h1>
-                  <p className="text-xs text-gray-400">Professionelles Training</p>
+                <div className="min-w-0">
+                  <h1 className="text-base sm:text-xl font-bold text-white truncate">Walking-Pad Tracker</h1>
+                  <p className="text-xs text-gray-400 hidden sm:block">Professionelles Training</p>
                 </div>
               </div>
               
-              {/* Recording Indicator */}
+              {/* Recording Indicator - Kompakt für Mobile */}
               {recordingState.isRecording && (
                 <div 
-                  onClick={() => setActiveTab('tracker')}
-                  className="flex items-center space-x-3 bg-red-500/20 border border-red-500 hover:bg-red-500/30 px-4 py-2 rounded-xl cursor-pointer transition-all backdrop-blur-sm"
+                  onClick={() => handleTabChange('tracker')}
+                  className="flex items-center space-x-2 bg-red-500/20 border border-red-500 hover:bg-red-500/30 px-2 sm:px-4 py-1 sm:py-2 rounded-lg cursor-pointer transition-all backdrop-blur-sm flex-shrink-0"
                   title="Klicken um zur laufenden Aufzeichnung zu wechseln"
                 >
-                  <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                  <div className="text-white">
+                  <div className="w-2 h-2 sm:w-3 sm:h-3 bg-red-500 rounded-full animate-pulse"></div>
+                  <div className="text-white hidden sm:block">
                     <div className="text-sm font-medium">🔴 Live Training</div>
                     <div className="text-xs opacity-90">
                       {recordingState.sessionName || 'Unbenanntes Training'} • {formatDuration(recordingState.duration)}
                     </div>
                   </div>
+                  <div className="text-white sm:hidden">
+                    <div className="text-xs font-medium">🔴 Live</div>
+                  </div>
                 </div>
               )}
             </div>
             
-            <div className="flex items-center space-x-3">
+            {/* Right Side */}
+            <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
+              {/* Firebase Status - Nur Desktop */}
               {!firebaseConfigured && (
-                <div className="flex items-center space-x-2 text-yellow-400 bg-yellow-400/10 px-3 py-1 rounded-lg border border-yellow-400/30">
-                  <AlertCircle className="w-5 h-5" />
-                  <span className="text-sm">Lokale Speicherung aktiv</span>
+                <div className="hidden lg:flex items-center space-x-2 text-yellow-400 bg-yellow-400/10 px-3 py-1 rounded-lg border border-yellow-400/30">
+                  <AlertCircle className="w-4 h-4" />
+                  <span className="text-sm">Lokale Speicherung</span>
                 </div>
               )}
               
-              {/* User Avatar */}
+              {/* User Info - Desktop */}
               {currentUser && (
-                <div className="flex items-center space-x-4">
-                  {/* User Info Card */}
-                  <div className="hidden md:flex flex-col items-end">
+                <div className="hidden md:flex items-center space-x-3">
+                  <div className="flex flex-col items-end">
                     <p className="text-sm text-white font-medium leading-tight">
                       {currentUser.displayName || 'Benutzer'}
                     </p>
                     <p className="text-xs text-gray-400 leading-tight">{currentUser.email}</p>
                   </div>
                   
-                  {/* Avatar with Dropdown */}
                   <button
-                    onClick={() => setActiveTab('profile')}
-                    className="relative w-10 h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center hover:from-green-500 hover:to-blue-600 transition-all ring-2 ring-transparent hover:ring-white/20 shadow-lg"
+                    onClick={() => handleTabChange('profile')}
+                    className="relative w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center hover:from-green-500 hover:to-blue-600 transition-all ring-2 ring-transparent hover:ring-white/20 shadow-lg"
                     title="Profil öffnen"
                   >
                     {currentUser.photoURL ? (
                       <img
                         src={currentUser.photoURL}
                         alt="Profil"
-                        className="w-10 h-10 rounded-full object-cover"
+                        className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
                       />
                     ) : (
-                      <span className="text-white font-bold text-sm">
+                      <span className="text-white font-bold text-xs sm:text-sm">
                         {(currentUser.displayName || currentUser.email || 'U').charAt(0).toUpperCase()}
                       </span>
                     )}
                   </button>
                   
-                  {/* Logout Button */}
                   <button
                     onClick={handleLogout}
                     className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all group"
                     title="Abmelden"
                   >
-                    <LogOut className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                    <LogOut className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform" />
                   </button>
                 </div>
               )}
+
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="md:hidden p-2 text-white hover:text-green-400 transition-colors"
+              >
+                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
             </div>
           </div>
         </div>
       </header>
 
-      <nav className="bg-gray-800 border-b border-gray-700">
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <div className="md:hidden fixed inset-0 z-50 bg-black bg-opacity-50" onClick={() => setMobileMenuOpen(false)}>
+          <div className="absolute top-0 right-0 w-80 max-w-[90vw] h-full bg-gray-800 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6">
+              {/* Mobile Menu Header */}
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-bold text-white">Menü</h3>
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-2 text-gray-400 hover:text-white transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* User Info Mobile */}
+              {currentUser && (
+                <div className="mb-6 p-4 bg-gray-700 rounded-lg">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center">
+                      {currentUser.photoURL ? (
+                        <img
+                          src={currentUser.photoURL}
+                          alt="Profil"
+                          className="w-12 h-12 rounded-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-white font-bold">
+                          {(currentUser.displayName || currentUser.email || 'U').charAt(0).toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-medium truncate">
+                        {currentUser.displayName || 'Benutzer'}
+                      </p>
+                      <p className="text-gray-400 text-sm truncate">{currentUser.email}</p>
+                    </div>
+                  </div>
+                  
+                  {!firebaseConfigured && (
+                    <div className="flex items-center space-x-2 text-yellow-400 bg-yellow-400/10 px-3 py-2 rounded-lg border border-yellow-400/30">
+                      <AlertCircle className="w-4 h-4" />
+                      <span className="text-sm">Lokale Speicherung aktiv</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Navigation Links */}
+              <div className="space-y-2 mb-6">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => handleTabChange(tab.id)}
+                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg font-medium transition-all ${
+                      activeTab === tab.id
+                        ? 'bg-green-600 text-white'
+                        : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                    }`}
+                  >
+                    <tab.icon className="w-5 h-5" />
+                    <span>{tab.label}</span>
+                    {tab.id === 'tracker' && recordingState.isRecording && (
+                      <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse ml-auto"></div>
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              {/* Logout Button */}
+              <button
+                onClick={handleLogout}
+                className="w-full bg-red-600 hover:bg-red-700 px-4 py-3 rounded-lg text-white font-medium transition-colors flex items-center justify-center space-x-2"
+              >
+                <LogOut className="w-5 h-5" />
+                <span>Abmelden</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Desktop Navigation */}
+      <nav className="bg-gray-800 border-b border-gray-700 hidden md:block">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex space-x-1">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => handleTabChange(tab.id)}
                 className={`flex items-center space-x-2 py-3 px-4 rounded-t-lg font-medium text-sm transition-all ${
                   activeTab === tab.id
                     ? 'bg-gray-700 text-green-400 border-b-2 border-green-500'
@@ -363,35 +466,62 @@ const MainApp: React.FC = () => {
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Mobile Bottom Navigation */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 z-30">
+        <div className="grid grid-cols-5 h-16">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => handleTabChange(tab.id)}
+              className={`flex flex-col items-center justify-center space-y-1 transition-all relative ${
+                activeTab === tab.id
+                  ? 'text-green-400 bg-gray-700'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <tab.icon className="w-5 h-5" />
+              <span className="text-xs font-medium">{tab.shortLabel}</span>
+              {tab.id === 'tracker' && recordingState.isRecording && (
+                <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+              )}
+              {activeTab === tab.id && (
+                <div className="absolute top-0 left-0 right-0 h-0.5 bg-green-500"></div>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 pb-20 md:pb-8">
         {activeTab === 'overview' && (
-          <div className="space-y-6">
-            <div className="bg-gray-800 rounded-xl p-6 shadow-xl">
-              <h2 className="text-2xl font-bold text-white mb-6">
+          <div className="space-y-4 sm:space-y-6">
+            <div className="bg-gray-800 rounded-xl p-4 sm:p-6 shadow-xl">
+              <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">
                 Willkommen zurück, {currentUser?.displayName || 'Benutzer'}!
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div className="bg-gray-700 rounded-lg p-4">
-                  <h3 className="text-lg font-semibold text-white mb-3">Schnellstart</h3>
-                  <p className="text-gray-300 mb-4">Starten Sie sofort ein neues Training</p>
+                  <h3 className="text-base sm:text-lg font-semibold text-white mb-3">Schnellstart</h3>
+                  <p className="text-sm sm:text-base text-gray-300 mb-4">Starten Sie sofort ein neues Training</p>
                   <button
-                    onClick={() => setActiveTab('tracker')}
-                    className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg flex items-center space-x-2 text-white font-medium transition-colors"
+                    onClick={() => handleTabChange('tracker')}
+                    className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg flex items-center space-x-2 text-white font-medium transition-colors w-full sm:w-auto justify-center sm:justify-start"
                   >
                     <Play className="w-4 h-4" />
                     <span>Neues Training</span>
                   </button>
                 </div>
                 <div className="bg-gray-700 rounded-lg p-4">
-                  <h3 className="text-lg font-semibold text-white mb-3">Letzte Aktivität</h3>
+                  <h3 className="text-base sm:text-lg font-semibold text-white mb-3">Letzte Aktivität</h3>
                   {sessions.length > 0 ? (
                     <div>
-                      <p className="text-gray-300">{sessions[0].name}</p>
-                      <p className="text-sm text-gray-400">{formatDate(sessions[0].date)}</p>
-                      <p className="text-green-400 font-medium">{sessions[0].distance.toFixed(2)} km</p>
+                      <p className="text-sm sm:text-base text-gray-300 truncate">{sessions[0].name}</p>
+                      <p className="text-xs sm:text-sm text-gray-400">{formatDate(sessions[0].date)}</p>
+                      <p className="text-sm sm:text-base text-green-400 font-medium">{sessions[0].distance.toFixed(2)} km</p>
                     </div>
                   ) : (
-                    <p className="text-gray-400">Noch keine Trainings absolviert</p>
+                    <p className="text-sm sm:text-base text-gray-400">Noch keine Trainings absolviert</p>
                   )}
                 </div>
               </div>
@@ -435,7 +565,8 @@ const MainApp: React.FC = () => {
         )}
       </main>
 
-      <footer className="bg-gray-800 border-t border-gray-700 mt-12">
+      {/* Footer - Nur Desktop */}
+      <footer className="bg-gray-800 border-t border-gray-700 mt-12 hidden md:block">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="text-center text-gray-400">
             <div className="flex flex-col md:flex-row justify-center items-center space-y-2 md:space-y-0 md:space-x-4">

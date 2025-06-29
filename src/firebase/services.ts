@@ -142,6 +142,7 @@ export const getTrainingSessions = async (): Promise<TrainingSession[]> => {
     const sessions = querySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
+      speedHistory: doc.data().speedHistory || [],
       date: doc.data().date.toDate(),
       createdAt: doc.data().createdAt.toDate()
     })) as TrainingSession[];

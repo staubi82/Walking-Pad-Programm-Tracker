@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from './context/AuthContext';
 import { useTheme } from './context/ThemeContext';
 import { LandingPage } from './components/LandingPage';
-import LoginPage from './components/Auth/LoginPage';
+import { LoginPage } from './components/Auth/LoginPage';
 import RegisterPage from './components/Auth/RegisterPage';
 import PasswordResetPage from './components/Auth/PasswordResetPage';
 import ProfilePage from './components/Auth/ProfilePage';

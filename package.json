@@ -7,7 +7,16 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "serve -s dist -l 3000",
+    "pm2:start": "pm2 start npm --name 'walking-pad-tracker' -- start",
+    "pm2:stop": "pm2 stop walking-pad-tracker",
+    "pm2:restart": "pm2 restart walking-pad-tracker",
+    "pm2:delete": "pm2 delete walking-pad-tracker",
+    "pm2:logs": "pm2 logs walking-pad-tracker",
+    "pm2:status": "pm2 list",
+    "pm2:monit": "pm2 monit",
+    "deploy": "npm run build && npm run pm2:restart"
   },
   "dependencies": {
     "firebase": "^10.7.1",

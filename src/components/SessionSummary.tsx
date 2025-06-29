@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Save, X, Clock, MapPin, Flame, TrendingUp, Activity, Edit3 } from 'lucide-react';
+import { Save, X, Clock, MapPin, Flame, TrendingUp, Activity, Edit3, Footprints } from 'lucide-react';
 import { formatDuration } from '../utils/calculations';
 
 interface SessionSummaryProps {
@@ -11,6 +11,7 @@ interface SessionSummaryProps {
     averageSpeed: number;
     maxSpeed: number;
     speedHistory: Array<{timestamp: number, speed: number}>;
+    steps?: number;
   };
   onSave: (sessionData: {
     name: string;
@@ -21,6 +22,7 @@ interface SessionSummaryProps {
     maxSpeed: number;
     speedHistory: Array<{timestamp: number, speed: number}>;
     difficulty?: string;
+    steps?: number;
   }) => void;
   onCancel: () => void;
 }
@@ -123,6 +125,22 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({ sessionData, onS
                 </div>
               </div>
             </div>
+            
+            {/* Schritte - falls verfügbar */}
+            {sessionData.steps && (
+              <div className="bg-cyan-900/30 rounded-lg p-4 border border-cyan-700 md:col-span-2">
+                <div className="flex items-center space-x-3">
+                  <Footprints className="w-8 h-8 text-cyan-400" />
+                  <div>
+                    <p className="text-sm text-cyan-300">Schritte</p>
+                    <p className="text-2xl font-bold text-white">{sessionData.steps.toLocaleString()}</p>
+                    <p className="text-xs text-cyan-200">
+                      {Math.round(sessionData.steps / (sessionData.duration / 60))} Schritte/Min
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
           
           {/* Zusätzliche Statistiken */}
@@ -142,6 +160,12 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({ sessionData, onS
                   <span className="text-gray-400">Geschwindigkeitsänderungen:</span>
                   <span className="text-white font-medium">{sessionData.speedHistory.length} Datenpunkte</span>
                 </div>
+                {sessionData.steps && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Schritte pro km:</span>
+                    <span className="text-white font-medium">{Math.round(sessionData.steps / sessionData.distance)} Schritte/km</span>
+                  </div>
+                )}
               </div>
             </div>
             
@@ -169,6 +193,19 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({ sessionData, onS
                      sessionData.averageSpeed >= 3.0 ? 'Mittel' : 'Niedrig'}
                   </span>
                 </div>
+                {sessionData.steps && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Schritt-Effizienz:</span>
+                    <span className={`font-medium ${
+                      sessionData.steps >= 10000 ? 'text-green-400' :
+                      sessionData.steps >= 5000 ? 'text-yellow-400' :
+                      'text-orange-400'
+                    }`}>
+                      {sessionData.steps >= 10000 ? 'Ausgezeichnet' :
+                       sessionData.steps >= 5000 ? 'Gut' : 'Okay'}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -251,6 +288,7 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({ sessionData, onS
                 Sie haben {formatDuration(sessionData.duration)} trainiert und {sessionData.distance.toFixed(2)} km zurückgelegt. 
                 {sessionData.calories >= 100 && ` Dabei haben Sie ${sessionData.calories} Kalorien verbrannt!`}
                 {sessionData.averageSpeed >= 4.0 && ' Das war ein richtig intensives Training!'}
+                {sessionData.steps && sessionData.steps >= 10000 && ' Fantastisch - Sie haben über 10.000 Schritte erreicht!'}
               </p>
             </div>
           </div>

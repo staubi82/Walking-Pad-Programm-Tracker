@@ -1,7 +1,7 @@
 import React from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
-import { Clock, MapPin, Flame, TrendingUp, Trash2, Edit3 } from 'lucide-react';
+import { Clock, MapPin, Flame, TrendingUp, Trash2, Edit3, Footprints } from 'lucide-react';
 import { TrainingSession } from '../types';
 import { formatDuration } from '../utils/calculations';
 
@@ -386,6 +386,17 @@ export const HighchartsChart: React.FC<HighchartsChartProps> = ({ session, onDel
             <p className="text-sm font-medium text-white">{session.maxSpeed.toFixed(1)} km/h</p>
           </div>
         </div>
+        
+        {/* Schritte - falls verfügbar */}
+        {session.steps && (
+          <div className="flex items-center space-x-2 md:col-span-2">
+            <Footprints className="w-4 h-4 text-cyan-400" />
+            <div>
+              <p className="text-xs text-gray-400">Schritte</p>
+              <p className="text-sm font-medium text-white">{session.steps.toLocaleString()}</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

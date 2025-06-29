@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, Target, Flame, MapPin, Clock, Activity } from 'lucide-react';
+import { TrendingUp, Target, Flame, MapPin, Clock, Activity, Footprints } from 'lucide-react';
 import { TrainingSession } from '../types';
 import { formatDuration } from '../utils/calculations';
 
@@ -12,12 +12,14 @@ export const Statistics: React.FC<StatisticsProps> = ({ sessions }) => {
   const totalTime = sessions.reduce((sum, session) => sum + session.duration, 0);
   const totalDistance = sessions.reduce((sum, session) => sum + session.distance, 0);
   const totalCalories = sessions.reduce((sum, session) => sum + session.calories, 0);
+  const totalSteps = sessions.reduce((sum, session) => sum + (session.steps || 0), 0);
   
   const averageDistance = totalSessions > 0 ? totalDistance / totalSessions : 0;
   const averageCalories = totalSessions > 0 ? totalCalories / totalSessions : 0;
   const averageSpeed = sessions.length > 0 
     ? sessions.reduce((sum, session) => sum + session.averageSpeed, 0) / sessions.length 
     : 0;
+  const averageSteps = totalSessions > 0 ? totalSteps / totalSessions : 0;
 
   const thisWeekSessions = sessions.filter(session => {
     const weekAgo = new Date();
@@ -30,6 +32,9 @@ export const Statistics: React.FC<StatisticsProps> = ({ sessions }) => {
     monthAgo.setMonth(monthAgo.getMonth() - 1);
     return session.date >= monthAgo;
   });
+
+  const thisWeekSteps = thisWeekSessions.reduce((sum, s) => sum + (s.steps || 0), 0);
+  const thisMonthSteps = thisMonthSessions.reduce((sum, s) => sum + (s.steps || 0), 0);
 
   const statsCards = [
     {
@@ -73,6 +78,20 @@ export const Statistics: React.FC<StatisticsProps> = ({ sessions }) => {
       icon: Activity,
       color: 'text-pink-400',
       bgColor: 'bg-pink-400/10'
+    },
+    {
+      title: 'Gesamtschritte',
+      value: totalSteps.toLocaleString(),
+      icon: Footprints,
+      color: 'text-cyan-400',
+      bgColor: 'bg-cyan-400/10'
+    },
+    {
+      title: 'Ø Schritte',
+      value: Math.round(averageSteps).toLocaleString(),
+      icon: Target,
+      color: 'text-indigo-400',
+      bgColor: 'bg-indigo-400/10'
     }
   ];
 
@@ -114,6 +133,12 @@ export const Statistics: React.FC<StatisticsProps> = ({ sessions }) => {
                 {thisWeekSessions.reduce((sum, s) => sum + s.calories, 0)} kcal
               </span>
             </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">Schritte:</span>
+              <span className="text-cyan-400 font-medium">
+                {thisWeekSteps.toLocaleString()}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -136,6 +161,12 @@ export const Statistics: React.FC<StatisticsProps> = ({ sessions }) => {
                 {thisMonthSessions.reduce((sum, s) => sum + s.calories, 0)} kcal
               </span>
             </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">Schritte:</span>
+              <span className="text-cyan-400 font-medium">
+                {thisMonthSteps.toLocaleString()}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -143,7 +174,7 @@ export const Statistics: React.FC<StatisticsProps> = ({ sessions }) => {
       {sessions.length > 0 && (
         <div className="mt-6 bg-gray-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">Persönliche Rekorde</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="text-center">
               <p className="text-sm text-gray-400">Längste Distanz</p>
               <p className="text-xl font-bold text-green-400">
@@ -160,6 +191,12 @@ export const Statistics: React.FC<StatisticsProps> = ({ sessions }) => {
               <p className="text-sm text-gray-400">Längste Zeit</p>
               <p className="text-xl font-bold text-blue-400">
                 {formatDuration(Math.max(...sessions.map(s => s.duration)))}
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-gray-400">Meiste Schritte</p>
+              <p className="text-xl font-bold text-cyan-400">
+                {Math.max(...sessions.map(s => s.steps || 0)).toLocaleString()}
               </p>
             </div>
           </div>

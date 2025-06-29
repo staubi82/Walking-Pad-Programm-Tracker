@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, MapPin, Flame, Trash2, Filter, BarChart3, Edit3, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Calendar, Clock, MapPin, Flame, Trash2, Filter, BarChart3, Edit3, ArrowUpDown, ArrowUp, ArrowDown, Footprints } from 'lucide-react';
 import { TrainingSession, FilterOptions } from '../types';
 import { formatDuration, formatDate } from '../utils/calculations';
 import { HighchartsChart } from './HighchartsChart';
@@ -395,6 +395,14 @@ export const SessionHistory: React.FC<SessionHistoryProps> = ({
                     <Calendar className="w-4 h-4 text-purple-400" />
                     <span className="text-sm text-gray-300">{formatDate(session.date)}</span>
                   </div>
+                  
+                  {/* Schritte - falls verfügbar */}
+                  {session.steps && (
+                    <div className="flex items-center space-x-2 md:col-span-2">
+                      <Footprints className="w-4 h-4 text-cyan-400" />
+                      <span className="text-sm text-gray-300">{session.steps.toLocaleString()} Schritte</span>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="flex justify-between text-xs text-gray-400">

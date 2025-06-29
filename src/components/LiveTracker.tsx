@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, Square, Plus, Minus, Clock, Edit3, Trash2, CheckCircle } from 'lucide-react';
-import { calculateDistance, calculateCalories, formatDuration, roundToNearestHalfMinute } from '../utils/calculations';
+import { calculateDistance, calculateCalories, calculateSteps, formatDuration, roundToNearestHalfMinute } from '../utils/calculations';
 import { SpeedPoint } from '../types';
 import { SessionSummary } from './SessionSummary';
+import { getUserProfile } from '../firebase/services';
+import { UserProfile } from '../types';
 
 interface TimelineEntry {
   id: string;
@@ -55,6 +57,9 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
   const [timelineNameError, setTimelineNameError] = useState('');
   const [timelineDifficulty, setTimelineDifficulty] = useState('');
   
+  // User Profile für Schrittzähler
+  const [userProfile, setUserProfile] = useState<UserProfile>({});
+  
   // Session Summary State
   const [showSessionSummary, setShowSessionSummary] = useState(false);
   const [completedSessionData, setCompletedSessionData] = useState<{
@@ -70,6 +75,22 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number>(0);
   const pausedTimeRef = useRef<number>(0);
+  
+  // Lade Benutzerprofil für Schrittzähler
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const profile = await getUserProfile();
+        setUserProfile(profile);
+      } catch (error) {
+        console.warn('Konnte Benutzerprofil nicht laden:', error);
+        // Verwende Standardwerte
+        setUserProfile({});
+      }
+    };
+    
+    loadProfile();
+  }, []);
   
   // Vordefinierte Timer-Optionen
   const timerPresets = [
@@ -165,6 +186,7 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
 
     const distance = calculateDistance(speedHistory);
     const calories = calculateCalories(speedHistory);
+    const steps = calculateSteps(speedHistory, userProfile);
     const averageSpeed = speedHistory.reduce((sum, point) => sum + point.speed, 0) / speedHistory.length;
     const maxSpeed = Math.max(...speedHistory.map(point => point.speed));
 
@@ -174,6 +196,7 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
       duration: roundedDuration,
       distance,
       calories,
+      steps,
       averageSpeed: Math.round(averageSpeed * 10) / 10,
       maxSpeed,
       speedHistory
@@ -316,6 +339,7 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
 
     const distance = calculateDistance(simulatedHistory);
     const calories = calculateCalories(simulatedHistory);
+    const steps = calculateSteps(simulatedHistory, userProfile);
     const averageSpeed = simulatedHistory.reduce((sum, point) => sum + point.speed, 0) / simulatedHistory.length;
     const maxSpeed = Math.max(...simulatedHistory.map(point => point.speed));
 
@@ -324,6 +348,7 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
       duration: maxMinute * 60,
       distance,
       calories,
+      steps,
       averageSpeed: Math.round(averageSpeed * 10) / 10,
       maxSpeed,
       speedHistory: simulatedHistory,
@@ -347,6 +372,7 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
 
   const currentDistance = calculateDistance(speedHistory);
   const currentCalories = calculateCalories(speedHistory);
+  const currentSteps = calculateSteps(speedHistory, userProfile);
   
   // Berechne Fortschritt in Prozent
   const progressPercentage = targetDuration && targetDuration > 0 
@@ -753,6 +779,29 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
           </div>
         </div>
 
+        {/* Zusätzliche Statistiken - Schritte */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="bg-gray-700 rounded-lg p-4">
+            <div className="text-sm text-gray-400">Schritte</div>
+            <div className="text-2xl font-bold text-purple-400">{currentSteps.toLocaleString()}</div>
+            <div className="text-xs text-gray-500 mt-1">Geschätzt basierend auf Körpergröße</div>
+          </div>
+          <div className="bg-gray-700 rounded-lg p-4">
+            <div className="text-sm text-gray-400">Schritte/Min</div>
+            <div className="text-2xl font-bold text-cyan-400">
+              {duration > 0 ? Math.round(currentSteps / (duration / 60)) : 0}
+            </div>
+            <div className="text-xs text-gray-500 mt-1">Durchschnittliche Frequenz</div>
+          </div>
+          <div className="bg-gray-700 rounded-lg p-4">
+            <div className="text-sm text-gray-400">Tempo</div>
+            <div className="text-2xl font-bold text-yellow-400">
+              {currentDistance > 0 ? formatDuration(Math.round((duration / currentDistance) * 60)) : '--:--'}
+            </div>
+            <div className="text-xs text-gray-500 mt-1">Min/km</div>
+          </div>
+        </div>
+
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-300 mb-3">
             Geschwindigkeit einstellen
@@ -849,6 +898,55 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
           )}
         </div>
       </div>
+      
+      {/* Schrittzähler-Info */}
+      {!isRunning && !showManualEntry && (
+        <div className="bg-gray-800 rounded-xl p-6 shadow-xl">
+          <h3 className="text-xl font-bold text-white mb-4">🚶‍♂️ Schrittzähler-Information</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <h4 className="text-lg font-semibold text-white">Wie funktioniert's?</h4>
+              <div className="space-y-2 text-sm text-gray-300">
+                <p>• <strong>Automatische Berechnung:</strong> Schritte werden basierend auf Ihrer Geschwindigkeit und Körpergröße geschätzt</p>
+                <p>• <strong>Schrittlänge:</strong> Wird aus Ihrer Körpergröße berechnet (Männer: 41.5%, Frauen: 41.3%)</p>
+                <p>• <strong>Echtzeit-Tracking:</strong> Sehen Sie Ihre Schritte während des Trainings live</p>
+                <p>• <strong>Genauigkeit:</strong> Die Schätzung ist sehr präzise für Walking-Pad Training</p>
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              <h4 className="text-lg font-semibold text-white">Profil-Optimierung</h4>
+              <div className="space-y-2 text-sm text-gray-300">
+                <p>• <strong>Körpergröße:</strong> {userProfile.height ? `${userProfile.height} cm` : 'Nicht festgelegt (Standard: 170 cm)'}</p>
+                <p>• <strong>Geschlecht:</strong> {userProfile.gender ? (userProfile.gender === 'male' ? 'Männlich' : userProfile.gender === 'female' ? 'Weiblich' : 'Divers') : 'Nicht festgelegt (Standard: Männlich)'}</p>
+                <p>• <strong>Schrittlänge:</strong> {userProfile.height && userProfile.gender ? 
+                  `~${Math.round((userProfile.height * (userProfile.gender === 'male' ? 0.415 : 0.413)))} cm` : 
+                  '~70 cm (geschätzt)'}</p>
+                <p>• <strong>Tipp:</strong> Gehen Sie zu Ihrem Profil, um genauere Schrittzählungen zu erhalten!</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-6 p-4 bg-purple-900/30 rounded-lg border border-purple-700">
+            <h5 className="text-purple-300 font-semibold mb-2">💡 Schrittziel-Empfehlungen</h5>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              <div className="text-center">
+                <div className="text-lg font-bold text-purple-400">5.000</div>
+                <div className="text-purple-300">Minimum täglich</div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-purple-400">10.000</div>
+                <div className="text-purple-300">Empfohlenes Tagesziel</div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-purple-400">15.000+</div>
+                <div className="text-purple-300">Sehr aktiver Lebensstil</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

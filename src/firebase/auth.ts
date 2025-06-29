@@ -12,6 +12,14 @@ import {
 } from 'firebase/auth';
 import { auth } from './config';
 
+// Custom Error für zu lange Photo URLs
+export class PhotoUrlTooLongError extends Error {
+  constructor(message: string = 'Profilbild ist zu groß für Firebase Auth') {
+    super(message);
+    this.name = 'PhotoUrlTooLongError';
+  }
+}
+
 // Benutzer registrieren
 export const registerUser = async (email: string, password: string, displayName: string, rememberMe: boolean = false) => {
   try {
@@ -71,13 +79,38 @@ export const resetPassword = async (email: string) => {
 // Profil aktualisieren
 export const updateUserProfile = async (user: User, updates: { displayName?: string; photoURL?: string }) => {
   try {
-    await updateProfile(user, updates);
+    // Prüfe ob photoURL zu lang ist (Firebase Auth Limit)
+    const MAX_PHOTO_URL_LENGTH = 1000;
+    let firebaseUpdates = { ...updates };
+    
+    if (updates.photoURL && updates.photoURL.length > MAX_PHOTO_URL_LENGTH) {
+      // Speichere das Bild nur lokal, nicht in Firebase Auth
+      localStorage.setItem(`profileImage_${user.uid}`, updates.photoURL);
+      
+      // Entferne photoURL aus Firebase Updates
+      delete firebaseUpdates.photoURL;
+      
+      // Werfe Custom Error für bessere Behandlung
+      if (Object.keys(firebaseUpdates).length === 0) {
+        throw new PhotoUrlTooLongError('Profilbild wurde lokal gespeichert, ist aber zu groß für Firebase Auth');
+      }
+    }
+    
+    // Aktualisiere Firebase nur mit erlaubten Updates
+    if (Object.keys(firebaseUpdates).length > 0) {
+      await updateProfile(user, firebaseUpdates);
+    }
     
     // Aktualisiere auch den lokalen Speicher für Offline-Verfügbarkeit
     if (updates.photoURL) {
       localStorage.setItem(`profileImage_${user.uid}`, updates.photoURL);
     }
   } catch (error) {
+    // Wenn es unser Custom Error ist, werfe ihn weiter
+    if (error instanceof PhotoUrlTooLongError) {
+      throw error;
+    }
+    
     console.error('Fehler beim Aktualisieren des Profils:', error);
     
     // Fallback: Speichere nur lokal wenn Firebase nicht verfügbar

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { User, Mail, Calendar, Edit3, Save, X, Trash2, Activity, TrendingUp, Target, Scale, Camera, Upload } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { updateUserProfile } from '../../firebase/auth';
+import { updateUserProfile, PhotoUrlTooLongError } from '../../firebase/auth';
 import { saveUserProfile, getUserProfile } from '../../firebase/services';
 import { UserProfile } from '../../types';
 import { calculateBMI, getBMICategory, calculateBMR, calculateTDEE, calculateIdealWeight } from '../../utils/calculations';
@@ -78,16 +78,26 @@ export const ProfilePage: React.FC = () => {
           }
           
           setTimeout(() => setSuccess(''), 3000);
-        } catch (error) {
-          console.warn('Firebase-Fehler beim Speichern des Profilbilds:', error);
+        } catch (error: any) {
+          if (error instanceof PhotoUrlTooLongError) {
+            // Spezielle Behandlung für zu große Bilder
+            setProfileImage(base64String);
+            if (currentUser?.uid) {
+              localStorage.setItem(`profileImage_${currentUser.uid}`, base64String);
+            }
+            setSuccess('Profilbild wurde lokal gespeichert (zu groß für Firebase)');
+            setTimeout(() => setSuccess(''), 3000);
+          } else {
+            console.warn('Firebase-Fehler beim Speichern des Profilbilds:', error);
           
-          // Fallback: Nur lokal speichern
-          setProfileImage(base64String);
-          if (currentUser?.uid) {
-            localStorage.setItem(`profileImage_${currentUser.uid}`, base64String);
+            // Fallback: Nur lokal speichern
+            setProfileImage(base64String);
+            if (currentUser?.uid) {
+              localStorage.setItem(`profileImage_${currentUser.uid}`, base64String);
+            }
+            setSuccess('Profilbild lokal gespeichert (Firebase nicht verfügbar)');
+            setTimeout(() => setSuccess(''), 3000);
           }
-          setSuccess('Profilbild lokal gespeichert (Firebase nicht verfügbar)');
-          setTimeout(() => setSuccess(''), 3000);
         }
       };
       

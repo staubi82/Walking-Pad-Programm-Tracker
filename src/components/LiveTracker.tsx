@@ -22,11 +22,7 @@ interface LiveTrackerProps {
     difficulty?: string;
   }) => void;
   isRecording: boolean;
-  onRecordingChange: (isRecording: boolean, sessionData?: {
-    sessionName: string;
-    duration: number;
-    currentSpeed: number;
-  }) => void;
+  onRecordingChange: (recording: boolean) => void;
 }
 
 const difficultyLevels = [
@@ -38,17 +34,18 @@ const difficultyLevels = [
   { id: 'selbstmord', label: 'Selbstmord 💀', color: 'bg-purple-600', description: 'Nur für Profis!' }
 ];
 
-export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, isRecording, onRecordingChange }) => {
+export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete }) => {
+  const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [duration, setDuration] = useState(0);
+  const [targetDuration, setTargetDuration] = useState<number | null>(null); // in Sekunden
+  const [remainingTime, setRemainingTime] = useState<number | null>(null);
   const [currentSpeed, setCurrentSpeed] = useState(1.0);
   const [speedHistory, setSpeedHistory] = useState<SpeedPoint[]>([]);
   const [sessionName, setSessionName] = useState('');
   const [nameError, setNameError] = useState('');
   const [showManualEntry, setShowManualEntry] = useState(false);
   const [selectedDifficulty, setSelectedDifficulty] = useState('');
-  const [showSummary, setShowSummary] = useState(false);
-  const [sessionData, setSessionData] = useState<any>(null);
   
   // Timeline-Eingabe
   const [timelineEntries, setTimelineEntries] = useState<TimelineEntry[]>([
@@ -58,29 +55,64 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, isR
   const [timelineNameError, setTimelineNameError] = useState('');
   const [timelineDifficulty, setTimelineDifficulty] = useState('');
   
+  // Session Summary State
+  const [showSessionSummary, setShowSessionSummary] = useState(false);
+  const [completedSessionData, setCompletedSessionData] = useState<{
+    name: string;
+    duration: number;
+    distance: number;
+    calories: number;
+    averageSpeed: number;
+    maxSpeed: number;
+    speedHistory: SpeedPoint[];
+  } | null>(null);
+  
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number>(0);
   const pausedTimeRef = useRef<number>(0);
+  
+  // Vordefinierte Timer-Optionen
+  const timerPresets = [
+    { label: '15 Min', value: 15 * 60 },
+    { label: '20 Min', value: 20 * 60 },
+    { label: '30 Min', value: 30 * 60 },
+    { label: '45 Min', value: 45 * 60 },
+    { label: '60 Min', value: 60 * 60 },
+    { label: '90 Min', value: 90 * 60 }
+  ];
 
-  // Update Recording State für Header
   useEffect(() => {
-    if (isRecording && !isPaused) {
+    if (isRunning && !isPaused) {
+      // Update recording state für Header
       onRecordingChange(true, {
-        sessionName: sessionName || 'Unbenanntes Training',
-        duration,
-        currentSpeed
+        sessionName: sessionName,
+        duration: duration,
+        currentSpeed: currentSpeed
       });
-    } else {
-      onRecordingChange(false);
-    }
-  }, [isRecording, isPaused, sessionName, duration, currentSpeed, onRecordingChange]);
-
-  useEffect(() => {
-    if (isRecording && !isPaused) {
+      
       intervalRef.current = setInterval(() => {
         const now = Date.now();
         const elapsed = Math.floor((now - startTimeRef.current - pausedTimeRef.current) / 1000);
         setDuration(elapsed);
+        
+        // Update recording state
+        onRecordingChange(true, {
+          sessionName: sessionName,
+          duration: elapsed,
+          currentSpeed: currentSpeed
+        });
+        
+        // Berechne verbleibende Zeit wenn Timer gesetzt ist
+        if (targetDuration) {
+          const remaining = targetDuration - elapsed;
+          setRemainingTime(Math.max(0, remaining));
+          
+          // Automatisch stoppen wenn Zeit abgelaufen
+          if (remaining <= 0) {
+            stopSession();
+            return;
+          }
+        }
         
         setSpeedHistory(prev => [...prev, { timestamp: now, speed: currentSpeed }]);
       }, 1000);
@@ -96,7 +128,7 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, isR
         clearInterval(intervalRef.current);
       }
     };
-  }, [isRecording, isPaused, currentSpeed]);
+  }, [isRunning, isPaused, currentSpeed]);
 
   const startSession = () => {
     if (!sessionName.trim()) {
@@ -108,14 +140,20 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, isR
     const now = Date.now();
     startTimeRef.current = now;
     pausedTimeRef.current = 0;
-    onRecordingChange(true, {
-      sessionName,
-      duration: 0,
-      currentSpeed
-    });
+    setIsRunning(true);
     setIsPaused(false);
     setDuration(0);
+    onRecordingChange(true, {
+      sessionName: sessionName,
+      duration: 0,
+      currentSpeed: currentSpeed
+    });
     setSpeedHistory([{ timestamp: now, speed: currentSpeed }]);
+    
+    // Setze verbleibende Zeit wenn Timer aktiv
+    if (targetDuration) {
+      setRemainingTime(targetDuration);
+    }
   };
 
   const pauseSession = () => {
@@ -128,9 +166,9 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, isR
     pausedTimeRef.current += pauseStart - (startTimeRef.current + duration * 1000 + pausedTimeRef.current);
     setIsPaused(false);
     onRecordingChange(true, {
-      sessionName,
-      duration,
-      currentSpeed
+      sessionName: sessionName,
+      duration: duration,
+      currentSpeed: currentSpeed
     });
   };
 
@@ -140,44 +178,61 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, isR
       return;
     }
 
-    onRecordingChange(false);
+    // Runde die Dauer auf nächste 30 Sekunden
+    const roundedDuration = roundToNearestHalfMinute(duration);
 
     const distance = calculateDistance(speedHistory);
     const calories = calculateCalories(speedHistory);
     const averageSpeed = speedHistory.reduce((sum, point) => sum + point.speed, 0) / speedHistory.length;
     const maxSpeed = Math.max(...speedHistory.map(point => point.speed));
 
-    const finalSessionData = {
+    // Zeige Session Summary anstatt direkt zu speichern
+    const sessionData = {
       name: sessionName,
-      duration,
+      duration: roundedDuration,
       distance,
       calories,
       averageSpeed: Math.round(averageSpeed * 10) / 10,
       maxSpeed,
-      speedHistory,
-      difficulty: selectedDifficulty
+      speedHistory
     };
-
-    setSessionData(finalSessionData);
-    setShowSummary(true);
-  };
-
-  const handleSummaryClose = (save: boolean, finalData?: any) => {
-    if (save && finalData) {
-      onSessionComplete(finalData);
-    }
     
-    // Reset alles
-    onRecordingChange(false);
+    setCompletedSessionData(sessionData);
+    setShowSessionSummary(true);
+
+    // Reset
+    setIsRunning(false);
     setIsPaused(false);
+    onRecordingChange(false);
     setDuration(0);
     setCurrentSpeed(1.0);
     setSpeedHistory([]);
     setSessionName('');
     setNameError('');
+    setTargetDuration(null);
+    setRemainingTime(null);
+  };
+
+  const handleSessionSave = (sessionData: {
+    name: string;
+    duration: number;
+    distance: number;
+    calories: number;
+    averageSpeed: number;
+    maxSpeed: number;
+    speedHistory: SpeedPoint[];
+    difficulty?: string;
+  }) => {
+    onSessionComplete(sessionData);
+    setShowSessionSummary(false);
+    setCompletedSessionData(null);
     setSelectedDifficulty('');
-    setShowSummary(false);
-    setSessionData(null);
+  };
+
+  const handleSessionCancel = () => {
+    setShowSessionSummary(false);
+    setCompletedSessionData(null);
+    onRecordingChange(false);
   };
 
   const adjustSpeed = (delta: number) => {
@@ -231,6 +286,8 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, isR
     }
 
     const maxMinute = Math.max(...sortedEntries.map(entry => entry.minute));
+    // Runde die Dauer auf nächste 30 Sekunden
+    const newDuration = roundToNearestHalfMinute(maxMinute * 60);
     if (maxMinute < 1) {
       alert('Training muss mindestens 1 Minute dauern.');
       return;
@@ -268,7 +325,7 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, isR
     const averageSpeed = simulatedHistory.reduce((sum, point) => sum + point.speed, 0) / simulatedHistory.length;
     const maxSpeed = Math.max(...simulatedHistory.map(point => point.speed));
 
-    const finalSessionData = {
+    onSessionComplete({
       name: timelineName,
       duration: maxMinute * 60,
       distance,
@@ -277,10 +334,16 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, isR
       maxSpeed,
       speedHistory: simulatedHistory,
       difficulty: timelineDifficulty
-    };
+    });
 
-    setSessionData(finalSessionData);
-    setShowSummary(true);
+    // Reset
+    setTimelineName('');
+    setTimelineNameError('');
+    setTimelineDifficulty('');
+    setTimelineEntries([{ id: '1', minute: 0, speed: 1.0 }]);
+    setShowManualEntry(false);
+    setTargetDuration(null);
+    setRemainingTime(null);
   };
 
   const speedButtons = [];
@@ -290,20 +353,76 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, isR
 
   const currentDistance = calculateDistance(speedHistory);
   const currentCalories = calculateCalories(speedHistory);
-
-  // Zeige Summary Modal
-  if (showSummary && sessionData) {
-    return (
-      <SessionSummary
-        sessionData={sessionData}
-        onSave={(finalData) => handleSummaryClose(true, finalData)}
-        onCancel={() => handleSummaryClose(false)}
-      />
-    );
-  }
+  
+  // Berechne Fortschritt in Prozent
+  const progressPercentage = targetDuration && targetDuration > 0 
+    ? Math.min(100, (duration / targetDuration) * 100)
+    : 0;
 
   return (
     <div className="space-y-6">
+      {/* Stoppuhr-Anzeige */}
+      <div className="bg-gray-800 rounded-xl p-6 shadow-xl">
+        <div className="flex items-center justify-center mb-4">
+          <Clock className="w-8 h-8 text-blue-400 mr-3" />
+          <h2 className="text-3xl font-bold text-white">
+            {targetDuration ? 'Timer' : 'Stoppuhr'}
+          </h2>
+        </div>
+        
+        <div className="text-center">
+          {/* Hauptzeit-Anzeige */}
+          <div className="mb-4">
+            <div className="text-6xl font-mono font-bold text-green-400 mb-2">
+              {targetDuration && remainingTime !== null 
+                ? formatDuration(remainingTime)
+                : formatDuration(duration)
+              }
+            </div>
+            
+            {/* Zusätzliche Zeit-Info bei Timer */}
+            {targetDuration && (
+              <div className="text-lg text-gray-400">
+                <span>Verstrichene Zeit: {formatDuration(duration)}</span>
+                <span className="mx-2">•</span>
+                <span>Zielzeit: {formatDuration(targetDuration)}</span>
+              </div>
+            )}
+          </div>
+          
+          {/* Fortschrittsbalken bei Timer */}
+          {targetDuration && (
+            <div className="mb-4">
+              <div className="w-full bg-gray-700 rounded-full h-3 mb-2">
+                <div 
+                  className="bg-gradient-to-r from-green-500 to-blue-500 h-3 rounded-full transition-all duration-1000 ease-out"
+                  style={{ width: `${progressPercentage}%` }}
+                ></div>
+              </div>
+              <div className="text-sm text-gray-400">
+                Fortschritt: {progressPercentage.toFixed(1)}%
+              </div>
+            </div>
+          )}
+          
+          <div className="flex justify-center space-x-4">
+            {!isRunning ? (
+              <div className="text-gray-400">Bereit zum Start</div>
+            ) : isPaused ? (
+              <div className="text-yellow-400 flex items-center">
+                <Pause className="w-4 h-4 mr-2" />
+                Pausiert
+              </div>
+            ) : (
+              <div className="text-green-400 flex items-center">
+                <Play className="w-4 h-4 mr-2" />
+                Läuft
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* Timeline-Dateneingabe */}
       <div className="bg-gray-800 rounded-xl p-6 shadow-xl">
         <div className="flex justify-between items-center mb-4">
@@ -471,11 +590,114 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, isR
         )}
       </div>
 
+      {/* Timer-Einstellungen */}
+      {!isRunning && !showManualEntry && (
+        <div className="bg-gray-800 rounded-xl p-6 shadow-xl">
+          <h3 className="text-xl font-bold text-white mb-4">Timer-Einstellungen</h3>
+          
+          <div className="space-y-4">
+            {/* Timer Ein/Aus */}
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium text-gray-300">
+                Timer verwenden
+              </label>
+              <button
+                onClick={() => {
+                  if (targetDuration) {
+                    setTargetDuration(null);
+                    setRemainingTime(null);
+                  } else {
+                    setTargetDuration(30 * 60); // Standard: 30 Minuten
+                    setRemainingTime(30 * 60);
+                  }
+                }}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  targetDuration ? 'bg-green-600' : 'bg-gray-600'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    targetDuration ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+            
+            {/* Timer-Presets */}
+            {targetDuration && (
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-3">
+                  Zielzeit auswählen
+                </label>
+                <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                  {timerPresets.map((preset) => (
+                    <button
+                      key={preset.value}
+                      onClick={() => {
+                        setTargetDuration(preset.value);
+                        setRemainingTime(preset.value);
+                      }}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        targetDuration === preset.value
+                          ? 'bg-green-600 text-white'
+                          : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+                      }`}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+                
+                {/* Benutzerdefinierte Zeit */}
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Benutzerdefinierte Zeit (Minuten)
+                  </label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="number"
+                      min="1"
+                      max="180"
+                      value={targetDuration ? Math.round(targetDuration / 60) : 30}
+                      onChange={(e) => {
+                        const minutes = parseInt(e.target.value) || 30;
+                        const seconds = minutes * 60;
+                        setTargetDuration(seconds);
+                        setRemainingTime(seconds);
+                      }}
+                      className="w-20 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-center focus:outline-none focus:ring-2 focus:ring-green-500"
+                    />
+                    <span className="text-gray-300">Minuten</span>
+                  </div>
+                </div>
+                
+                {/* Timer-Info */}
+                <div className="mt-4 p-3 bg-blue-900/30 rounded-lg border border-blue-700">
+                  <p className="text-blue-300 text-sm">
+                    ⏰ <strong>Timer aktiv:</strong> Das Training stoppt automatisch nach {formatDuration(targetDuration)}
+                    <br />🎯 <strong>Ziel:</strong> Erreichen Sie Ihre gewünschte Trainingszeit
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      
+      {/* Session Summary Modal */}
+      {showSessionSummary && completedSessionData && (
+        <SessionSummary
+          sessionData={completedSessionData}
+          onSave={handleSessionSave}
+          onCancel={handleSessionCancel}
+        />
+      )}
+
       {/* Live Tracking */}
       <div className="bg-gray-800 rounded-xl p-6 shadow-xl">
         <h2 className="text-2xl font-bold text-white mb-6">Live Tracking</h2>
         
-        {!isRecording && !showManualEntry && (
+        {!isRunning && !showManualEntry && (
           <div className="space-y-4 mb-6">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -546,7 +768,7 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, isR
             <div className="flex items-center justify-center space-x-4">
               <button
                 onClick={() => adjustSpeed(-0.5)}
-                disabled={!isRecording || currentSpeed <= 1.0}
+                disabled={!isRunning || currentSpeed <= 1.0}
                 className="bg-red-600 hover:bg-red-700 disabled:bg-gray-600 p-2 rounded-lg transition-colors"
               >
                 <Minus className="w-4 h-4 text-white" />
@@ -560,7 +782,7 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, isR
                   step="0.5"
                   value={currentSpeed}
                   onChange={(e) => handleSpeedInputChange(e.target.value)}
-                  disabled={!isRecording}
+                  disabled={!isRunning}
                   className="w-20 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-center focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-600"
                 />
                 <span className="text-gray-300 text-sm">km/h</span>
@@ -568,7 +790,7 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, isR
               
               <button
                 onClick={() => adjustSpeed(0.5)}
-                disabled={!isRecording || currentSpeed >= 6.0}
+                disabled={!isRunning || currentSpeed >= 6.0}
                 className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 p-2 rounded-lg transition-colors"
               >
                 <Plus className="w-4 h-4 text-white" />
@@ -581,7 +803,7 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, isR
               <button
                 key={speed}
                 onClick={() => setCurrentSpeed(speed)}
-                disabled={!isRecording}
+                disabled={!isRunning}
                 className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   currentSpeed === speed
                     ? 'bg-green-600 text-white'
@@ -595,7 +817,7 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, isR
         </div>
 
         <div className="flex justify-center space-x-4">
-          {!isRecording ? (
+          {!isRunning ? (
             <button
               onClick={startSession}
               className="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg flex items-center space-x-2 text-white font-medium transition-colors"
@@ -618,7 +840,7 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, isR
                   onClick={pauseSession}
                   className="bg-yellow-600 hover:bg-yellow-700 px-6 py-3 rounded-lg flex items-center space-x-2 text-white font-medium transition-colors"
                 >
-                  <Pause className="w-5 h-5" />
+                  <Pause className="w-4 h-4 mr-2" />
                   <span>Pausieren</span>
                 </button>
               )}

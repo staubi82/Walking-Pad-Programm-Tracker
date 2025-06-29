@@ -311,49 +311,6 @@ const MainApp: React.FC = () => {
     setMobileMenuOpen(false); // Schließe Mobile Menu beim Tab-Wechsel
   };
 
-  // Helper functions for tab styling
-  const getActiveTabStyle = (tabId: string, isDark: boolean) => {
-    const baseStyle = isDark ? 'text-white shadow-2xl' : 'text-gray-900 shadow-2xl';
-    
-    switch (tabId) {
-      case 'overview':
-        return `${baseStyle} bg-gradient-to-br from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700`;
-      case 'tracker':
-        return `${baseStyle} bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700`;
-      case 'history':
-        return `${baseStyle} bg-gradient-to-br from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700`;
-      case 'stats':
-        return `${baseStyle} bg-gradient-to-br from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700`;
-      case 'profile':
-        return `${baseStyle} bg-gradient-to-br from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700`;
-      default:
-        return `${baseStyle} bg-gradient-to-br from-gray-500 to-gray-600`;
-    }
-  };
-
-  const getInactiveTabStyle = (isDark: boolean) => {
-    return isDark
-      ? 'text-gray-300 hover:text-white hover:bg-white/10 backdrop-blur-sm'
-      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-900/10 backdrop-blur-sm';
-  };
-
-  const getTabGlowColor = (tabId: string) => {
-    switch (tabId) {
-      case 'overview':
-        return 'bg-gradient-to-br from-blue-400/20 to-purple-500/20';
-      case 'tracker':
-        return 'bg-gradient-to-br from-green-400/20 to-emerald-500/20';
-      case 'history':
-        return 'bg-gradient-to-br from-orange-400/20 to-red-500/20';
-      case 'stats':
-        return 'bg-gradient-to-br from-purple-400/20 to-pink-500/20';
-      case 'profile':
-        return 'bg-gradient-to-br from-indigo-400/20 to-blue-500/20';
-      default:
-        return 'bg-gradient-to-br from-gray-400/20 to-gray-500/20';
-    }
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
@@ -406,15 +363,13 @@ const MainApp: React.FC = () => {
             {/* Right Side */}
             <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
               {/* Theme Toggle */}
-              <div className="hidden sm:block">
-                <ThemeToggle />
-              </div>
+              <ThemeToggle className="hidden sm:flex" />
               
               {/* Firebase Status - Nur Desktop */}
               {!firebaseConfigured && (
-                <div className={`hidden lg:flex items-center space-x-2 px-3 py-2 rounded-lg border transition-all duration-200 hover:scale-105 ${
+                <div className={`hidden lg:flex items-center space-x-2 text-yellow-400 px-3 py-1 rounded-lg border border-yellow-400/30 transition-colors duration-200 ${
                   isDark ? 'bg-yellow-400/10' : 'bg-yellow-50'
-                } border-yellow-400/30 text-yellow-600`}>
+                }`}>
                   <AlertCircle className="w-4 h-4" />
                   <span className="text-sm">Lokale Speicherung</span>
                 </div>
@@ -422,8 +377,8 @@ const MainApp: React.FC = () => {
               
               {/* User Info - Desktop */}
               {currentUser && (
-                <div className="hidden md:flex items-center space-x-3 group">
-                  <div className="flex flex-col items-end transition-all duration-200 group-hover:scale-105">
+                <div className="hidden md:flex items-center space-x-3">
+                  <div className="flex flex-col items-end">
                     <p className={`text-sm font-medium leading-tight transition-colors duration-200 ${
                       isDark ? 'text-white' : 'text-gray-900'
                     }`}>
@@ -436,52 +391,42 @@ const MainApp: React.FC = () => {
                   
                   <button
                     onClick={() => handleTabChange('profile')}
-                    className="relative w-10 h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-xl hover:from-green-500 hover:to-blue-600 ring-2 ring-transparent hover:ring-white/30 shadow-lg overflow-hidden group"
+                    className="relative w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center hover:from-green-500 hover:to-blue-600 transition-all ring-2 ring-transparent hover:ring-white/20 shadow-lg overflow-hidden"
                     title="Profil öffnen"
                   >
                     {profileImage ? (
                       <img
                         src={profileImage}
                         alt="Profil"
-                        className="w-10 h-10 rounded-full object-cover transition-transform duration-300 group-hover:scale-110"
+                        className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
                       />
                     ) : (
-                      <span className="text-white font-bold text-sm transition-transform duration-300 group-hover:scale-110">
+                      <span className="text-white font-bold text-xs sm:text-sm">
                         {(currentUser.displayName || currentUser.email || 'U').charAt(0).toUpperCase()}
                       </span>
                     )}
-                    {/* Hover Indicator */}
-                    <div className="absolute inset-0 rounded-full bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   </button>
                   
-                  <div className="relative">
-                    <button
+                  <button
                     onClick={handleLogout}
-                    className={`p-2 rounded-lg transition-all duration-300 hover:scale-110 hover:shadow-lg group relative ${
+                    className={`p-2 hover:text-red-400 rounded-lg transition-all group ${
                       isDark 
-                        ? 'text-gray-400 hover:text-red-400 hover:bg-red-500/20' 
-                        : 'text-gray-600 hover:text-red-600 hover:bg-red-50'
+                        ? 'text-gray-400 hover:bg-red-500/10' 
+                        : 'text-gray-600 hover:bg-red-50'
                     }`}
                     title="Abmelden"
                   >
-                    <LogOut className="w-5 h-5 transition-transform duration-300 group-hover:rotate-12" />
-                    {/* Tooltip */}
-                    <div className={`absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none ${
-                      isDark ? 'bg-gray-700 text-white' : 'bg-gray-800 text-white'
-                    }`}>
-                      Abmelden
-                    </div>
+                    <LogOut className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform" />
                   </button>
-                  </div>
                 </div>
               )}
 
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className={`md:hidden p-2 rounded-lg transition-all duration-300 hover:scale-110 hover:shadow-lg ${
+                className={`md:hidden p-2 hover:text-green-400 transition-colors ${
                   isDark ? 'text-white' : 'text-gray-900'
-                } hover:text-green-400 hover:bg-green-400/10`}
+                }`}
               >
                 {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
@@ -598,64 +543,42 @@ const MainApp: React.FC = () => {
       )}
 
       {/* Desktop Navigation */}
-      <nav className={`hidden md:block sticky top-16 z-30 backdrop-blur-xl transition-all duration-300 ${
+      <nav className={`hidden md:block sticky top-16 z-30 backdrop-blur-sm transition-colors duration-200 ${
         isDark 
-          ? 'bg-gray-900/80 border-b border-gray-700/50' 
-          : 'bg-white/80 border-b border-gray-200/50'
+          ? 'bg-gray-800/95 border-b border-gray-700' 
+          : 'bg-white/95 border-b border-gray-200'
       }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
-          <div className="flex justify-center space-x-2">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-center space-x-1">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
-                className={`group relative flex items-center space-x-3 py-4 px-6 rounded-2xl font-semibold text-sm transition-all duration-300 transform hover:scale-105 hover:shadow-2xl ${
+                className={`relative flex items-center space-x-2 py-4 px-6 font-medium text-sm transition-all duration-200 ${
                   activeTab === tab.id
-                    ? getActiveTabStyle(tab.id, isDark)
-                    : getInactiveTabStyle(isDark)
+                    ? isDark 
+                      ? 'text-green-400 bg-gray-700/50' 
+                      : 'text-green-600 bg-gray-100/50'
+                    : isDark
+                      ? 'text-gray-300 hover:text-white hover:bg-gray-700/30'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/30'
                 }`}
               >
-                {/* Background Glow Effect */}
-                <div className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
-                  getTabGlowColor(tab.id)
-                }`}></div>
-                
-                {/* Icon with special effects */}
-                <div className="relative z-10">
-                  <tab.icon className={`w-6 h-6 transition-all duration-300 group-hover:scale-110 ${
-                    activeTab === tab.id ? 'drop-shadow-lg' : ''
-                  }`} />
-                </div>
-                
-                {/* Label */}
-                <span className="relative z-10 transition-all duration-300 group-hover:tracking-wide">
-                  {tab.label}
-                </span>
+                <tab.icon className="w-5 h-5" />
+                <span>{tab.label}</span>
                 
                 {/* Active Indicator */}
                 {activeTab === tab.id && (
-                  <>
-                    <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-white rounded-full shadow-lg animate-pulse"></div>
-                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse"></div>
-                  </>
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-green-500"></div>
                 )}
                 
                 {/* Recording Indicator */}
                 {tab.id === 'tracker' && recordingState.isRecording && (
-                  <div className="absolute -top-1 -right-1 z-20">
-                    <div className="w-4 h-4 bg-red-500 rounded-full animate-ping"></div>
-                    <div className="absolute inset-0 w-4 h-4 bg-red-600 rounded-full animate-pulse"></div>
-                  </div>
+                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
                 )}
-                
-                {/* Hover Shimmer Effect */}
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 transform -skew-x-12 group-hover:animate-pulse"></div>
               </button>
             ))}
           </div>
-          
-          {/* Progress Bar at bottom */}
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 opacity-20 animate-pulse"></div>
         </div>
       </nav>
 

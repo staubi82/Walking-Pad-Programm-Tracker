@@ -176,7 +176,7 @@ export const HighchartsChart: React.FC<HighchartsChartProps> = ({ session, onDel
           },
           verticalAlign: 'top',
           y: 15,
-          x: 15,
+          x: 10,
           rotation: 0,
           textAlign: 'center'
         }

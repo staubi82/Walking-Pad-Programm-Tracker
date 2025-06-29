@@ -587,7 +587,7 @@ const MainApp: React.FC = () => {
                 {/* Label */}
                 <span className={`mt-1 font-semibold transition-all duration-300 ${
                   activeTab === tab.id ? 'text-white' : ''
-                }`} />
+                }`}>
                   <span className="hidden xl:inline">{tab.label}</span>
                   <span className="xl:hidden">{tab.shortLabel}</span>
                 </span>

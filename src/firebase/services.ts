@@ -41,19 +41,22 @@ export const getTrainingSessions = async (): Promise<TrainingSession[]> => {
       throw new Error('Benutzer nicht angemeldet');
     }
 
+    // Erst nach userId filtern, dann manuell sortieren um Index-Probleme zu vermeiden
     const q = query(
       collection(db, 'trainingSessions'), 
-      where('userId', '==', user.uid),
-      orderBy('date', 'desc')
+      where('userId', '==', user.uid)
     );
     const querySnapshot = await getDocs(q);
     
-    return querySnapshot.docs.map(doc => ({
+    const sessions = querySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
       date: doc.data().date.toDate(),
       createdAt: doc.data().createdAt.toDate()
     })) as TrainingSession[];
+    
+    // Manuell nach Datum sortieren
+    return sessions.sort((a, b) => b.date.getTime() - a.date.getTime());
   } catch (error) {
     // Spezifische Behandlung für Berechtigungsfehler
     if (error instanceof Error && error.message.includes('Missing or insufficient permissions')) {

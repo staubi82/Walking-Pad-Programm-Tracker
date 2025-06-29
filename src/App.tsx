@@ -66,18 +66,30 @@ const MainApp: React.FC = () => {
             const localSessions = JSON.parse(localStorage.getItem('walkingPadSessions') || '[]');
             setSessions(localSessions);
           } else {
-            throw firebaseError;
+          const localSessions = JSON.parse(localStorage.getItem('walkingPadSessions') || '[]').map((session: any) => ({
+            ...session,
+            date: new Date(session.date),
+            createdAt: new Date(session.createdAt)
+          }));
           }
         }
       } else {
         // Lade aus localStorage wenn Firebase nicht verfügbar ist
-        const localSessions = JSON.parse(localStorage.getItem('walkingPadSessions') || '[]');
+        const localSessions = JSON.parse(localStorage.getItem('walkingPadSessions') || '[]').map((session: any) => ({
+          ...session,
+          date: new Date(session.date),
+          createdAt: new Date(session.createdAt)
+        }));
         setSessions(localSessions);
       }
     } catch (error) {
       console.error('Allgemeiner Fehler beim Laden der Trainingseinheiten:', error);
       // Fallback auf leeres Array
-      const localSessions = JSON.parse(localStorage.getItem('walkingPadSessions') || '[]');
+      const localSessions = JSON.parse(localStorage.getItem('walkingPadSessions') || '[]').map((session: any) => ({
+        ...session,
+        date: new Date(session.date),
+        createdAt: new Date(session.createdAt)
+      }));
       setSessions(localSessions);
     } finally {
       setLoading(false);
@@ -107,7 +119,12 @@ const MainApp: React.FC = () => {
         // Fallback: Save to localStorage if Firebase is not configured
         const localSessions = JSON.parse(localStorage.getItem('walkingPadSessions') || '[]');
         const sessionWithId = { ...newSession, id: Date.now().toString() };
-        localSessions.push(sessionWithId);
+        const sessionToStore = {
+          ...sessionWithId,
+          date: sessionWithId.date.toISOString(),
+          createdAt: sessionWithId.createdAt.toISOString()
+        };
+        localSessions.push(sessionToStore);
         localStorage.setItem('walkingPadSessions', JSON.stringify(localSessions));
         setSessions(prev => [sessionWithId as TrainingSession, ...prev]);
       }
@@ -173,11 +190,20 @@ const MainApp: React.FC = () => {
         await loadSessions();
       } else {
         // Fallback: Update in localStorage
-        const localSessions = JSON.parse(localStorage.getItem('walkingPadSessions') || '[]');
+        const localSessions = JSON.parse(localStorage.getItem('walkingPadSessions') || '[]').map((session: any) => ({
+          ...session,
+          date: new Date(session.date),
+          createdAt: new Date(session.createdAt)
+        }));
         const updatedSessions = localSessions.map((session: TrainingSession) => 
           session.id === updatedSession.id ? updatedSession : session
         );
-        localStorage.setItem('walkingPadSessions', JSON.stringify(updatedSessions));
+        const sessionsToStore = updatedSessions.map(session => ({
+          ...session,
+          date: session.date.toISOString(),
+          createdAt: session.createdAt.toISOString()
+        }));
+        localStorage.setItem('walkingPadSessions', JSON.stringify(sessionsToStore));
         setSessions(prev => prev.map(session => 
           session.id === updatedSession.id ? updatedSession : session
         ));

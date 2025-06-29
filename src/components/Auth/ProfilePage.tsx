@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { User, Mail, Calendar, Edit3, Save, X, LogOut, Trash2 } from 'lucide-react';
+import { User, Mail, Calendar, Edit3, Save, X, LogOut, Trash2, Activity, TrendingUp, Target, Scale } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { updateUserProfile, logoutUser } from '../../firebase/auth';
 import { useNavigate } from 'react-router-dom';
+import { UserProfile } from '../../types';
+import { calculateBMI, getBMICategory, calculateBMR, calculateTDEE, calculateIdealWeight } from '../../utils/calculations';
 
 export const ProfilePage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -10,6 +12,10 @@ export const ProfilePage: React.FC = () => {
   
   const [isEditing, setIsEditing] = useState(false);
   const [displayName, setDisplayName] = useState(currentUser?.displayName || '');
+  const [userProfile, setUserProfile] = useState<UserProfile>(() => {
+    const saved = localStorage.getItem(`userProfile_${currentUser?.uid}`);
+    return saved ? JSON.parse(saved) : {};
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -23,6 +29,10 @@ export const ProfilePage: React.FC = () => {
 
     try {
       await updateUserProfile(currentUser, { displayName });
+      
+      // Speichere Benutzerprofil in localStorage
+      localStorage.setItem(`userProfile_${currentUser.uid}`, JSON.stringify(userProfile));
+      
       setSuccess('Profil erfolgreich aktualisiert!');
       setIsEditing(false);
       
@@ -37,8 +47,14 @@ export const ProfilePage: React.FC = () => {
 
   const handleCancel = () => {
     setDisplayName(currentUser?.displayName || '');
+    const saved = localStorage.getItem(`userProfile_${currentUser?.uid}`);
+    setUserProfile(saved ? JSON.parse(saved) : {});
     setIsEditing(false);
     setError('');
+  };
+
+  const updateProfileField = (field: keyof UserProfile, value: any) => {
+    setUserProfile(prev => ({ ...prev, [field]: value }));
   };
 
   const handleLogout = async () => {
@@ -49,6 +65,15 @@ export const ProfilePage: React.FC = () => {
       console.error('Fehler beim Abmelden:', error);
     }
   };
+
+  // Berechnungen
+  const bmi = userProfile.weight && userProfile.height ? calculateBMI(userProfile.weight, userProfile.height) : null;
+  const bmiCategory = bmi ? getBMICategory(bmi) : null;
+  const bmr = userProfile.weight && userProfile.height && userProfile.age && userProfile.gender 
+    ? calculateBMR(userProfile.weight, userProfile.height, userProfile.age, userProfile.gender) 
+    : null;
+  const tdee = bmr && userProfile.activityLevel ? calculateTDEE(bmr, userProfile.activityLevel) : null;
+  const idealWeight = userProfile.height ? calculateIdealWeight(userProfile.height, userProfile.gender || 'male') : null;
 
   const getProviderInfo = () => {
     if (!currentUser?.providerData.length) return null;
@@ -88,6 +113,89 @@ export const ProfilePage: React.FC = () => {
           <h1 className="text-3xl font-bold text-white">Mein Profil</h1>
           <p className="mt-2 text-gray-400">Verwalten Sie Ihre Kontoinformationen</p>
         </div>
+
+        {/* Gesundheits-Statistiken */}
+        {(userProfile.weight || userProfile.height || userProfile.age) && (
+          <div className="bg-gray-800 rounded-xl p-8 shadow-xl mb-6">
+            <h3 className="text-xl font-bold text-white mb-6">📊 Gesundheits-Statistiken</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* BMI */}
+              {bmi && bmiCategory && (
+                <div className="bg-gray-700 rounded-lg p-4">
+                  <div className="flex items-center space-x-3 mb-2">
+                    <Target className="w-6 h-6 text-blue-400" />
+                    <h4 className="font-semibold text-white">BMI</h4>
+                  </div>
+                  <div className="text-2xl font-bold text-white mb-1">{bmi}</div>
+                  <div className={`text-sm ${bmiCategory.color}`}>{bmiCategory.category}</div>
+                  <div className="text-xs text-gray-400 mt-1">{bmiCategory.description}</div>
+                </div>
+              )}
+              
+              {/* Grundumsatz */}
+              {bmr && (
+                <div className="bg-gray-700 rounded-lg p-4">
+                  <div className="flex items-center space-x-3 mb-2">
+                    <Activity className="w-6 h-6 text-green-400" />
+                    <h4 className="font-semibold text-white">Grundumsatz</h4>
+                  </div>
+                  <div className="text-2xl font-bold text-white mb-1">{bmr}</div>
+                  <div className="text-sm text-green-400">kcal/Tag</div>
+                  <div className="text-xs text-gray-400 mt-1">Ruheumsatz</div>
+                </div>
+              )}
+              
+              {/* Gesamtumsatz */}
+              {tdee && (
+                <div className="bg-gray-700 rounded-lg p-4">
+                  <div className="flex items-center space-x-3 mb-2">
+                    <TrendingUp className="w-6 h-6 text-orange-400" />
+                    <h4 className="font-semibold text-white">Gesamtumsatz</h4>
+                  </div>
+                  <div className="text-2xl font-bold text-white mb-1">{tdee}</div>
+                  <div className="text-sm text-orange-400">kcal/Tag</div>
+                  <div className="text-xs text-gray-400 mt-1">Mit Aktivität</div>
+                </div>
+              )}
+              
+              {/* Idealgewicht */}
+              {idealWeight && (
+                <div className="bg-gray-700 rounded-lg p-4">
+                  <div className="flex items-center space-x-3 mb-2">
+                    <Scale className="w-6 h-6 text-purple-400" />
+                    <h4 className="font-semibold text-white">Idealgewicht</h4>
+                  </div>
+                  <div className="text-lg font-bold text-white mb-1">
+                    {idealWeight.min}-{idealWeight.max} kg
+                  </div>
+                  <div className="text-sm text-purple-400">Normalgewicht</div>
+                  <div className="text-xs text-gray-400 mt-1">BMI 18.5-24.9</div>
+                </div>
+              )}
+            </div>
+            
+            {/* Zusätzliche Informationen */}
+            <div className="mt-6 p-4 bg-blue-900/30 rounded-lg border border-blue-700">
+              <h4 className="text-lg font-semibold text-blue-300 mb-2">💡 Gesundheitstipps</h4>
+              <div className="text-blue-200 text-sm space-y-1">
+                {bmi && bmi < 18.5 && (
+                  <p>• Ihr BMI deutet auf Untergewicht hin. Konsultieren Sie einen Arzt für eine gesunde Gewichtszunahme.</p>
+                )}
+                {bmi && bmi >= 25 && bmi < 30 && (
+                  <p>• Regelmäßige Bewegung und eine ausgewogene Ernährung können beim Erreichen des Idealgewichts helfen.</p>
+                )}
+                {bmi && bmi >= 30 && (
+                  <p>• Bei Adipositas ist eine ärztliche Beratung empfehlenswert für einen gesunden Gewichtsverlust.</p>
+                )}
+                {tdee && (
+                  <p>• Ihr täglicher Kalorienbedarf liegt bei etwa {tdee} kcal. Für Gewichtsverlust: 300-500 kcal weniger, für Zunahme: 300-500 kcal mehr.</p>
+                )}
+                <p>• Diese Werte sind Richtwerte. Konsultieren Sie bei gesundheitlichen Fragen immer einen Arzt.</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Profile Card */}
         <div className="bg-gray-800 rounded-xl p-8 shadow-xl">

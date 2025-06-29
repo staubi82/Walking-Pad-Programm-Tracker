@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, Square, Plus, Minus, Clock, Edit3, Trash2, CheckCircle } from 'lucide-react';
 import { calculateDistance, calculateCalories, formatDuration, roundToNearestHalfMinute } from '../utils/calculations';
-import { SpeedPoint } from '../types';
+import { SpeedPoint, UserProfile } from '../types';
 import { SessionSummary } from './SessionSummary';
+import { useAuth } from '../context/AuthContext';
 
 interface TimelineEntry {
   id: string;
@@ -35,6 +36,7 @@ const difficultyLevels = [
 ];
 
 export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete }) => {
+  const { currentUser } = useAuth();
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [duration, setDuration] = useState(0);
@@ -54,6 +56,15 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete }) =
   const [timelineName, setTimelineName] = useState('');
   const [timelineNameError, setTimelineNameError] = useState('');
   const [timelineDifficulty, setTimelineDifficulty] = useState('');
+  
+  // Lade Benutzerprofil für Kalorienberechnung
+  const [userProfile, setUserProfile] = useState<UserProfile>(() => {
+    if (currentUser?.uid) {
+      const saved = localStorage.getItem(`userProfile_${currentUser.uid}`);
+      return saved ? JSON.parse(saved) : {};
+    }
+    return {};
+  });
   
   // Session Summary State
   const [showSessionSummary, setShowSessionSummary] = useState(false);
@@ -182,7 +193,7 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete }) =
     const roundedDuration = roundToNearestHalfMinute(duration);
 
     const distance = calculateDistance(speedHistory);
-    const calories = calculateCalories(speedHistory);
+    const calories = calculateCalories(speedHistory, userProfile);
     const averageSpeed = speedHistory.reduce((sum, point) => sum + point.speed, 0) / speedHistory.length;
     const maxSpeed = Math.max(...speedHistory.map(point => point.speed));
 
@@ -321,7 +332,7 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete }) =
     }
 
     const distance = calculateDistance(simulatedHistory);
-    const calories = calculateCalories(simulatedHistory);
+    const calories = calculateCalories(simulatedHistory, userProfile);
     const averageSpeed = simulatedHistory.reduce((sum, point) => sum + point.speed, 0) / simulatedHistory.length;
     const maxSpeed = Math.max(...simulatedHistory.map(point => point.speed));
 
@@ -352,7 +363,7 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete }) =
   }
 
   const currentDistance = calculateDistance(speedHistory);
-  const currentCalories = calculateCalories(speedHistory);
+  const currentCalories = calculateCalories(speedHistory, userProfile);
   
   // Berechne Fortschritt in Prozent
   const progressPercentage = targetDuration && targetDuration > 0 

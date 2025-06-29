@@ -10,11 +10,20 @@ export interface TrainingSession {
   speedHistory: SpeedPoint[];
   createdAt: Date;
   difficulty?: string;
+  weight?: number; // Gewicht zum Zeitpunkt des Trainings
 }
 
 export interface SpeedPoint {
   timestamp: number;
   speed: number;
+}
+
+export interface UserProfile {
+  weight?: number; // in kg
+  height?: number; // in cm
+  age?: number; // in Jahren
+  gender?: 'male' | 'female' | 'other';
+  activityLevel?: 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active';
 }
 
 export interface TrainingProgram {

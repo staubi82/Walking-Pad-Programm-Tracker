@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Activity, BarChart3, History, AlertCircle, Play } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
@@ -462,18 +462,13 @@ function App() {
       } />
       
       <Route path="/" element={
-        <Routes>
-          <Route index element={
-            <ProtectedRoute>
-              <MainApp />
-            </ProtectedRoute>
-          } />
-          <Route path="*" element={<LandingPage />} />
-        </Routes>
+        <ProtectedRoute>
+          <MainApp />
+        </ProtectedRoute>
       } />
       
       {/* Redirect unknown routes to home */}
-      <Route path="*" element={<LandingPage />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

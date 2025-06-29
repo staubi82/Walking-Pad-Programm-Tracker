@@ -27,6 +27,8 @@ import {
 } from 'lucide-react';
 import { loginUser, registerUser, getAuthErrorMessage } from '../firebase/auth';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext';
+import { ThemeToggle } from './ThemeToggle';
 
 export const LandingPage: React.FC = () => {
   // SVG pattern for background
@@ -47,6 +49,7 @@ export const LandingPage: React.FC = () => {
   const [error, setError] = useState('');
   
   const navigate = useNavigate();
+  const { isDark } = useTheme();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -167,32 +170,52 @@ export const LandingPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className={`min-h-screen transition-colors duration-200 ${
+      isDark ? 'bg-gray-900' : 'bg-gray-50'
+    }`}>
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         {/* Background Pattern */}
-        <div className="absolute inset-0 bg-gradient-to-br from-green-900/20 via-gray-900 to-blue-900/20"></div>
+        <div className={`absolute inset-0 transition-colors duration-200 ${
+          isDark 
+            ? 'bg-gradient-to-br from-green-900/20 via-gray-900 to-blue-900/20' 
+            : 'bg-gradient-to-br from-green-100/50 via-gray-50 to-blue-100/50'
+        }`}></div>
         <div className={`absolute inset-0 bg-[url('${backgroundPattern}')] opacity-20`}></div>
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-12">
           {/* Header */}
           <header className="flex justify-between items-center mb-8 lg:mb-16">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-xl flex items-center justify-center shadow-lg">
+              <div className={`w-10 h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-xl flex items-center justify-center shadow-lg ${
+                !isDark ? 'shadow-gray-300' : ''
+              }`}>
                 <Activity className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl lg:text-2xl font-bold text-white">Walking-Pad Tracker</h1>
-                <p className="text-xs text-gray-400 hidden sm:block">Professionelles Training</p>
+                <h1 className={`text-xl lg:text-2xl font-bold transition-colors duration-200 ${
+                  isDark ? 'text-white' : 'text-gray-900'
+                }`}>Walking-Pad Tracker</h1>
+                <p className={`text-xs hidden sm:block transition-colors duration-200 ${
+                  isDark ? 'text-gray-400' : 'text-gray-600'
+                }`}>Professionelles Training</p>
               </div>
             </div>
             
+            {/* Theme Toggle */}
+            <div className="flex items-center space-x-4">
+              <ThemeToggle />
+              
             {/* Desktop Navigation */}
             {!authMode && (
-              <div className="hidden md:flex space-x-4">
+              <div className="hidden md:flex space-x-4 ml-4">
                 <button
                   onClick={() => switchAuthMode('login')}
-                  className="px-6 py-2 text-green-400 hover:text-green-300 font-medium transition-colors"
+                  className={`px-6 py-2 font-medium transition-colors ${
+                    isDark 
+                      ? 'text-green-400 hover:text-green-300' 
+                      : 'text-green-600 hover:text-green-700'
+                  }`}
                 >
                   Anmelden
                 </button>
@@ -204,12 +227,15 @@ export const LandingPage: React.FC = () => {
                 </button>
               </div>
             )}
+            </div>
 
             {/* Mobile Menu Button */}
             {!authMode && (
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 text-white hover:text-green-400 transition-colors"
+                className={`md:hidden p-2 hover:text-green-400 transition-colors ${
+                  isDark ? 'text-white' : 'text-gray-900'
+                }`}
               >
                 {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
@@ -219,7 +245,11 @@ export const LandingPage: React.FC = () => {
             {authMode && (
               <button
                 onClick={() => setAuthMode(null)}
-                className="p-2 text-gray-400 hover:text-white transition-colors"
+                className={`p-2 transition-colors ${
+                  isDark 
+                    ? 'text-gray-400 hover:text-white' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
               >
                 <X className="w-6 h-6" />
               </button>
@@ -228,11 +258,22 @@ export const LandingPage: React.FC = () => {
 
           {/* Mobile Menu */}
           {mobileMenuOpen && !authMode && (
-            <div className="md:hidden mb-8 bg-gray-800/95 backdrop-blur-sm rounded-xl p-6 border border-gray-700 shadow-2xl">
+            <div className={`md:hidden mb-8 backdrop-blur-sm rounded-xl p-6 border shadow-2xl transition-colors duration-200 ${
+              isDark 
+                ? 'bg-gray-800/95 border-gray-700' 
+                : 'bg-white/95 border-gray-200'
+            }`}>
               <div className="space-y-4">
+                {/* Theme Toggle Mobile */}
+                <ThemeToggle className="w-full justify-center mb-4" showLabel={true} />
+                
                 <button
                   onClick={() => switchAuthMode('login')}
-                  className="w-full bg-gray-700 hover:bg-gray-600 px-6 py-3 rounded-lg text-white font-medium transition-colors flex items-center justify-center space-x-2"
+                  className={`w-full px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2 ${
+                    isDark 
+                      ? 'bg-gray-700 hover:bg-gray-600 text-white' 
+                      : 'bg-gray-200 hover:bg-gray-300 text-gray-900'
+                  }`}
                 >
                   <LogIn className="w-5 h-5" />
                   <span>Anmelden</span>
@@ -253,13 +294,18 @@ export const LandingPage: React.FC = () => {
             <div className="space-y-6 lg:space-y-8 order-2 lg:order-1">
               <div>
                 <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-4 lg:mb-6 leading-tight">
+                <h2 className={`text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 lg:mb-6 leading-tight transition-colors duration-200 ${
+                  isDark ? 'text-white' : 'text-gray-900'
+                }`}>
                   Ihr professioneller
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500">
                     {' '}Walking-Pad
                   </span>
                   {' '}Tracker
                 </h2>
-                <p className="text-lg lg:text-xl text-gray-300 mb-6 lg:mb-8 leading-relaxed">
+                <p className={`text-lg lg:text-xl mb-6 lg:mb-8 leading-relaxed transition-colors duration-200 ${
+                  isDark ? 'text-gray-300' : 'text-gray-700'
+                }`}>
                   Verfolgen Sie Ihre Trainings in Echtzeit, analysieren Sie Ihre Fortschritte und erreichen Sie Ihre Fitness-Ziele mit unserem fortschrittlichen Walking-Pad Tracker.
                 </p>
               </div>
@@ -267,10 +313,18 @@ export const LandingPage: React.FC = () => {
               {/* Stats */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
                 {stats.map((stat, index) => (
-                  <div key={index} className="text-center p-3 lg:p-4 bg-gray-800/50 rounded-lg backdrop-blur-sm border border-gray-700/50">
+                  <div key={index} className={`text-center p-3 lg:p-4 rounded-lg backdrop-blur-sm border transition-colors duration-200 ${
+                    isDark 
+                      ? 'bg-gray-800/50 border-gray-700/50' 
+                      : 'bg-white/70 border-gray-200/50'
+                  }`}>
                     <stat.icon className="w-5 h-5 lg:w-6 lg:h-6 text-green-400 mx-auto mb-2" />
-                    <div className="text-lg lg:text-2xl font-bold text-white">{stat.value}</div>
-                    <div className="text-xs lg:text-sm text-gray-400">{stat.label}</div>
+                    <div className={`text-lg lg:text-2xl font-bold transition-colors duration-200 ${
+                      isDark ? 'text-white' : 'text-gray-900'
+                    }`}>{stat.value}</div>
+                    <div className={`text-xs lg:text-sm transition-colors duration-200 ${
+                      isDark ? 'text-gray-400' : 'text-gray-600'
+                    }`}>{stat.label}</div>
                   </div>
                 ))}
               </div>
@@ -280,7 +334,9 @@ export const LandingPage: React.FC = () => {
                 {benefits.map((benefit, index) => (
                   <div key={index} className="flex items-start space-x-3">
                     <CheckCircle className="w-4 h-4 lg:w-5 lg:h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-sm lg:text-base text-gray-300">{benefit}</span>
+                    <span className={`text-sm lg:text-base transition-colors duration-200 ${
+                      isDark ? 'text-gray-300' : 'text-gray-700'
+                    }`}>{benefit}</span>
                   </div>
                 ))}
               </div>
@@ -309,12 +365,20 @@ export const LandingPage: React.FC = () => {
             <div className="order-1 lg:order-2 lg:pl-8">
               {authMode ? (
                 /* Auth Form */
-                <div className="bg-gray-800/90 backdrop-blur-sm rounded-2xl p-6 lg:p-8 shadow-2xl border border-gray-700">
+                <div className={`backdrop-blur-sm rounded-2xl p-6 lg:p-8 shadow-2xl border transition-colors duration-200 ${
+                  isDark 
+                    ? 'bg-gray-800/90 border-gray-700' 
+                    : 'bg-white/90 border-gray-200'
+                }`}>
                   <div className="text-center mb-6">
-                    <h3 className="text-xl lg:text-2xl font-bold text-white mb-2">
+                    <h3 className={`text-xl lg:text-2xl font-bold mb-2 transition-colors duration-200 ${
+                      isDark ? 'text-white' : 'text-gray-900'
+                    }`}>
                       {authMode === 'login' ? 'Willkommen zurück!' : 'Konto erstellen'}
                     </h3>
-                    <p className="text-sm lg:text-base text-gray-400">
+                    <p className={`text-sm lg:text-base transition-colors duration-200 ${
+                      isDark ? 'text-gray-400' : 'text-gray-600'
+                    }`}>
                       {authMode === 'login' 
                         ? 'Melden Sie sich in Ihrem Konto an' 
                         : 'Starten Sie Ihre Fitness-Reise noch heute'
@@ -324,25 +388,35 @@ export const LandingPage: React.FC = () => {
 
                   <form onSubmit={handleSubmit} className="space-y-4 lg:space-y-6">
                     {error && (
-                      <div className="bg-red-900/50 border border-red-700 rounded-lg p-4">
+                      <div className={`border border-red-700 rounded-lg p-4 transition-colors duration-200 ${
+                        isDark ? 'bg-red-900/50' : 'bg-red-50'
+                      }`}>
                         <p className="text-red-300 text-sm">{error}</p>
                       </div>
                     )}
 
                     {authMode === 'register' && (
                       <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                        <label className={`block text-sm font-medium mb-2 transition-colors duration-200 ${
+                          isDark ? 'text-gray-300' : 'text-gray-700'
+                        }`}>
                           Vollständiger Name
                         </label>
                         <div className="relative">
-                          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                          <User className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 transition-colors duration-200 ${
+                            isDark ? 'text-gray-400' : 'text-gray-500'
+                          }`} />
                           <input
                             name="displayName"
                             type="text"
                             required
                             value={formData.displayName}
                             onChange={handleChange}
-                            className="w-full pl-10 pr-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 text-base"
+                            className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-base transition-colors duration-200 ${
+                              isDark 
+                                ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                                : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                            }`}
                             placeholder="Max Mustermann"
                           />
                         </div>
@@ -350,36 +424,52 @@ export const LandingPage: React.FC = () => {
                     )}
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                      <label className={`block text-sm font-medium mb-2 transition-colors duration-200 ${
+                        isDark ? 'text-gray-300' : 'text-gray-700'
+                      }`}>
                         E-Mail-Adresse
                       </label>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                        <Mail className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 transition-colors duration-200 ${
+                          isDark ? 'text-gray-400' : 'text-gray-500'
+                        }`} />
                         <input
                           name="email"
                           type="email"
                           required
                           value={formData.email}
                           onChange={handleChange}
-                          className="w-full pl-10 pr-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 text-base"
+                          className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-base transition-colors duration-200 ${
+                            isDark 
+                              ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                              : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                          }`}
                           placeholder="ihre.email@beispiel.de"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                      <label className={`block text-sm font-medium mb-2 transition-colors duration-200 ${
+                        isDark ? 'text-gray-300' : 'text-gray-700'
+                      }`}>
                         Passwort
                       </label>
                       <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                        <Lock className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 transition-colors duration-200 ${
+                          isDark ? 'text-gray-400' : 'text-gray-500'
+                        }`} />
                         <input
                           name="password"
                           type={showPassword ? 'text' : 'password'}
                           required
                           value={formData.password}
                           onChange={handleChange}
-                          className="w-full pl-10 pr-10 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 text-base"
+                          className={`w-full pl-10 pr-10 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-base transition-colors duration-200 ${
+                            isDark 
+                              ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                              : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                          }`}
                           placeholder={authMode === 'register' ? 'Mindestens 6 Zeichen' : 'Ihr Passwort'}
                         />
                         <button
@@ -388,9 +478,17 @@ export const LandingPage: React.FC = () => {
                           className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1"
                         >
                           {showPassword ? (
-                            <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-300" />
+                            <EyeOff className={`h-5 w-5 transition-colors duration-200 ${
+                              isDark 
+                                ? 'text-gray-400 hover:text-gray-300' 
+                                : 'text-gray-500 hover:text-gray-700'
+                            }`} />
                           ) : (
-                            <Eye className="h-5 w-5 text-gray-400 hover:text-gray-300" />
+                            <Eye className={`h-5 w-5 transition-colors duration-200 ${
+                              isDark 
+                                ? 'text-gray-400 hover:text-gray-300' 
+                                : 'text-gray-500 hover:text-gray-700'
+                            }`} />
                           )}
                         </button>
                       </div>
@@ -398,18 +496,26 @@ export const LandingPage: React.FC = () => {
 
                     {authMode === 'register' && (
                       <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                        <label className={`block text-sm font-medium mb-2 transition-colors duration-200 ${
+                          isDark ? 'text-gray-300' : 'text-gray-700'
+                        }`}>
                           Passwort bestätigen
                         </label>
                         <div className="relative">
-                          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                          <Lock className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 transition-colors duration-200 ${
+                            isDark ? 'text-gray-400' : 'text-gray-500'
+                          }`} />
                           <input
                             name="confirmPassword"
                             type={showConfirmPassword ? 'text' : 'password'}
                             required
                             value={formData.confirmPassword}
                             onChange={handleChange}
-                            className="w-full pl-10 pr-10 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 text-base"
+                            className={`w-full pl-10 pr-10 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-base transition-colors duration-200 ${
+                              isDark 
+                                ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                                : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                            }`}
                             placeholder="Passwort wiederholen"
                           />
                           <button
@@ -418,9 +524,17 @@ export const LandingPage: React.FC = () => {
                             className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1"
                           >
                             {showConfirmPassword ? (
-                              <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-300" />
+                              <EyeOff className={`h-5 w-5 transition-colors duration-200 ${
+                                isDark 
+                                  ? 'text-gray-400 hover:text-gray-300' 
+                                  : 'text-gray-500 hover:text-gray-700'
+                              }`} />
                             ) : (
-                              <Eye className="h-5 w-5 text-gray-400 hover:text-gray-300" />
+                              <Eye className={`h-5 w-5 transition-colors duration-200 ${
+                                isDark 
+                                  ? 'text-gray-400 hover:text-gray-300' 
+                                  : 'text-gray-500 hover:text-gray-700'
+                              }`} />
                             )}
                           </button>
                         </div>
@@ -434,9 +548,15 @@ export const LandingPage: React.FC = () => {
                           type="checkbox"
                           checked={rememberMe}
                           onChange={(e) => setRememberMe(e.target.checked)}
-                          className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-600 rounded bg-gray-700"
+                          className={`h-4 w-4 text-green-600 focus:ring-green-500 rounded transition-colors duration-200 ${
+                            isDark 
+                              ? 'border-gray-600 bg-gray-700' 
+                              : 'border-gray-300 bg-white'
+                          }`}
                         />
-                        <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-300">
+                        <label htmlFor="remember-me" className={`ml-2 block text-sm transition-colors duration-200 ${
+                          isDark ? 'text-gray-300' : 'text-gray-700'
+                        }`}>
                           Eingeloggt bleiben
                         </label>
                       </div>
@@ -474,7 +594,9 @@ export const LandingPage: React.FC = () => {
                   </form>
 
                   <div className="mt-6 text-center">
-                    <p className="text-gray-400">
+                    <p className={`transition-colors duration-200 ${
+                      isDark ? 'text-gray-400' : 'text-gray-600'
+                    }`}>
                       {authMode === 'login' ? 'Noch kein Konto?' : 'Bereits ein Konto?'}{' '}
                       <button
                         onClick={() => switchAuthMode(authMode === 'login' ? 'register' : 'login')}
@@ -487,7 +609,11 @@ export const LandingPage: React.FC = () => {
 
                   <button
                     onClick={() => setAuthMode(null)}
-                    className="mt-4 w-full text-gray-400 hover:text-gray-300 text-sm transition-colors"
+                    className={`mt-4 w-full text-sm transition-colors ${
+                      isDark 
+                        ? 'text-gray-400 hover:text-gray-300' 
+                        : 'text-gray-600 hover:text-gray-700'
+                    }`}
                   >
                     ← Zurück zur Übersicht
                   </button>
@@ -496,8 +622,14 @@ export const LandingPage: React.FC = () => {
                 /* Demo Preview */
                 <div className="space-y-6">
                   {/* Mock App Screenshot */}
-                  <div className="bg-gray-800/90 backdrop-blur-sm rounded-2xl p-4 lg:p-6 shadow-2xl border border-gray-700">
-                    <div className="bg-gray-900 rounded-lg p-3 lg:p-4 mb-4">
+                  <div className={`backdrop-blur-sm rounded-2xl p-4 lg:p-6 shadow-2xl border transition-colors duration-200 ${
+                    isDark 
+                      ? 'bg-gray-800/90 border-gray-700' 
+                      : 'bg-white/90 border-gray-200'
+                  }`}>
+                    <div className={`rounded-lg p-3 lg:p-4 mb-4 transition-colors duration-200 ${
+                      isDark ? 'bg-gray-900' : 'bg-gray-100'
+                    }`}>
                       <div className="flex items-center space-x-2 mb-4">
                         <div className="w-2 h-2 lg:w-3 lg:h-3 bg-red-500 rounded-full"></div>
                         <div className="w-2 h-2 lg:w-3 lg:h-3 bg-yellow-500 rounded-full"></div>
@@ -512,23 +644,41 @@ export const LandingPage: React.FC = () => {
                         </div>
                         
                         <div className="grid grid-cols-3 gap-2 lg:gap-3">
-                          <div className="bg-gray-800 rounded-lg p-2 lg:p-3 text-center">
+                          <div className={`rounded-lg p-2 lg:p-3 text-center transition-colors duration-200 ${
+                            isDark ? 'bg-gray-800' : 'bg-white'
+                          }`}>
                             <div className="text-sm lg:text-lg font-bold text-blue-400">2.1 km</div>
-                            <div className="text-xs text-gray-400">Distanz</div>
+                            <div className={`text-xs transition-colors duration-200 ${
+                              isDark ? 'text-gray-400' : 'text-gray-600'
+                            }`}>Distanz</div>
                           </div>
-                          <div className="bg-gray-800 rounded-lg p-2 lg:p-3 text-center">
+                          <div className={`rounded-lg p-2 lg:p-3 text-center transition-colors duration-200 ${
+                            isDark ? 'bg-gray-800' : 'bg-white'
+                          }`}>
                             <div className="text-sm lg:text-lg font-bold text-orange-400">156 kcal</div>
-                            <div className="text-xs text-gray-400">Kalorien</div>
+                            <div className={`text-xs transition-colors duration-200 ${
+                              isDark ? 'text-gray-400' : 'text-gray-600'
+                            }`}>Kalorien</div>
                           </div>
-                          <div className="bg-gray-800 rounded-lg p-2 lg:p-3 text-center">
+                          <div className={`rounded-lg p-2 lg:p-3 text-center transition-colors duration-200 ${
+                            isDark ? 'bg-gray-800' : 'bg-white'
+                          }`}>
                             <div className="text-sm lg:text-lg font-bold text-purple-400">4.8 km/h</div>
-                            <div className="text-xs text-gray-400">Speed</div>
+                            <div className={`text-xs transition-colors duration-200 ${
+                              isDark ? 'text-gray-400' : 'text-gray-600'
+                            }`}>Speed</div>
                           </div>
                         </div>
                         
                         {/* Mock Speed Chart */}
-                        <div className="bg-gray-800 rounded-lg p-2 lg:p-3">
-                          <div className="h-16 lg:h-20 bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded flex items-end justify-between px-2">
+                        <div className={`rounded-lg p-2 lg:p-3 transition-colors duration-200 ${
+                          isDark ? 'bg-gray-800' : 'bg-white'
+                        }`}>
+                          <div className={`h-16 lg:h-20 rounded flex items-end justify-between px-2 transition-colors duration-200 ${
+                            isDark 
+                              ? 'bg-gradient-to-r from-green-500/20 to-blue-500/20' 
+                              : 'bg-gradient-to-r from-green-500/30 to-blue-500/30'
+                          }`}>
                             {[40, 60, 80, 70, 90, 85, 95, 75].map((height, i) => (
                               <div
                                 key={i}
@@ -537,14 +687,20 @@ export const LandingPage: React.FC = () => {
                               ></div>
                             ))}
                           </div>
-                          <div className="text-xs text-gray-400 mt-2 text-center">Geschwindigkeitsverlauf</div>
+                          <div className={`text-xs mt-2 text-center transition-colors duration-200 ${
+                            isDark ? 'text-gray-400' : 'text-gray-600'
+                          }`}>Geschwindigkeitsverlauf</div>
                         </div>
                       </div>
                     </div>
                     
                     <div className="text-center">
-                      <div className="text-sm text-gray-400 mb-2">Live Demo</div>
-                      <div className="text-base lg:text-lg font-semibold text-white">Professionelles Training-Interface</div>
+                      <div className={`text-sm mb-2 transition-colors duration-200 ${
+                        isDark ? 'text-gray-400' : 'text-gray-600'
+                      }`}>Live Demo</div>
+                      <div className={`text-base lg:text-lg font-semibold transition-colors duration-200 ${
+                        isDark ? 'text-white' : 'text-gray-900'
+                      }`}>Professionelles Training-Interface</div>
                     </div>
                   </div>
                 </div>
@@ -555,13 +711,19 @@ export const LandingPage: React.FC = () => {
       </div>
 
       {/* Features Section */}
-      <section className="py-12 lg:py-20 bg-gray-800/50">
+      <section className={`py-12 lg:py-20 transition-colors duration-200 ${
+        isDark ? 'bg-gray-800/50' : 'bg-white/50'
+      }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 lg:mb-16">
-            <h2 className="text-2xl lg:text-4xl font-bold text-white mb-4">
+            <h2 className={`text-2xl lg:text-4xl font-bold mb-4 transition-colors duration-200 ${
+              isDark ? 'text-white' : 'text-gray-900'
+            }`}>
               Alles was Sie für erfolgreiches Training brauchen
             </h2>
-            <p className="text-lg lg:text-xl text-gray-400 max-w-3xl mx-auto">
+            <p className={`text-lg lg:text-xl max-w-3xl mx-auto transition-colors duration-200 ${
+              isDark ? 'text-gray-400' : 'text-gray-600'
+            }`}>
               Unser Walking-Pad Tracker bietet professionelle Features für ambitionierte Fitness-Enthusiasten
             </p>
           </div>
@@ -569,12 +731,20 @@ export const LandingPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
             {features.map((feature, index) => (
               <div key={index} className="group">
-                <div className="bg-gray-800 rounded-xl p-6 h-full hover:bg-gray-700 transition-all duration-300 transform group-hover:scale-105 border border-gray-700">
+                <div className={`rounded-xl p-6 h-full transition-all duration-300 transform group-hover:scale-105 border ${
+                  isDark 
+                    ? 'bg-gray-800 hover:bg-gray-700 border-gray-700' 
+                    : 'bg-white hover:bg-gray-50 border-gray-200'
+                }`}>
                   <div className={`${feature.bgColor} w-12 h-12 rounded-lg flex items-center justify-center mb-4`}>
                     <feature.icon className={`w-6 h-6 ${feature.color}`} />
                   </div>
-                  <h3 className="text-lg lg:text-xl font-semibold text-white mb-3">{feature.title}</h3>
-                  <p className="text-sm lg:text-base text-gray-400 leading-relaxed">{feature.description}</p>
+                  <h3 className={`text-lg lg:text-xl font-semibold mb-3 transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>{feature.title}</h3>
+                  <p className={`text-sm lg:text-base leading-relaxed transition-colors duration-200 ${
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  }`}>{feature.description}</p>
                 </div>
               </div>
             ))}
@@ -586,8 +756,12 @@ export const LandingPage: React.FC = () => {
       <section className="py-12 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 lg:mb-16">
-            <h2 className="text-2xl lg:text-4xl font-bold text-white mb-4">So einfach geht's</h2>
-            <p className="text-lg lg:text-xl text-gray-400">In nur 3 Schritten zu Ihrem perfekten Training</p>
+            <h2 className={`text-2xl lg:text-4xl font-bold mb-4 transition-colors duration-200 ${
+              isDark ? 'text-white' : 'text-gray-900'
+            }`}>So einfach geht's</h2>
+            <p className={`text-lg lg:text-xl transition-colors duration-200 ${
+              isDark ? 'text-gray-400' : 'text-gray-600'
+            }`}>In nur 3 Schritten zu Ihrem perfekten Training</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -620,8 +794,12 @@ export const LandingPage: React.FC = () => {
                     <span className="text-xs lg:text-sm font-bold text-green-400">{item.step}</span>
                   </div>
                 </div>
-                <h3 className="text-lg lg:text-xl font-semibold text-white mb-3">{item.title}</h3>
-                <p className="text-sm lg:text-base text-gray-400">{item.description}</p>
+                <h3 className={`text-lg lg:text-xl font-semibold mb-3 transition-colors duration-200 ${
+                  isDark ? 'text-white' : 'text-gray-900'
+                }`}>{item.title}</h3>
+                <p className={`text-sm lg:text-base transition-colors duration-200 ${
+                  isDark ? 'text-gray-400' : 'text-gray-600'
+                }`}>{item.description}</p>
               </div>
             ))}
           </div>
@@ -629,12 +807,20 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-12 lg:py-20 bg-gradient-to-r from-green-900/20 to-blue-900/20">
+      <section className={`py-12 lg:py-20 transition-colors duration-200 ${
+        isDark 
+          ? 'bg-gradient-to-r from-green-900/20 to-blue-900/20' 
+          : 'bg-gradient-to-r from-green-100/50 to-blue-100/50'
+      }`}>
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-white mb-4 lg:mb-6">
+          <h2 className={`text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mb-4 lg:mb-6 transition-colors duration-200 ${
+            isDark ? 'text-white' : 'text-gray-900'
+          }`}>
             Bereit für Ihr nächstes Training?
           </h2>
-          <p className="text-lg lg:text-xl text-gray-300 mb-6 lg:mb-8">
+          <p className={`text-lg lg:text-xl mb-6 lg:mb-8 transition-colors duration-200 ${
+            isDark ? 'text-gray-300' : 'text-gray-700'
+          }`}>
             Starten Sie noch heute kostenlos und entdecken Sie, wie einfach professionelles Training-Tracking sein kann.
           </p>
           
@@ -650,23 +836,36 @@ export const LandingPage: React.FC = () => {
           </div>
           
           <p className="text-sm text-gray-400 mt-4">
+          <p className={`text-sm mt-4 transition-colors duration-200 ${
+            isDark ? 'text-gray-400' : 'text-gray-600'
+          }`}>
             Keine Kreditkarte erforderlich • Sofort einsatzbereit • 100% kostenlos
           </p>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-800 border-t border-gray-700 py-8 lg:py-12">
+      <footer className={`border-t py-8 lg:py-12 transition-colors duration-200 ${
+        isDark 
+          ? 'bg-gray-800 border-gray-700' 
+          : 'bg-white border-gray-200'
+      }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-blue-500 rounded-xl flex items-center justify-center">
+              <div className={`w-8 h-8 bg-gradient-to-br from-green-400 to-blue-500 rounded-xl flex items-center justify-center ${
+                !isDark ? 'shadow-md' : ''
+              }`}>
                 <Activity className="w-5 h-5 text-white" />
               </div>
-              <span className="text-lg lg:text-xl font-bold text-white">Walking-Pad Tracker</span>
+              <span className={`text-lg lg:text-xl font-bold transition-colors duration-200 ${
+                isDark ? 'text-white' : 'text-gray-900'
+              }`}>Walking-Pad Tracker</span>
             </div>
             
-            <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-6 text-gray-400 text-center md:text-left">
+            <div className={`flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-6 text-center md:text-left transition-colors duration-200 ${
+              isDark ? 'text-gray-400' : 'text-gray-600'
+            }`}>
               <p className="text-sm">&copy; 2025 Walking-Pad Tracker by Staubi. Bleiben Sie aktiv und gesund!</p>
               <a 
                 href="https://github.com/staubi82" 

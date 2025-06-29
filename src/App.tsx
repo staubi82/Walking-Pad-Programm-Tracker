@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Activity, BarChart3, History, AlertCircle, Play, LogOut, User, Menu, X } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
+import { useTheme } from './context/ThemeContext';
+import { ThemeToggle } from './components/ThemeToggle';
 import { logoutUser } from './firebase/auth';
 import { getUserProfile } from './firebase/services';
 import { LandingPage } from './components/LandingPage';
@@ -25,6 +27,7 @@ interface RecordingState {
 
 const MainApp: React.FC = () => {
   const { currentUser, isAuthenticated } = useAuth();
+  const { isDark } = useTheme();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'overview' | 'tracker' | 'history' | 'stats' | 'profile'>('overview');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -328,20 +331,30 @@ const MainApp: React.FC = () => {
   ] as const;
 
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className={`min-h-screen transition-colors duration-200 ${
+      isDark ? 'bg-gray-900' : 'bg-gray-50'
+    }`}>
       {/* Header */}
-      <header className="bg-gray-800 shadow-lg sticky top-0 z-40">
+      <header className={`shadow-lg sticky top-0 z-40 transition-colors duration-200 ${
+        isDark ? 'bg-gray-800' : 'bg-white border-b border-gray-200'
+      }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-14 sm:h-16">
             {/* Logo & Title */}
             <div className="flex items-center space-x-3 sm:space-x-6 flex-1 min-w-0">
               <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+                <div className={`w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0 ${
+                  !isDark ? 'shadow-gray-300' : ''
+                }`}>
                   <Activity className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
                 </div>
                 <div className="min-w-0">
-                  <h1 className="text-base sm:text-xl font-bold text-white truncate">Walking-Pad Tracker</h1>
-                  <p className="text-xs text-gray-400 hidden sm:block">Professionelles Training</p>
+                  <h1 className={`text-base sm:text-xl font-bold truncate transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>Walking-Pad Tracker</h1>
+                  <p className={`text-xs hidden sm:block transition-colors duration-200 ${
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  }`}>Professionelles Training</p>
                 </div>
               </div>
               
@@ -349,9 +362,14 @@ const MainApp: React.FC = () => {
             
             {/* Right Side */}
             <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
+              {/* Theme Toggle */}
+              <ThemeToggle className="hidden sm:flex" />
+              
               {/* Firebase Status - Nur Desktop */}
               {!firebaseConfigured && (
-                <div className="hidden lg:flex items-center space-x-2 text-yellow-400 bg-yellow-400/10 px-3 py-1 rounded-lg border border-yellow-400/30">
+                <div className={`hidden lg:flex items-center space-x-2 text-yellow-400 px-3 py-1 rounded-lg border border-yellow-400/30 transition-colors duration-200 ${
+                  isDark ? 'bg-yellow-400/10' : 'bg-yellow-50'
+                }`}>
                   <AlertCircle className="w-4 h-4" />
                   <span className="text-sm">Lokale Speicherung</span>
                 </div>
@@ -361,10 +379,14 @@ const MainApp: React.FC = () => {
               {currentUser && (
                 <div className="hidden md:flex items-center space-x-3">
                   <div className="flex flex-col items-end">
-                    <p className="text-sm text-white font-medium leading-tight">
+                    <p className={`text-sm font-medium leading-tight transition-colors duration-200 ${
+                      isDark ? 'text-white' : 'text-gray-900'
+                    }`}>
                       {currentUser.displayName || 'Benutzer'}
                     </p>
-                    <p className="text-xs text-gray-400 leading-tight">{currentUser.email}</p>
+                    <p className={`text-xs leading-tight transition-colors duration-200 ${
+                      isDark ? 'text-gray-400' : 'text-gray-600'
+                    }`}>{currentUser.email}</p>
                   </div>
                   
                   <button
@@ -387,7 +409,11 @@ const MainApp: React.FC = () => {
                   
                   <button
                     onClick={handleLogout}
-                    className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all group"
+                    className={`p-2 hover:text-red-400 rounded-lg transition-all group ${
+                      isDark 
+                        ? 'text-gray-400 hover:bg-red-500/10' 
+                        : 'text-gray-600 hover:bg-red-50'
+                    }`}
                     title="Abmelden"
                   >
                     <LogOut className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform" />
@@ -398,7 +424,9 @@ const MainApp: React.FC = () => {
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 text-white hover:text-green-400 transition-colors"
+                className={`md:hidden p-2 hover:text-green-400 transition-colors ${
+                  isDark ? 'text-white' : 'text-gray-900'
+                }`}
               >
                 {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
@@ -410,14 +438,22 @@ const MainApp: React.FC = () => {
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
         <div className="md:hidden fixed inset-0 z-50 bg-black bg-opacity-50" onClick={() => setMobileMenuOpen(false)}>
-          <div className="absolute top-0 right-0 w-80 max-w-[90vw] h-full bg-gray-800 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className={`absolute top-0 right-0 w-80 max-w-[90vw] h-full shadow-2xl transition-colors duration-200 ${
+            isDark ? 'bg-gray-800' : 'bg-white'
+          }`} onClick={(e) => e.stopPropagation()}>
             <div className="p-6">
               {/* Mobile Menu Header */}
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-bold text-white">Menü</h3>
+                <h3 className={`text-lg font-bold transition-colors duration-200 ${
+                  isDark ? 'text-white' : 'text-gray-900'
+                }`}>Menü</h3>
                 <button
                   onClick={() => setMobileMenuOpen(false)}
-                  className="p-2 text-gray-400 hover:text-white transition-colors"
+                  className={`p-2 transition-colors ${
+                    isDark 
+                      ? 'text-gray-400 hover:text-white' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
                 >
                   <X className="w-6 h-6" />
                 </button>
@@ -425,7 +461,9 @@ const MainApp: React.FC = () => {
 
               {/* User Info Mobile */}
               {currentUser && (
-                <div className="mb-6 p-4 bg-gray-700 rounded-lg">
+                <div className={`mb-6 p-4 rounded-lg transition-colors duration-200 ${
+                  isDark ? 'bg-gray-700' : 'bg-gray-100'
+                }`}>
                   <div className="flex items-center space-x-3 mb-3">
                     <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center overflow-hidden">
                       {profileImage ? (
@@ -441,21 +479,32 @@ const MainApp: React.FC = () => {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-white font-medium truncate">
+                      <p className={`font-medium truncate transition-colors duration-200 ${
+                        isDark ? 'text-white' : 'text-gray-900'
+                      }`}>
                         {currentUser.displayName || 'Benutzer'}
                       </p>
-                      <p className="text-gray-400 text-sm truncate">{currentUser.email}</p>
+                      <p className={`text-sm truncate transition-colors duration-200 ${
+                        isDark ? 'text-gray-400' : 'text-gray-600'
+                      }`}>{currentUser.email}</p>
                     </div>
                   </div>
                   
                   {!firebaseConfigured && (
-                    <div className="flex items-center space-x-2 text-yellow-400 bg-yellow-400/10 px-3 py-2 rounded-lg border border-yellow-400/30">
+                    <div className={`flex items-center space-x-2 text-yellow-400 px-3 py-2 rounded-lg border border-yellow-400/30 transition-colors duration-200 ${
+                      isDark ? 'bg-yellow-400/10' : 'bg-yellow-50'
+                    }`}>
                       <AlertCircle className="w-4 h-4" />
                       <span className="text-sm">Lokale Speicherung aktiv</span>
                     </div>
                   )}
                 </div>
               )}
+
+              {/* Theme Toggle Mobile */}
+              <div className="mb-6">
+                <ThemeToggle className="w-full justify-center" showLabel={true} />
+              </div>
 
               {/* Navigation Links */}
               <div className="space-y-2 mb-6">
@@ -466,7 +515,9 @@ const MainApp: React.FC = () => {
                     className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg font-medium transition-all ${
                       activeTab === tab.id
                         ? 'bg-green-600 text-white'
-                        : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                        : isDark 
+                          ? 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                          : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                     }`}
                   >
                     <tab.icon className="w-5 h-5" />
@@ -492,7 +543,11 @@ const MainApp: React.FC = () => {
       )}
 
       {/* Desktop Navigation */}
-      <nav className="bg-gray-800 border-b border-gray-700 hidden md:block">
+      <nav className={`border-b hidden md:block transition-colors duration-200 ${
+        isDark 
+          ? 'bg-gray-800 border-gray-700' 
+          : 'bg-white border-gray-200'
+      }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex space-x-1">
             {tabs.map((tab) => (
@@ -501,8 +556,12 @@ const MainApp: React.FC = () => {
                 onClick={() => handleTabChange(tab.id)}
                 className={`flex items-center space-x-2 py-3 px-4 rounded-t-lg font-medium text-sm transition-all ${
                   activeTab === tab.id
-                    ? 'bg-gray-700 text-green-400 border-b-2 border-green-500'
-                    : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+                    ? isDark 
+                      ? 'bg-gray-700 text-green-400 border-b-2 border-green-500'
+                      : 'bg-gray-100 text-green-600 border-b-2 border-green-500'
+                    : isDark
+                      ? 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
               >
                 <tab.icon className="w-5 h-5" />
@@ -517,7 +576,11 @@ const MainApp: React.FC = () => {
       </nav>
 
       {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 z-30">
+      <div className={`md:hidden fixed bottom-0 left-0 right-0 border-t z-30 transition-colors duration-200 ${
+        isDark 
+          ? 'bg-gray-800 border-gray-700' 
+          : 'bg-white border-gray-200'
+      }`}>
         <div className="grid grid-cols-5 h-16">
           {tabs.map((tab) => (
             <button
@@ -525,8 +588,12 @@ const MainApp: React.FC = () => {
               onClick={() => handleTabChange(tab.id)}
               className={`flex flex-col items-center justify-center space-y-1 transition-all relative ${
                 activeTab === tab.id
-                  ? 'text-green-400 bg-gray-700'
-                  : 'text-gray-400 hover:text-white'
+                  ? isDark 
+                    ? 'text-green-400 bg-gray-700'
+                    : 'text-green-600 bg-gray-100'
+                  : isDark
+                    ? 'text-gray-400 hover:text-white'
+                    : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               <tab.icon className="w-5 h-5" />
@@ -616,9 +683,15 @@ const MainApp: React.FC = () => {
       </main>
 
       {/* Footer - Nur Desktop */}
-      <footer className="bg-gray-800 border-t border-gray-700 mt-12 hidden md:block">
+      <footer className={`border-t mt-12 hidden md:block transition-colors duration-200 ${
+        isDark 
+          ? 'bg-gray-800 border-gray-700' 
+          : 'bg-white border-gray-200'
+      }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="text-center text-gray-400">
+          <div className={`text-center transition-colors duration-200 ${
+            isDark ? 'text-gray-400' : 'text-gray-600'
+          }`}>
             <div className="flex flex-col md:flex-row justify-center items-center space-y-2 md:space-y-0 md:space-x-4">
               <p>&copy; 2025 Walking-Pad Tracker by Staubi. Bleiben Sie aktiv und gesund!</p>
               <a 
@@ -649,22 +722,36 @@ const MainApp: React.FC = () => {
       {/* Delete Confirmation Modal */}
       {deleteConfirmation.show && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-xl p-6 w-full max-w-md shadow-2xl border border-gray-700">
+          <div className={`rounded-xl p-6 w-full max-w-md shadow-2xl border transition-colors duration-200 ${
+            isDark 
+              ? 'bg-gray-800 border-gray-700' 
+              : 'bg-white border-gray-200'
+          }`}>
             <div className="flex items-center space-x-3 mb-4">
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                isDark ? 'bg-red-100' : 'bg-red-100'
+              }`}>
                 <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white">Programm löschen</h3>
-                <p className="text-sm text-gray-400">Diese Aktion kann nicht rückgängig gemacht werden</p>
+                <h3 className={`text-lg font-semibold transition-colors duration-200 ${
+                  isDark ? 'text-white' : 'text-gray-900'
+                }`}>Programm löschen</h3>
+                <p className={`text-sm transition-colors duration-200 ${
+                  isDark ? 'text-gray-400' : 'text-gray-600'
+                }`}>Diese Aktion kann nicht rückgängig gemacht werden</p>
               </div>
             </div>
             
             <div className="mb-6">
-              <p className="text-gray-300">
-                Möchten Sie das Programm <span className="font-semibold text-white">"{deleteConfirmation.sessionName}"</span> wirklich löschen?
+              <p className={`transition-colors duration-200 ${
+                isDark ? 'text-gray-300' : 'text-gray-700'
+              }`}>
+                Möchten Sie das Programm <span className={`font-semibold transition-colors duration-200 ${
+                  isDark ? 'text-white' : 'text-gray-900'
+                }`}>"{deleteConfirmation.sessionName}"</span> wirklich löschen?
               </p>
             </div>
             
@@ -680,7 +767,11 @@ const MainApp: React.FC = () => {
               </button>
               <button
                 onClick={() => setDeleteConfirmation({ show: false, sessionId: '', sessionName: '' })}
-                className="flex-1 bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded-lg text-white font-medium transition-colors"
+                className={`flex-1 px-4 py-2 rounded-lg text-white font-medium transition-colors ${
+                  isDark 
+                    ? 'bg-gray-600 hover:bg-gray-500' 
+                    : 'bg-gray-500 hover:bg-gray-600'
+                }`}
               >
                 Abbrechen
               </button>
@@ -706,13 +797,19 @@ function formatDuration(seconds: number): string {
 
 function App() {
   const { isAuthenticated, loading } = useAuth();
+  const { isDark } = useTheme();
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className={`min-h-screen flex items-center justify-center transition-colors duration-200 ${
+        isDark ? 'bg-gray-900' : 'bg-gray-50'
+      }`}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
           <p className="text-white">Lade...</p>
+          <p className={`transition-colors duration-200 ${
+            isDark ? 'text-white' : 'text-gray-900'
+          }`}>Lade...</p>
         </div>
       </div>
     );

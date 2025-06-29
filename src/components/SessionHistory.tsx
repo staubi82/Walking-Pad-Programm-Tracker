@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, MapPin, Flame, Trash2, Filter, BarChart3, Edit3, ArrowUpDown, ArrowUp, ArrowDown, Footprints } from 'lucide-react';
 import { TrainingSession, FilterOptions } from '../types';
 import { formatDuration, formatDate, calculateStepsForExistingSession } from '../utils/calculations';
 import { HighchartsChart } from './HighchartsChart';
 import { getUserProfile } from '../firebase/services';
-import { useState, useEffect } from 'react';
 
 interface SessionHistoryProps {
   sessions: TrainingSession[];

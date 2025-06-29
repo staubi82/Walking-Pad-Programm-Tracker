@@ -543,108 +543,54 @@ const MainApp: React.FC = () => {
       )}
 
       {/* Desktop Navigation */}
-      <nav className={`hidden md:block py-8 transition-colors duration-200 ${
+      <nav className={`hidden md:block py-6 transition-colors duration-200 ${
         isDark 
           ? 'bg-gray-900' 
           : 'bg-gray-50'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-center">
-            <div className={`relative flex items-center gap-1 p-1.5 rounded-3xl backdrop-blur-2xl border transition-all duration-500 shadow-2xl hover:shadow-3xl ${
+            <div className={`relative flex items-center gap-2 p-2 rounded-2xl transition-all duration-300 ${
               isDark 
-                ? 'bg-gray-800/60 border-gray-600/30 shadow-black/40 hover:bg-gray-800/70' 
-                : 'bg-white/60 border-gray-300/30 shadow-gray-500/20 hover:bg-white/70'
+                ? 'bg-gray-800/80 backdrop-blur-sm border border-gray-700/50' 
+                : 'bg-white/80 backdrop-blur-sm border border-gray-200/50 shadow-sm'
             }`}>
-              
-              {/* Background Glow Effect */}
-              <div className={`absolute inset-0 rounded-3xl transition-opacity duration-500 ${
-                isDark 
-                  ? 'bg-gradient-to-r from-green-500/10 via-blue-500/10 to-purple-500/10' 
-                  : 'bg-gradient-to-r from-green-500/5 via-blue-500/5 to-purple-500/5'
-              }`}></div>
               
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
-                className={`relative flex flex-col items-center justify-center py-4 px-5 rounded-2xl font-medium text-xs transition-all duration-500 min-w-[90px] group z-10 ${
+                className={`relative flex items-center space-x-2 py-3 px-4 rounded-xl font-medium text-sm transition-all duration-300 group ${
                   activeTab === tab.id
-                    ? isDark
-                      ? 'bg-gradient-to-br from-green-400 via-green-500 to-green-600 text-white shadow-xl shadow-green-500/40 scale-110 transform'
-                      : 'bg-gradient-to-br from-green-400 via-green-500 to-green-600 text-white shadow-xl shadow-green-500/40 scale-110 transform'
+                    ? 'bg-green-500 text-white shadow-lg shadow-green-500/25'
                     : isDark
-                      ? 'text-gray-400 hover:text-white hover:bg-gray-700/40 hover:scale-105 hover:shadow-lg'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/40 hover:scale-105 hover:shadow-lg'
+                      ? 'text-gray-400 hover:text-white hover:bg-gray-700/50'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/50'
                 }`}
               >
-                {/* Active Background Glow */}
-                {activeTab === tab.id && (
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-green-400/20 to-green-600/20 blur-sm scale-110"></div>
-                )}
-                
-                {/* Icon */}
-                <div className="relative z-10">
-                  <tab.icon className={`w-6 h-6 transition-all duration-500 ${
-                    activeTab === tab.id 
-                      ? 'scale-125 drop-shadow-lg filter brightness-110' 
-                      : 'group-hover:scale-115 group-hover:drop-shadow-md'
+                <div className="relative">
+                  <tab.icon className={`w-5 h-5 transition-all duration-300 ${
+                    activeTab === tab.id ? 'scale-110' : 'group-hover:scale-105'
                   }`} />
                   
-                  {/* Recording Indicator */}
                   {tab.id === 'tracker' && recordingState.isRecording && (
-                    <div className="absolute -top-2 -right-2 w-4 h-4 bg-gradient-to-br from-red-400 to-red-600 rounded-full animate-pulse border-2 border-white shadow-xl">
-                      <div className="absolute inset-0 bg-red-500 rounded-full animate-ping opacity-60"></div>
-                      <div className="absolute inset-1 bg-white rounded-full opacity-90"></div>
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse">
+                      <div className="absolute inset-0 bg-red-500 rounded-full animate-ping opacity-75"></div>
                     </div>
                   )}
                 </div>
                 
-                {/* Label */}
-                <span className={`mt-2 font-bold transition-all duration-500 tracking-wide z-10 ${
-                  activeTab === tab.id 
-                    ? 'text-white drop-shadow-sm' 
-                    : 'group-hover:font-extrabold'
-                }`}>
+                <span className="transition-all duration-300">
                   <span className="hidden xl:inline">{tab.label}</span>
                   <span className="xl:hidden">{tab.shortLabel}</span>
                 </span>
                 
-                {/* Active Indicator */}
+                {/* Subtle active indicator */}
                 {activeTab === tab.id && (
-                  <>
-                    <div className="absolute -bottom-2 w-2 h-2 bg-white rounded-full shadow-lg animate-pulse"></div>
-                    <div className="absolute -bottom-3 w-6 h-0.5 bg-gradient-to-r from-transparent via-white to-transparent opacity-60 rounded-full"></div>
-                  </>
+                  <div className="absolute inset-0 rounded-xl bg-green-500/10 -z-10 scale-110 transition-all duration-300"></div>
                 )}
-                
-                {/* Hover Effect */}
-                <div className={`absolute inset-0 rounded-2xl transition-all duration-500 opacity-0 group-hover:opacity-100 ${
-                  activeTab !== tab.id 
-                    ? isDark
-                      ? 'bg-gradient-to-br from-gray-600/20 to-gray-700/20'
-                      : 'bg-gradient-to-br from-gray-200/30 to-gray-300/30'
-                    : ''
-                }`}></div>
               </button>
             ))}
-            
-            {/* Floating Particles Effect */}
-            <div className="absolute inset-0 pointer-events-none">
-              {[...Array(3)].map((_, i) => (
-                <div
-                  key={i}
-                  className={`absolute w-1 h-1 rounded-full animate-pulse ${
-                    isDark ? 'bg-green-400/30' : 'bg-green-500/20'
-                  }`}
-                  style={{
-                    left: `${20 + i * 30}%`,
-                    top: `${10 + i * 20}%`,
-                    animationDelay: `${i * 0.5}s`,
-                    animationDuration: `${2 + i}s`
-                  }}
-                ></div>
-              ))}
-            </div>
           </div>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 
 // Firebase configuration
 // Konfiguration aus Umgebungsvariablen laden
@@ -18,4 +19,6 @@ const app = initializeApp(firebaseConfig);
 // Initialize Firestore
 export const db = getFirestore(app);
 
+// Initialize Firebase Authentication
+export const auth = getAuth(app);
 export default app;

@@ -7,16 +7,23 @@ import {
   query, 
   orderBy, 
   where, 
-  Timestamp 
+  Timestamp,
+  updateDoc
 } from 'firebase/firestore';
-import { db } from './config';
+import { db, auth } from './config';
 import { TrainingSession, TrainingProgram } from '../types';
 
 // Training Sessions
 export const saveTrainingSession = async (session: Omit<TrainingSession, 'id'>) => {
   try {
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error('Benutzer nicht angemeldet');
+    }
+
     const docRef = await addDoc(collection(db, 'trainingSessions'), {
       ...session,
+      userId: user.uid,
       date: Timestamp.fromDate(session.date),
       createdAt: Timestamp.fromDate(session.createdAt)
     });
@@ -29,7 +36,16 @@ export const saveTrainingSession = async (session: Omit<TrainingSession, 'id'>) 
 
 export const getTrainingSessions = async (): Promise<TrainingSession[]> => {
   try {
-    const q = query(collection(db, 'trainingSessions'), orderBy('date', 'desc'));
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error('Benutzer nicht angemeldet');
+    }
+
+    const q = query(
+      collection(db, 'trainingSessions'), 
+      where('userId', '==', user.uid),
+      orderBy('date', 'desc')
+    );
     const querySnapshot = await getDocs(q);
     
     return querySnapshot.docs.map(doc => ({
@@ -51,6 +67,11 @@ export const getTrainingSessions = async (): Promise<TrainingSession[]> => {
 
 export const deleteTrainingSession = async (id: string) => {
   try {
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error('Benutzer nicht angemeldet');
+    }
+
     await deleteDoc(doc(db, 'trainingSessions', id));
   } catch (error) {
     console.error('Fehler beim Löschen der Trainingseinheit:', error);
@@ -58,11 +79,41 @@ export const deleteTrainingSession = async (id: string) => {
   }
 };
 
+export const updateTrainingSession = async (id: string, updates: Partial<Omit<TrainingSession, 'id' | 'userId'>>) => {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error('Benutzer nicht angemeldet');
+    }
+
+    const updateData: any = { ...updates };
+    
+    // Konvertiere Date-Objekte zu Timestamps
+    if (updateData.date) {
+      updateData.date = Timestamp.fromDate(updateData.date);
+    }
+    if (updateData.createdAt) {
+      updateData.createdAt = Timestamp.fromDate(updateData.createdAt);
+    }
+
+    await updateDoc(doc(db, 'trainingSessions', id), updateData);
+  } catch (error) {
+    console.error('Fehler beim Aktualisieren der Trainingseinheit:', error);
+    throw error;
+  }
+};
+
 // Training Programs
 export const saveTrainingProgram = async (program: Omit<TrainingProgram, 'id'>) => {
   try {
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error('Benutzer nicht angemeldet');
+    }
+
     const docRef = await addDoc(collection(db, 'trainingPrograms'), {
       ...program,
+      userId: user.uid,
       createdAt: Timestamp.fromDate(program.createdAt)
     });
     return docRef.id;
@@ -74,7 +125,16 @@ export const saveTrainingProgram = async (program: Omit<TrainingProgram, 'id'>) 
 
 export const getTrainingPrograms = async (): Promise<TrainingProgram[]> => {
   try {
-    const q = query(collection(db, 'trainingPrograms'), orderBy('createdAt', 'desc'));
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error('Benutzer nicht angemeldet');
+    }
+
+    const q = query(
+      collection(db, 'trainingPrograms'), 
+      where('userId', '==', user.uid),
+      orderBy('createdAt', 'desc')
+    );
     const querySnapshot = await getDocs(q);
     
     return querySnapshot.docs.map(doc => ({
@@ -84,6 +144,6 @@ export const getTrainingPrograms = async (): Promise<TrainingProgram[]> => {
     })) as TrainingProgram[];
   } catch (error) {
     console.error('Fehler beim Laden der Trainingsprogramme:', error);
-    return [];
+    throw error;
   }
 };

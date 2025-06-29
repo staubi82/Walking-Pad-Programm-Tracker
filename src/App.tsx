@@ -543,56 +543,41 @@ const MainApp: React.FC = () => {
       )}
 
       {/* Desktop Navigation */}
-      <nav className={`hidden md:block py-4 transition-colors duration-200 ${
+      <nav className={`hidden md:block sticky top-16 z-30 backdrop-blur-sm transition-colors duration-200 ${
         isDark 
-          ? 'bg-gray-900' 
-          : 'bg-gray-50'
+          ? 'bg-gray-900/90' 
+          : 'bg-white/90 shadow-sm'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-center">
-            <div className={`relative flex items-center p-1 rounded-xl border transition-all duration-300 shadow-lg ${
-              isDark 
-                ? 'bg-gray-800 border-gray-700 shadow-gray-900/50' 
-                : 'bg-white border-gray-200 shadow-gray-300/30'
+            <div className={`flex items-center rounded-full p-1 transition-colors duration-200 ${
+              isDark ? 'bg-gray-800' : 'bg-gray-100'
             }`}>
-              {/* Sliding Background */}
-              <div 
-                className={`absolute top-1 bottom-1 rounded-lg transition-all duration-300 ease-out ${
-                  isDark ? 'bg-green-600' : 'bg-green-600'
-                }`}
-                style={{
-                  left: `${tabs.findIndex(tab => tab.id === activeTab) * (100 / tabs.length)}%`,
-                  width: `${100 / tabs.length}%`,
-                  transform: 'translateX(4px)',
-                  right: '4px'
-                }}
-              />
-              
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
-                className={`relative z-10 flex items-center justify-center space-x-2 py-3 px-6 rounded-lg font-medium text-sm transition-all duration-300 min-w-[120px] ${
+                className={`relative flex items-center space-x-2 py-2 px-4 rounded-full font-medium text-sm transition-all duration-200 ${
                   activeTab === tab.id
-                    ? 'text-white shadow-sm' 
+                    ? isDark 
+                      ? 'text-white bg-green-600 shadow-lg' 
+                      : 'text-white bg-green-600 shadow-lg'
                     : isDark
-                      ? 'text-gray-400 hover:text-gray-200'
-                      : 'text-gray-600 hover:text-gray-800'
+                      ? 'text-gray-400 hover:text-white hover:bg-gray-700'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-white'
                 }`}
               >
-                <tab.icon className={`w-4 h-4 transition-transform duration-200 ${
-                  activeTab === tab.id ? 'scale-110' : ''
-                }`} />
-                <span className="hidden xl:inline font-semibold">{tab.label}</span>
-                <span className="xl:hidden font-semibold">{tab.shortLabel}</span>
+                <tab.icon className="w-4 h-4" />
+                <span className="hidden lg:inline">{tab.label}</span>
+                <span className="lg:hidden">{tab.shortLabel}</span>
                 
                 {/* Recording Indicator */}
                 {tab.id === 'tracker' && recordingState.isRecording && (
-                  <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-red-500 rounded-full animate-pulse border-2 border-white shadow-lg"></div>
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse border-2 border-white"></div>
                 )}
               </button>
             ))}
-          </div>
+            </div>
           </div>
         </div>
       </nav>

@@ -339,7 +339,7 @@ const MainApp: React.FC = () => {
         isDark ? 'bg-gray-800' : 'bg-white border-b border-gray-200'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-14 sm:h-16">
+          <div className="flex justify-between items-center h-16 sm:h-20">
             {/* Logo & Title */}
             <div className="flex items-center space-x-3 sm:space-x-6 flex-1 min-w-0">
               <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
@@ -542,59 +542,6 @@ const MainApp: React.FC = () => {
         </div>
       )}
 
-      {/* Desktop Navigation */}
-      <nav className={`hidden md:block py-6 transition-colors duration-200 ${
-        isDark 
-          ? 'bg-gray-900' 
-          : 'bg-gray-50'
-      }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-center">
-            <div className={`relative flex items-center gap-2 p-2 rounded-2xl transition-all duration-300 ${
-              isDark 
-                ? 'bg-gray-800/80 backdrop-blur-sm border border-gray-700/50' 
-                : 'bg-white/80 backdrop-blur-sm border border-gray-200/50 shadow-sm'
-            }`}>
-              
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => handleTabChange(tab.id)}
-                className={`relative flex items-center space-x-2 py-3 px-4 rounded-xl font-medium text-sm transition-all duration-300 group ${
-                  activeTab === tab.id
-                    ? 'bg-green-500 text-white shadow-lg shadow-green-500/25'
-                    : isDark
-                      ? 'text-gray-400 hover:text-white hover:bg-gray-700/50'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/50'
-                }`}
-              >
-                <div className="relative">
-                  <tab.icon className={`w-5 h-5 transition-all duration-300 ${
-                    activeTab === tab.id ? 'scale-110' : 'group-hover:scale-105'
-                  }`} />
-                  
-                  {tab.id === 'tracker' && recordingState.isRecording && (
-                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse">
-                      <div className="absolute inset-0 bg-red-500 rounded-full animate-ping opacity-75"></div>
-                    </div>
-                  )}
-                </div>
-                
-                <span className="transition-all duration-300">
-                  <span className="hidden xl:inline">{tab.label}</span>
-                  <span className="xl:hidden">{tab.shortLabel}</span>
-                </span>
-                
-                {/* Subtle active indicator */}
-                {activeTab === tab.id && (
-                  <div className="absolute inset-0 rounded-xl bg-green-500/10 -z-10 scale-110 transition-all duration-300"></div>
-                )}
-              </button>
-            ))}
-          </div>
-          </div>
-        </div>
-      </nav>
 
       {/* Mobile Bottom Navigation */}
       <div className={`md:hidden fixed bottom-0 left-0 right-0 border-t z-30 transition-colors duration-200 ${
@@ -685,6 +632,45 @@ const MainApp: React.FC = () => {
               </div>
             </div>
             
+            {/* Desktop Navigation - Integriert */}
+            <div className="hidden md:flex items-center justify-center flex-1">
+              <div className={`relative flex items-center gap-1 p-1.5 rounded-2xl transition-all duration-300 ${
+                isDark 
+                  ? 'bg-gray-700/50 backdrop-blur-sm border border-gray-600/30' 
+                  : 'bg-gray-100/80 backdrop-blur-sm border border-gray-200/50'
+              }`}>
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => handleTabChange(tab.id)}
+                    className={`relative flex items-center space-x-2 py-2.5 px-4 rounded-xl font-medium text-sm transition-all duration-300 group ${
+                      activeTab === tab.id
+                        ? 'bg-green-500 text-white shadow-lg shadow-green-500/20'
+                        : isDark
+                          ? 'text-gray-300 hover:text-white hover:bg-gray-600/50'
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-white/70'
+                    }`}
+                  >
+                    <div className="relative">
+                      <tab.icon className={`w-4 h-4 transition-all duration-300 ${
+                        activeTab === tab.id ? 'scale-110' : 'group-hover:scale-105'
+                      }`} />
+                      
+                      {tab.id === 'tracker' && recordingState.isRecording && (
+                        <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse">
+                          <div className="absolute inset-0 bg-red-500 rounded-full animate-ping opacity-75"></div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <span className="transition-all duration-300 hidden lg:inline">
+                      {tab.shortLabel}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            
             <SessionHistory 
               sessions={sessions.slice(0, 5)} 
               onDeleteSession={handleDeleteSession}
@@ -747,7 +733,7 @@ const MainApp: React.FC = () => {
                 <span>GitHub</span>
               </a>
             </div>
-          </div>
+            <div className="flex items-center space-x-2 sm:space-x-3 flex-1 justify-end">
         </div>
       </footer>
 

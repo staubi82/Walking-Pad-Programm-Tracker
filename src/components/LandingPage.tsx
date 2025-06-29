@@ -834,7 +834,6 @@ export const LandingPage: React.FC = () => {
             </button>
           </div>
           
-          <p className="text-sm text-gray-400 mt-4">
           <p className={`text-sm mt-4 transition-colors duration-200 ${
             isDark ? 'text-gray-400' : 'text-gray-600'
           }`}>

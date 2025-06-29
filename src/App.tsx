@@ -340,7 +340,7 @@ const MainApp: React.FC = () => {
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Top Row - Logo & User Info */}
-          <div className="flex justify-between items-center h-14 sm:h-16 border-b border-gray-200/20">
+          <div className="flex justify-between items-center h-14 sm:h-16">
             {/* Logo & Title */}
             <div className="flex items-center space-x-3 sm:space-x-6 flex-1 min-w-0">
               <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
@@ -431,6 +431,31 @@ const MainApp: React.FC = () => {
               >
                 {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
+            </div>
+          </div>
+          
+          {/* Bottom Row - Navigation (Desktop only) */}
+          <div className="hidden md:block border-t border-gray-200/20">
+            <div className="flex justify-center space-x-1 py-2">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => handleTabChange(tab.id)}
+                  className={`flex items-center space-x-2 py-2 px-4 rounded-lg font-medium text-sm transition-all ${
+                    activeTab === tab.id
+                      ? 'bg-green-600 text-white shadow-lg'
+                      : isDark
+                        ? 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  }`}
+                >
+                  <tab.icon className="w-4 h-4" />
+                  <span>{tab.label}</span>
+                  {tab.id === 'tracker' && recordingState.isRecording && (
+                    <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                  )}
+                </button>
+              ))}
             </div>
           </div>
         </div>

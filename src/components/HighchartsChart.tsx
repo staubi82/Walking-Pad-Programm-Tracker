@@ -65,7 +65,7 @@ export const HighchartsChart: React.FC<HighchartsChartProps> = ({ session, onDel
       });
       
       // Berechne Minuten und Sekunden korrekt
-      const totalSeconds = Math.round(timeFromStart);
+      const totalSeconds = Math.round(timeFromStart / 30) * 30; // Runde auf 30-Sekunden-Intervalle
       const minutes = Math.floor(totalSeconds / 60);
       const seconds = totalSeconds % 60;
       
@@ -98,7 +98,7 @@ export const HighchartsChart: React.FC<HighchartsChartProps> = ({ session, onDel
       
       // Füge auch zu speedChanges hinzu wenn sich die Geschwindigkeit geändert hat
       if (Math.abs(lastPoint.speed - currentSpeed) > 0.1) {
-        const totalSeconds = Math.round(lastTimeFromStart);
+        const totalSeconds = Math.round(lastTimeFromStart / 30) * 30; // Runde auf 30-Sekunden-Intervalle
         const minutes = Math.floor(totalSeconds / 60);
         const seconds = totalSeconds % 60;
         

@@ -88,22 +88,25 @@ export const HighchartsChart: React.FC<HighchartsChartProps> = ({ session, onDel
     const lastPoint = session.speedHistory[session.speedHistory.length - 1];
     const lastTimeFromStart = (lastPoint.timestamp - session.speedHistory[0].timestamp) / 1000;
     
+    // Begrenze auf die tatsächliche Session-Dauer
+    const maxTimeFromStart = Math.min(lastTimeFromStart, totalDuration);
+    
     // Nur hinzufügen wenn es sich vom letzten uniqueSpeedPoint unterscheidet
     const lastUniquePoint = uniqueSpeedPoints[uniqueSpeedPoints.length - 1];
-    if (Math.abs(lastTimeFromStart - lastUniquePoint.time) > 10) { // Mindestens 10 Sekunden Unterschied
+    if (Math.abs(maxTimeFromStart - lastUniquePoint.time) > 10) { // Mindestens 10 Sekunden Unterschied
       uniqueSpeedPoints.push({
-        time: lastTimeFromStart,
+        time: maxTimeFromStart,
         speed: lastPoint.speed
       });
       
       // Füge auch zu speedChanges hinzu wenn sich die Geschwindigkeit geändert hat
       if (Math.abs(lastPoint.speed - currentSpeed) > 0.1) {
-        const totalSeconds = Math.round(lastTimeFromStart / 30) * 30; // Runde auf 30-Sekunden-Intervalle
+        const totalSeconds = Math.round(maxTimeFromStart / 30) * 30; // Runde auf 30-Sekunden-Intervalle
         const minutes = Math.floor(totalSeconds / 60);
         const seconds = totalSeconds % 60;
         
         speedChanges.push({
-          x: lastTimeFromStart / 60,
+          x: maxTimeFromStart / 60,
           speed: lastPoint.speed,
           change: Math.round((lastPoint.speed - currentSpeed) * 10) / 10,
           time: formatDuration(totalSeconds),
@@ -116,7 +119,10 @@ export const HighchartsChart: React.FC<HighchartsChartProps> = ({ session, onDel
   
   // Konvertiere zu Chart-Daten (Zeit in Minuten)
   for (const point of uniqueSpeedPoints) {
-    chartData.push([point.time / 60, Math.round(point.speed * 10) / 10]);
+    // Begrenze auch hier auf die Session-Dauer
+    if (point.time <= totalDuration) {
+      chartData.push([point.time / 60, Math.round(point.speed * 10) / 10]);
+    }
   }
 
   // Highcharts Konfiguration

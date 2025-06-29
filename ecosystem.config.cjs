@@ -3,7 +3,7 @@ module.exports = {
     {
       name: 'walking-pad-tracker',
       script: 'npx',
-      args: 'serve -s dist -l 3000',
+      args: 'serve -s dist -l 3814',
       cwd: '/var/www/Walking-Pad-Programm-Tracker',
       instances: 1,
       autorestart: true,
@@ -11,11 +11,11 @@ module.exports = {
       max_memory_restart: '1G',
       env: {
         NODE_ENV: 'production',
-        PORT: 3000
+        PORT: 3814
       },
       env_production: {
         NODE_ENV: 'production',
-        PORT: 3000
+        PORT: 3814
       },
       error_file: './logs/err.log',
       out_file: './logs/out.log',

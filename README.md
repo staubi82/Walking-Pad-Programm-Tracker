@@ -113,6 +113,73 @@ server {
     listen 80;
     server_name your-domain.com www.your-domain.com;
     
+    # Proxy zu Node.js App auf Port 3814
+    location / {
+        proxy_pass http://localhost:3814;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+    
+    # Optional: Direkter Zugriff auf statische Dateien (Performance-Optimierung)
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+        root /home/walkingpad/walking-pad-tracker/dist;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        try_files $uri @proxy;
+    }
+    
+    location @proxy {
+        proxy_pass http://localhost:3814;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+
+# Alternative: Einfache statische Dateien (ohne Node.js)
+# server {
+#     listen 80;
+#     server_name your-domain.com www.your-domain.com;
+#     
+#     root /home/walkingpad/walking-pad-tracker/dist;
+#     index index.html;
+#     
+#     # Gzip Kompression
+#     gzip on;
+#     gzip_vary on;
+#     gzip_min_length 1024;
+#     gzip_types text/plain text/css text/xml text/javascript application/javascript application/xml+rss application/json;
+#     
+#     # Cache-Headers für statische Dateien
+#     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+#         expires 1y;
+#         add_header Cache-Control "public, immutable";
+#     }
+#     
+#     # SPA Routing
+#     location / {
+#         try_files $uri $uri/ /index.html;
+#     }
+# }
+```
+
+**Vereinfachte Nginx-Konfiguration (nur statische Dateien):**
+
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com www.your-domain.com;
     root /home/walkingpad/walking-pad-tracker/dist;
     index index.html;
     

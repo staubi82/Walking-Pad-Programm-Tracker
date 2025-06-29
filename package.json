@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "serve -s dist -l 3000",
+    "start": "serve -s dist -l 3814",
     "pm2:start": "pm2 start npm --name 'walking-pad-tracker' -- start",
     "pm2:stop": "pm2 stop walking-pad-tracker",
     "pm2:restart": "pm2 restart walking-pad-tracker",
@@ -28,6 +28,7 @@
     "recharts": "^2.8.0"
   },
   "devDependencies": {
+    "serve": "^14.2.1",
     "@eslint/js": "^9.9.1",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",

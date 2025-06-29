@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Activity, BarChart3, History, AlertCircle, Play } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
@@ -446,7 +446,32 @@ const MainApp: React.FC = () => {
   );
 };
 
+// Helper function to format duration
+function formatDuration(seconds: number): string {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  
+  if (hours > 0) {
+    return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+  return `${minutes}:${secs.toString().padStart(2, '0')}`;
+}
+
 function App() {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
+          <p className="text-white">Lade...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Routes>
       {/* Public Routes */}
@@ -461,10 +486,9 @@ function App() {
         </ProtectedRoute>
       } />
       
+      {/* Main Route */}
       <Route path="/" element={
-        <ProtectedRoute>
-          <MainApp />
-        </ProtectedRoute>
+        isAuthenticated ? <MainApp /> : <LandingPage />
       } />
       
       {/* Redirect unknown routes to home */}
@@ -474,15 +498,3 @@ function App() {
 }
 
 export default App;
-
-// Helper function to format duration (moved here to avoid import issues)
-function formatDuration(seconds: number): string {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const secs = seconds % 60;
-  
-  if (hours > 0) {
-    return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  }
-  return `${minutes}:${secs.toString().padStart(2, '0')}`;
-}

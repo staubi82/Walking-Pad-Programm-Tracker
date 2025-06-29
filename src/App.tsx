@@ -545,39 +545,39 @@ const MainApp: React.FC = () => {
       {/* Desktop Navigation */}
       <nav className={`hidden md:block sticky top-16 z-30 backdrop-blur-sm transition-colors duration-200 ${
         isDark 
-          ? 'bg-gray-800/95 border-b border-gray-700' 
-          : 'bg-white/95 border-b border-gray-200'
+          ? 'bg-gray-900/90' 
+          : 'bg-white/90 shadow-sm'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-center space-x-1">
+          <div className="flex justify-center">
+            <div className={`flex items-center rounded-full p-1 transition-colors duration-200 ${
+              isDark ? 'bg-gray-800' : 'bg-gray-100'
+            }`}>
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
-                className={`relative flex items-center space-x-2 py-4 px-6 font-medium text-sm transition-all duration-200 ${
+                className={`relative flex items-center space-x-2 py-2 px-4 rounded-full font-medium text-sm transition-all duration-200 ${
                   activeTab === tab.id
                     ? isDark 
-                      ? 'text-green-400 bg-gray-700/50' 
-                      : 'text-green-600 bg-gray-100/50'
+                      ? 'text-white bg-green-600 shadow-lg' 
+                      : 'text-white bg-green-600 shadow-lg'
                     : isDark
-                      ? 'text-gray-300 hover:text-white hover:bg-gray-700/30'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/30'
+                      ? 'text-gray-400 hover:text-white hover:bg-gray-700'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-white'
                 }`}
               >
-                <tab.icon className="w-5 h-5" />
-                <span>{tab.label}</span>
-                
-                {/* Active Indicator */}
-                {activeTab === tab.id && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-green-500"></div>
-                )}
+                <tab.icon className="w-4 h-4" />
+                <span className="hidden lg:inline">{tab.label}</span>
+                <span className="lg:hidden">{tab.shortLabel}</span>
                 
                 {/* Recording Indicator */}
                 {tab.id === 'tracker' && recordingState.isRecording && (
-                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse border-2 border-white"></div>
                 )}
               </button>
             ))}
+            </div>
           </div>
         </div>
       </nav>

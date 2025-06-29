@@ -35,6 +35,7 @@ const difficultyLevels = [
 ];
 
 export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete }) => {
+export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, isRecording, onRecordingChange }) => {
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [duration, setDuration] = useState(0);

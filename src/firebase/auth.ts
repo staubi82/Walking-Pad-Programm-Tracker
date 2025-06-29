@@ -5,30 +5,12 @@ import {
   sendPasswordResetEmail,
   updateProfile,
   User,
-  GoogleAuthProvider,
-  FacebookAuthProvider,
-  GithubAuthProvider,
-  signInWithPopup,
   setPersistence,
   browserLocalPersistence,
   browserSessionPersistence,
   onAuthStateChanged
 } from 'firebase/auth';
 import { auth } from './config';
-
-// Auth Providers
-const googleProvider = new GoogleAuthProvider();
-const facebookProvider = new FacebookAuthProvider();
-const githubProvider = new GithubAuthProvider();
-
-// Konfiguriere Provider
-googleProvider.addScope('profile');
-googleProvider.addScope('email');
-
-facebookProvider.addScope('email');
-facebookProvider.addScope('public_profile');
-
-githubProvider.addScope('user:email');
 
 // Benutzer registrieren
 export const registerUser = async (email: string, password: string, displayName: string, rememberMe: boolean = false) => {
@@ -62,42 +44,6 @@ export const loginUser = async (email: string, password: string, rememberMe: boo
     return userCredential.user;
   } catch (error) {
     console.error('Fehler bei der Anmeldung:', error);
-    throw error;
-  }
-};
-
-// Google Login
-export const loginWithGoogle = async (rememberMe: boolean = false) => {
-  try {
-    await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
-    const result = await signInWithPopup(auth, googleProvider);
-    return result.user;
-  } catch (error) {
-    console.error('Fehler beim Google Login:', error);
-    throw error;
-  }
-};
-
-// Facebook Login
-export const loginWithFacebook = async (rememberMe: boolean = false) => {
-  try {
-    await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
-    const result = await signInWithPopup(auth, facebookProvider);
-    return result.user;
-  } catch (error) {
-    console.error('Fehler beim Facebook Login:', error);
-    throw error;
-  }
-};
-
-// GitHub Login
-export const loginWithGithub = async (rememberMe: boolean = false) => {
-  try {
-    await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
-    const result = await signInWithPopup(auth, githubProvider);
-    return result.user;
-  } catch (error) {
-    console.error('Fehler beim GitHub Login:', error);
     throw error;
   }
 };

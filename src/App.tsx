@@ -597,6 +597,7 @@ const MainApp: React.FC = () => {
                   <div className="absolute -bottom-1 w-1 h-1 bg-white rounded-full shadow-sm"></div>
                 )}
               </button>
+              </button>
             ))}
           </div>
           </div>

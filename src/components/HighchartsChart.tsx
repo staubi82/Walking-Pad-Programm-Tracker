@@ -32,13 +32,19 @@ const difficultyLabels = {
 export const HighchartsChart: React.FC<HighchartsChartProps> = ({ session, onDelete, onEdit }) => {
   // Erstelle Datenpunkte nur bei tatsächlichen Geschwindigkeitsänderungen
   const chartData = [];
-  const speedChanges = [];
+  const speedChanges: Array<{
+    x: number;
+    speed: number;
+    change: number;
+    time: string;
+    minute: number;
+    second: number;
+  }> = [];
   const totalDuration = session.duration;
   
   // Gruppiere speedHistory nach eindeutigen Geschwindigkeiten
   const uniqueSpeedPoints = [];
   let currentSpeed = session.speedHistory[0]?.speed || 1.0;
-  let currentStartTime = 0;
   
   // Füge Startpunkt hinzu
   uniqueSpeedPoints.push({
@@ -58,25 +64,54 @@ export const HighchartsChart: React.FC<HighchartsChartProps> = ({ session, onDel
         speed: point.speed
       });
       
+      // Berechne Minuten und Sekunden korrekt
+      const totalSeconds = Math.round(timeFromStart);
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      
       // Speichere Geschwindigkeitsänderung
       speedChanges.push({
         x: timeFromStart / 60,
         speed: point.speed,
         change: point.speed - currentSpeed,
-        time: formatDuration(timeFromStart)
+        time: formatDuration(totalSeconds),
+        minute: minutes,
+        second: seconds
       });
       
       currentSpeed = point.speed;
     }
   }
   
-  // Füge Endpunkt hinzu falls nötig
-  const lastPoint = uniqueSpeedPoints[uniqueSpeedPoints.length - 1];
-  if (lastPoint.time < totalDuration - 10) {
-    uniqueSpeedPoints.push({
-      time: totalDuration,
-      speed: currentSpeed
-    });
+  // Füge Endpunkt hinzu (letzte Messung)
+  if (session.speedHistory.length > 0) {
+    const lastPoint = session.speedHistory[session.speedHistory.length - 1];
+    const lastTimeFromStart = (lastPoint.timestamp - session.speedHistory[0].timestamp) / 1000;
+    
+    // Nur hinzufügen wenn es sich vom letzten uniqueSpeedPoint unterscheidet
+    const lastUniquePoint = uniqueSpeedPoints[uniqueSpeedPoints.length - 1];
+    if (Math.abs(lastTimeFromStart - lastUniquePoint.time) > 10) { // Mindestens 10 Sekunden Unterschied
+      uniqueSpeedPoints.push({
+        time: lastTimeFromStart,
+        speed: lastPoint.speed
+      });
+      
+      // Füge auch zu speedChanges hinzu wenn sich die Geschwindigkeit geändert hat
+      if (Math.abs(lastPoint.speed - currentSpeed) > 0.1) {
+        const totalSeconds = Math.round(lastTimeFromStart);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        
+        speedChanges.push({
+          x: lastTimeFromStart / 60,
+          speed: lastPoint.speed,
+          change: Math.round((lastPoint.speed - currentSpeed) * 10) / 10,
+          time: formatDuration(totalSeconds),
+          minute: minutes,
+          second: seconds
+        });
+      }
+    }
   }
   
   // Konvertiere zu Chart-Daten (Zeit in Minuten)
@@ -132,7 +167,7 @@ export const HighchartsChart: React.FC<HighchartsChartProps> = ({ session, onDel
         dashStyle: 'Dash',
         zIndex: 1,
         label: {
-          text: `${change.change > 0 ? '+' : ''}${change.change.toFixed(1)}`,
+          text: `${change.change > 0 ? '+' : ''}${change.change}`,
           style: {
             color: change.change > 0 ? '#10B981' : '#EF4444',
             fontSize: '10px',
@@ -301,7 +336,7 @@ export const HighchartsChart: React.FC<HighchartsChartProps> = ({ session, onDel
                   change.change > 0 ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'
                 }`}
               >
-                {change.time}: {change.change > 0 ? '+' : ''}{change.change.toFixed(1)} km/h
+                {change.minute}:{change.second.toString().padStart(2, '0')}: {change.change > 0 ? '+' : ''}{change.change} km/h
               </span>
             ))}
             {speedChanges.length > 6 && (

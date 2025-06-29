@@ -293,7 +293,6 @@ export const LandingPage: React.FC = () => {
             {/* Left Column - Content */}
             <div className="space-y-6 lg:space-y-8 order-2 lg:order-1">
               <div>
-                <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-4 lg:mb-6 leading-tight">
                 <h2 className={`text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 lg:mb-6 leading-tight transition-colors duration-200 ${
                   isDark ? 'text-white' : 'text-gray-900'
                 }`}>

@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { Activity, BarChart3, History, AlertCircle, Play, LogOut, User, Menu, X } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
 import { logoutUser } from './firebase/auth';
+import { getUserProfile } from './firebase/services';
 import { LandingPage } from './components/LandingPage';
 import { PasswordResetPage } from './components/Auth/PasswordResetPage';
 import { ProfilePage } from './components/Auth/ProfilePage';
@@ -31,6 +32,7 @@ const MainApp: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [firebaseConfigured, setFirebaseConfigured] = useState(true);
   const [editingSession, setEditingSession] = useState<TrainingSession | null>(null);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
 
   // Recording State für Header-Indikator
   const [recordingState, setRecordingState] = useState<RecordingState>({
@@ -49,10 +51,23 @@ const MainApp: React.FC = () => {
   useEffect(() => {
     if (isAuthenticated) {
       loadSessions();
+      loadProfileImage();
     } else {
       setLoading(false);
     }
   }, [isAuthenticated]);
+
+  const loadProfileImage = async () => {
+    if (currentUser?.uid) {
+      // Versuche zuerst das lokale Profilbild zu laden
+      const savedImage = localStorage.getItem(`profileImage_${currentUser.uid}`);
+      if (savedImage) {
+        setProfileImage(savedImage);
+      } else if (currentUser.photoURL) {
+        setProfileImage(currentUser.photoURL);
+      }
+    }
+  };
 
   const loadSessions = async () => {
     try {
@@ -354,12 +369,12 @@ const MainApp: React.FC = () => {
                   
                   <button
                     onClick={() => handleTabChange('profile')}
-                    className="relative w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center hover:from-green-500 hover:to-blue-600 transition-all ring-2 ring-transparent hover:ring-white/20 shadow-lg"
+                    className="relative w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center hover:from-green-500 hover:to-blue-600 transition-all ring-2 ring-transparent hover:ring-white/20 shadow-lg overflow-hidden"
                     title="Profil öffnen"
                   >
-                    {currentUser.photoURL ? (
+                    {profileImage ? (
                       <img
-                        src={currentUser.photoURL}
+                        src={profileImage}
                         alt="Profil"
                         className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
                       />
@@ -412,10 +427,10 @@ const MainApp: React.FC = () => {
               {currentUser && (
                 <div className="mb-6 p-4 bg-gray-700 rounded-lg">
                   <div className="flex items-center space-x-3 mb-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center">
-                      {currentUser.photoURL ? (
+                    <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center overflow-hidden">
+                      {profileImage ? (
                         <img
-                          src={currentUser.photoURL}
+                          src={profileImage}
                           alt="Profil"
                           className="w-12 h-12 rounded-full object-cover"
                         />

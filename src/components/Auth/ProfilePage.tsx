@@ -239,69 +239,111 @@ export const ProfilePage: React.FC = () => {
 
         {/* Gesundheits-Statistiken */}
         {(userProfile.weight || userProfile.height || userProfile.age) && (
-          <div className="bg-gray-800 rounded-xl p-8 shadow-xl mb-6">
-            <h3 className="text-xl font-bold text-white mb-6">📊 Gesundheits-Statistiken</h3>
+          <div className={`rounded-xl p-8 shadow-xl mb-6 transition-colors duration-200 ${
+            isDark ? 'bg-gray-800' : 'bg-white border border-gray-200'
+          }`}>
+            <h3 className={`text-xl font-bold mb-6 transition-colors duration-200 ${
+              isDark ? 'text-white' : 'text-gray-900'
+            }`}>📊 Gesundheits-Statistiken</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {/* BMI */}
               {bmi && bmiCategory && (
-                <div className="bg-gray-700 rounded-lg p-4">
+                <div className={`rounded-lg p-4 transition-colors duration-200 ${
+                  isDark ? 'bg-gray-700' : 'bg-gray-100'
+                }`}>
                   <div className="flex items-center space-x-3 mb-2">
                     <Target className="w-6 h-6 text-blue-400" />
-                    <h4 className="font-semibold text-white">BMI</h4>
+                    <h4 className={`font-semibold transition-colors duration-200 ${
+                      isDark ? 'text-white' : 'text-gray-900'
+                    }`}>BMI</h4>
                   </div>
-                  <div className="text-2xl font-bold text-white mb-1">{bmi}</div>
+                  <div className={`text-2xl font-bold mb-1 transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>{bmi}</div>
                   <div className={`text-sm ${bmiCategory.color}`}>{bmiCategory.category}</div>
-                  <div className="text-xs text-gray-400 mt-1">{bmiCategory.description}</div>
+                  <div className={`text-xs mt-1 transition-colors duration-200 ${
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  }`}>{bmiCategory.description}</div>
                 </div>
               )}
               
               {/* Grundumsatz */}
               {bmr && (
-                <div className="bg-gray-700 rounded-lg p-4">
+                <div className={`rounded-lg p-4 transition-colors duration-200 ${
+                  isDark ? 'bg-gray-700' : 'bg-gray-100'
+                }`}>
                   <div className="flex items-center space-x-3 mb-2">
                     <Activity className="w-6 h-6 text-green-400" />
-                    <h4 className="font-semibold text-white">Grundumsatz</h4>
+                    <h4 className={`font-semibold transition-colors duration-200 ${
+                      isDark ? 'text-white' : 'text-gray-900'
+                    }`}>Grundumsatz</h4>
                   </div>
-                  <div className="text-2xl font-bold text-white mb-1">{bmr}</div>
+                  <div className={`text-2xl font-bold mb-1 transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>{bmr}</div>
                   <div className="text-sm text-green-400">kcal/Tag</div>
-                  <div className="text-xs text-gray-400 mt-1">Ruheumsatz</div>
+                  <div className={`text-xs mt-1 transition-colors duration-200 ${
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  }`}>Ruheumsatz</div>
                 </div>
               )}
               
               {/* Gesamtumsatz */}
               {tdee && (
-                <div className="bg-gray-700 rounded-lg p-4">
+                <div className={`rounded-lg p-4 transition-colors duration-200 ${
+                  isDark ? 'bg-gray-700' : 'bg-gray-100'
+                }`}>
                   <div className="flex items-center space-x-3 mb-2">
                     <TrendingUp className="w-6 h-6 text-orange-400" />
-                    <h4 className="font-semibold text-white">Gesamtumsatz</h4>
+                    <h4 className={`font-semibold transition-colors duration-200 ${
+                      isDark ? 'text-white' : 'text-gray-900'
+                    }`}>Gesamtumsatz</h4>
                   </div>
-                  <div className="text-2xl font-bold text-white mb-1">{tdee}</div>
+                  <div className={`text-2xl font-bold mb-1 transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>{tdee}</div>
                   <div className="text-sm text-orange-400">kcal/Tag</div>
-                  <div className="text-xs text-gray-400 mt-1">Mit Aktivität</div>
+                  <div className={`text-xs mt-1 transition-colors duration-200 ${
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  }`}>Mit Aktivität</div>
                 </div>
               )}
               
               {/* Idealgewicht */}
               {idealWeight && (
-                <div className="bg-gray-700 rounded-lg p-4">
+                <div className={`rounded-lg p-4 transition-colors duration-200 ${
+                  isDark ? 'bg-gray-700' : 'bg-gray-100'
+                }`}>
                   <div className="flex items-center space-x-3 mb-2">
                     <Scale className="w-6 h-6 text-purple-400" />
-                    <h4 className="font-semibold text-white">Idealgewicht</h4>
+                    <h4 className={`font-semibold transition-colors duration-200 ${
+                      isDark ? 'text-white' : 'text-gray-900'
+                    }`}>Idealgewicht</h4>
                   </div>
-                  <div className="text-lg font-bold text-white mb-1">
+                  <div className={`text-lg font-bold mb-1 transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>
                     {idealWeight.min}-{idealWeight.max} kg
                   </div>
                   <div className="text-sm text-purple-400">Normalgewicht</div>
-                  <div className="text-xs text-gray-400 mt-1">BMI 18.5-24.9</div>
+                  <div className={`text-xs mt-1 transition-colors duration-200 ${
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  }`}>BMI 18.5-24.9</div>
                 </div>
               )}
             </div>
             
             {/* Zusätzliche Informationen */}
-            <div className="mt-6 p-4 bg-blue-900/30 rounded-lg border border-blue-700">
-              <h4 className="text-lg font-semibold text-blue-300 mb-2">💡 Gesundheitstipps</h4>
-              <div className="text-blue-200 text-sm space-y-1">
+            <div className={`mt-6 p-4 rounded-lg border transition-colors duration-200 ${
+              isDark ? 'bg-blue-900/30 border-blue-700' : 'bg-blue-50 border-blue-300'
+            }`}>
+              <h4 className={`text-lg font-semibold mb-2 transition-colors duration-200 ${
+                isDark ? 'text-blue-300' : 'text-blue-700'
+              }`}>💡 Gesundheitstipps</h4>
+              <div className={`text-sm space-y-1 transition-colors duration-200 ${
+                isDark ? 'text-blue-200' : 'text-blue-600'
+              }`}>
                 {bmi && bmi < 18.5 && (
                   <p>• Ihr BMI deutet auf Untergewicht hin. Konsultieren Sie einen Arzt für eine gesunde Gewichtszunahme.</p>
                 )}
@@ -321,17 +363,27 @@ export const ProfilePage: React.FC = () => {
         )}
 
         {/* Profile Card */}
-        <div className="bg-gray-800 rounded-xl p-8 shadow-xl">
+        <div className={`rounded-xl p-8 shadow-xl transition-colors duration-200 ${
+          isDark ? 'bg-gray-800' : 'bg-white border border-gray-200'
+        }`}>
           {/* Messages */}
           {error && (
-            <div className="mb-6 bg-red-900/50 border border-red-700 rounded-lg p-4">
-              <p className="text-red-300 text-sm">{error}</p>
+            <div className={`mb-6 border rounded-lg p-4 transition-colors duration-200 ${
+              isDark ? 'bg-red-900/50 border-red-700' : 'bg-red-50 border-red-300'
+            }`}>
+              <p className={`text-sm transition-colors duration-200 ${
+                isDark ? 'text-red-300' : 'text-red-700'
+              }`}>{error}</p>
             </div>
           )}
           
           {success && (
-            <div className="mb-6 bg-green-900/50 border border-green-700 rounded-lg p-4">
-              <p className="text-green-300 text-sm">{success}</p>
+            <div className={`mb-6 border rounded-lg p-4 transition-colors duration-200 ${
+              isDark ? 'bg-green-900/50 border-green-700' : 'bg-green-50 border-green-300'
+            }`}>
+              <p className={`text-sm transition-colors duration-200 ${
+                isDark ? 'text-green-300' : 'text-green-700'
+              }`}>{success}</p>
             </div>
           )}
 
@@ -390,7 +442,9 @@ export const ProfilePage: React.FC = () => {
               <h2 className="text-2xl font-bold text-white">
                 {currentUser.displayName || 'Unbekannter Benutzer'}
               </h2>
-              <p className="text-gray-400">{currentUser.email}</p>
+              <p className={`transition-colors duration-200 ${
+                isDark ? 'text-gray-400' : 'text-gray-600'
+              }`}>{currentUser.email}</p>
               
               {providerInfo && (
                 <div className="flex items-center space-x-2 mt-2">
@@ -438,9 +492,15 @@ export const ProfilePage: React.FC = () => {
           </div>
           
           {/* Profilbild-Upload Info */}
-          <div className="mb-6 p-4 bg-blue-900/30 rounded-lg border border-blue-700">
-            <h4 className="text-lg font-semibold text-blue-300 mb-2">📸 Profilbild</h4>
-            <div className="text-blue-200 text-sm space-y-1">
+          <div className={`mb-6 p-4 rounded-lg border transition-colors duration-200 ${
+            isDark ? 'bg-blue-900/30 border-blue-700' : 'bg-blue-50 border-blue-300'
+          }`}>
+            <h4 className={`text-lg font-semibold mb-2 transition-colors duration-200 ${
+              isDark ? 'text-blue-300' : 'text-blue-700'
+            }`}>📸 Profilbild</h4>
+            <div className={`text-sm space-y-1 transition-colors duration-200 ${
+              isDark ? 'text-blue-200' : 'text-blue-600'
+            }`}>
               <p>• Fahren Sie mit der Maus über Ihr Profilbild, um es zu ändern</p>
               <p>• Unterstützte Formate: JPG, PNG, GIF (max. 5MB)</p>
               <p>• Das Bild wird automatisch auf eine runde Form zugeschnitten</p>
@@ -460,13 +520,23 @@ export const ProfilePage: React.FC = () => {
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 ${
+                    isDark 
+                      ? 'bg-gray-700 border-gray-600 text-white' 
+                      : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                   placeholder="Ihr Name"
                 />
               ) : (
-                <div className="flex items-center space-x-2 px-3 py-2 bg-gray-700 rounded-lg">
-                  <User className="w-4 h-4 text-gray-400" />
-                  <span className="text-white">{currentUser.displayName || 'Nicht festgelegt'}</span>
+                <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors duration-200 ${
+                  isDark ? 'bg-gray-700' : 'bg-gray-100'
+                }`}>
+                  <User className={`w-4 h-4 transition-colors duration-200 ${
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  }`} />
+                  <span className={`transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>{currentUser.displayName || 'Nicht festgelegt'}</span>
                 </div>
               )}
             </div>
@@ -483,13 +553,23 @@ export const ProfilePage: React.FC = () => {
                   max="300"
                   value={userProfile.weight || ''}
                   onChange={(e) => updateProfileField('weight', e.target.value ? parseFloat(e.target.value) : undefined)}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 ${
+                    isDark 
+                      ? 'bg-gray-700 border-gray-600 text-white' 
+                      : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                   placeholder="70"
                 />
               ) : (
-                <div className="flex items-center space-x-2 px-3 py-2 bg-gray-700 rounded-lg">
-                  <Scale className="w-4 h-4 text-gray-400" />
-                  <span className="text-white">{userProfile.weight ? `${userProfile.weight} kg` : 'Nicht festgelegt'}</span>
+                <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors duration-200 ${
+                  isDark ? 'bg-gray-700' : 'bg-gray-100'
+                }`}>
+                  <Scale className={`w-4 h-4 transition-colors duration-200 ${
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  }`} />
+                  <span className={`transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>{userProfile.weight ? `${userProfile.weight} kg` : 'Nicht festgelegt'}</span>
                 </div>
               )}
             </div>
@@ -505,13 +585,23 @@ export const ProfilePage: React.FC = () => {
                   max="250"
                   value={userProfile.height || ''}
                   onChange={(e) => updateProfileField('height', e.target.value ? parseFloat(e.target.value) : undefined)}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 ${
+                    isDark 
+                      ? 'bg-gray-700 border-gray-600 text-white' 
+                      : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                   placeholder="175"
                 />
               ) : (
-                <div className="flex items-center space-x-2 px-3 py-2 bg-gray-700 rounded-lg">
-                  <TrendingUp className="w-4 h-4 text-gray-400" />
-                  <span className="text-white">{userProfile.height ? `${userProfile.height} cm` : 'Nicht festgelegt'}</span>
+                <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors duration-200 ${
+                  isDark ? 'bg-gray-700' : 'bg-gray-100'
+                }`}>
+                  <TrendingUp className={`w-4 h-4 transition-colors duration-200 ${
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  }`} />
+                  <span className={`transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>{userProfile.height ? `${userProfile.height} cm` : 'Nicht festgelegt'}</span>
                 </div>
               )}
             </div>
@@ -527,13 +617,23 @@ export const ProfilePage: React.FC = () => {
                   max="120"
                   value={userProfile.age || ''}
                   onChange={(e) => updateProfileField('age', e.target.value ? parseInt(e.target.value) : undefined)}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 ${
+                    isDark 
+                      ? 'bg-gray-700 border-gray-600 text-white' 
+                      : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                   placeholder="30"
                 />
               ) : (
-                <div className="flex items-center space-x-2 px-3 py-2 bg-gray-700 rounded-lg">
-                  <Calendar className="w-4 h-4 text-gray-400" />
-                  <span className="text-white">{userProfile.age ? `${userProfile.age} Jahre` : 'Nicht festgelegt'}</span>
+                <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors duration-200 ${
+                  isDark ? 'bg-gray-700' : 'bg-gray-100'
+                }`}>
+                  <Calendar className={`w-4 h-4 transition-colors duration-200 ${
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  }`} />
+                  <span className={`transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>{userProfile.age ? `${userProfile.age} Jahre` : 'Nicht festgelegt'}</span>
                 </div>
               )}
             </div>
@@ -546,7 +646,11 @@ export const ProfilePage: React.FC = () => {
                 <select
                   value={userProfile.gender || ''}
                   onChange={(e) => updateProfileField('gender', e.target.value || undefined)}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 ${
+                    isDark 
+                      ? 'bg-gray-700 border-gray-600 text-white' 
+                      : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                 >
                   <option value="">Nicht angegeben</option>
                   <option value="male">Männlich</option>
@@ -554,9 +658,15 @@ export const ProfilePage: React.FC = () => {
                   <option value="other">Divers</option>
                 </select>
               ) : (
-                <div className="flex items-center space-x-2 px-3 py-2 bg-gray-700 rounded-lg">
-                  <User className="w-4 h-4 text-gray-400" />
-                  <span className="text-white">
+                <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors duration-200 ${
+                  isDark ? 'bg-gray-700' : 'bg-gray-100'
+                }`}>
+                  <User className={`w-4 h-4 transition-colors duration-200 ${
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  }`} />
+                  <span className={`transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>
                     {userProfile.gender === 'male' ? 'Männlich' : 
                      userProfile.gender === 'female' ? 'Weiblich' : 
                      userProfile.gender === 'other' ? 'Divers' : 'Nicht angegeben'}
@@ -573,7 +683,11 @@ export const ProfilePage: React.FC = () => {
                 <select
                   value={userProfile.activityLevel || ''}
                   onChange={(e) => updateProfileField('activityLevel', e.target.value || undefined)}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 ${
+                    isDark 
+                      ? 'bg-gray-700 border-gray-600 text-white' 
+                      : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                 >
                   <option value="">Nicht angegeben</option>
                   <option value="sedentary">Wenig aktiv (Bürojob, wenig Sport)</option>
@@ -583,9 +697,15 @@ export const ProfilePage: React.FC = () => {
                   <option value="very_active">Extrem aktiv (2x täglich Training)</option>
                 </select>
               ) : (
-                <div className="flex items-center space-x-2 px-3 py-2 bg-gray-700 rounded-lg">
-                  <Activity className="w-4 h-4 text-gray-400" />
-                  <span className="text-white">
+                <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors duration-200 ${
+                  isDark ? 'bg-gray-700' : 'bg-gray-100'
+                }`}>
+                  <Activity className={`w-4 h-4 transition-colors duration-200 ${
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  }`} />
+                  <span className={`transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>
                     {userProfile.activityLevel === 'sedentary' ? 'Wenig aktiv' :
                      userProfile.activityLevel === 'light' ? 'Leicht aktiv' :
                      userProfile.activityLevel === 'moderate' ? 'Mäßig aktiv' :
@@ -601,9 +721,15 @@ export const ProfilePage: React.FC = () => {
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 E-Mail-Adresse
               </label>
-              <div className="flex items-center space-x-2 px-3 py-2 bg-gray-700 rounded-lg">
-                <Mail className="w-4 h-4 text-gray-400" />
-                <span className="text-white">{currentUser.email}</span>
+              <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors duration-200 ${
+                isDark ? 'bg-gray-700' : 'bg-gray-100'
+              }`}>
+                <Mail className={`w-4 h-4 transition-colors duration-200 ${
+                  isDark ? 'text-gray-400' : 'text-gray-600'
+                }`} />
+                <span className={`transition-colors duration-200 ${
+                  isDark ? 'text-white' : 'text-gray-900'
+                }`}>{currentUser.email}</span>
                 {currentUser.emailVerified && (
                   <span className="text-green-400 text-xs bg-green-900/30 px-2 py-1 rounded">
                     Verifiziert
@@ -617,9 +743,15 @@ export const ProfilePage: React.FC = () => {
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Konto erstellt
               </label>
-              <div className="flex items-center space-x-2 px-3 py-2 bg-gray-700 rounded-lg">
-                <Calendar className="w-4 h-4 text-gray-400" />
-                <span className="text-white">
+              <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors duration-200 ${
+                isDark ? 'bg-gray-700' : 'bg-gray-100'
+              }`}>
+                <Calendar className={`w-4 h-4 transition-colors duration-200 ${
+                  isDark ? 'text-gray-400' : 'text-gray-600'
+                }`} />
+                <span className={`transition-colors duration-200 ${
+                  isDark ? 'text-white' : 'text-gray-900'
+                }`}>
                   {currentUser.metadata.creationTime 
                     ? new Date(currentUser.metadata.creationTime).toLocaleDateString('de-DE', {
                         day: '2-digit',
@@ -639,9 +771,15 @@ export const ProfilePage: React.FC = () => {
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Letzte Anmeldung
               </label>
-              <div className="flex items-center space-x-2 px-3 py-2 bg-gray-700 rounded-lg">
-                <Calendar className="w-4 h-4 text-gray-400" />
-                <span className="text-white">
+              <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors duration-200 ${
+                isDark ? 'bg-gray-700' : 'bg-gray-100'
+              }`}>
+                <Calendar className={`w-4 h-4 transition-colors duration-200 ${
+                  isDark ? 'text-gray-400' : 'text-gray-600'
+                }`} />
+                <span className={`transition-colors duration-200 ${
+                  isDark ? 'text-white' : 'text-gray-900'
+                }`}>
                   {currentUser.metadata.lastSignInTime 
                     ? new Date(currentUser.metadata.lastSignInTime).toLocaleDateString('de-DE', {
                         day: '2-digit',
@@ -658,32 +796,50 @@ export const ProfilePage: React.FC = () => {
           </div>
 
           {/* Account Statistics */}
-          <div className="bg-gray-700 rounded-lg p-6 mb-8">
-            <h3 className="text-lg font-semibold text-white mb-4">Konto-Statistiken</h3>
+          <div className={`rounded-lg p-6 mb-8 transition-colors duration-200 ${
+            isDark ? 'bg-gray-700' : 'bg-gray-100'
+          }`}>
+            <h3 className={`text-lg font-semibold mb-4 transition-colors duration-200 ${
+              isDark ? 'text-white' : 'text-gray-900'
+            }`}>Konto-Statistiken</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-400">0</div>
-                <div className="text-sm text-gray-400">Trainingseinheiten</div>
+                <div className={`text-sm transition-colors duration-200 ${
+                  isDark ? 'text-gray-400' : 'text-gray-600'
+                }`}>Trainingseinheiten</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-blue-400">0.0 km</div>
-                <div className="text-sm text-gray-400">Gesamtdistanz</div>
+                <div className={`text-sm transition-colors duration-200 ${
+                  isDark ? 'text-gray-400' : 'text-gray-600'
+                }`}>Gesamtdistanz</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-orange-400">0 kcal</div>
-                <div className="text-sm text-gray-400">Verbrannte Kalorien</div>
+                <div className={`text-sm transition-colors duration-200 ${
+                  isDark ? 'text-gray-400' : 'text-gray-600'
+                }`}>Verbrannte Kalorien</div>
               </div>
             </div>
           </div>
 
           {/* Danger Zone */}
           <div className="mt-8 pt-8 border-t border-gray-700">
-            <h3 className="text-lg font-semibold text-red-400 mb-4">Gefahrenbereich</h3>
-            <div className="bg-red-900/20 border border-red-700 rounded-lg p-4">
+            <h3 className={`text-lg font-semibold text-red-400 mb-4 transition-colors duration-200 ${
+              isDark ? 'border-gray-700' : 'border-gray-300'
+            }`}>Gefahrenbereich</h3>
+            <div className={`border rounded-lg p-4 transition-colors duration-200 ${
+              isDark ? 'bg-red-900/20 border-red-700' : 'bg-red-50 border-red-300'
+            }`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="text-white font-medium">Konto löschen</h4>
-                  <p className="text-gray-400 text-sm">
+                  <h4 className={`font-medium transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>Konto löschen</h4>
+                  <p className={`text-sm transition-colors duration-200 ${
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  }`}>
                     Diese Aktion kann nicht rückgängig gemacht werden. Alle Ihre Daten werden permanent gelöscht.
                   </p>
                 </div>

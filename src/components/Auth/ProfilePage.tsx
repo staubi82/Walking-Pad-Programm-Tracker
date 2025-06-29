@@ -232,10 +232,16 @@ export const ProfilePage: React.FC = () => {
   return (
     <div className="space-y-6">
         {/* Header */}
-        <div className="bg-gray-800 rounded-xl p-6 shadow-xl">
+        <div className={`rounded-xl p-6 shadow-xl transition-colors duration-200 ${
+          isDark ? 'bg-gray-800' : 'bg-white border border-gray-200'
+        }`}>
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-white">Mein Profil</h2>
-            <p className="mt-2 text-gray-400">Verwalten Sie Ihre Kontoinformationen und Gesundheitsdaten</p>
+            <h2 className={`text-3xl font-bold transition-colors duration-200 ${
+              isDark ? 'text-white' : 'text-gray-900'
+            }`}>Mein Profil</h2>
+            <p className={`mt-2 transition-colors duration-200 ${
+              isDark ? 'text-gray-400' : 'text-gray-600'
+            }`}>Verwalten Sie Ihre Kontoinformationen und Gesundheitsdaten</p>
           </div>
         </div>
 

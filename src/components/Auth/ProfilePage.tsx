@@ -1,16 +1,14 @@
 import React, { useState } from 'react';
-import { User, Mail, Calendar, Edit3, Save, X, LogOut, Trash2, Activity, TrendingUp, Target, Scale } from 'lucide-react';
+import { User, Mail, Calendar, Edit3, Save, X, Trash2, Activity, TrendingUp, Target, Scale } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { updateUserProfile, logoutUser } from '../../firebase/auth';
+import { updateUserProfile } from '../../firebase/auth';
 import { saveUserProfile, getUserProfile } from '../../firebase/services';
-import { useNavigate } from 'react-router-dom';
 import { UserProfile } from '../../types';
 import { calculateBMI, getBMICategory, calculateBMR, calculateTDEE, calculateIdealWeight } from '../../utils/calculations';
 import { useEffect } from 'react';
 
 export const ProfilePage: React.FC = () => {
   const { currentUser } = useAuth();
-  const navigate = useNavigate();
   
   const [isEditing, setIsEditing] = useState(false);
   const [displayName, setDisplayName] = useState(currentUser?.displayName || '');
@@ -99,7 +97,7 @@ export const ProfilePage: React.FC = () => {
   const handleLogout = async () => {
     try {
       await logoutUser();
-      navigate('/login');
+      // Nach dem Logout wird automatisch zur LandingPage weitergeleitet
     } catch (error) {
       console.error('Fehler beim Abmelden:', error);
     }
@@ -145,12 +143,13 @@ export const ProfilePage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto">
+    <div className="space-y-6">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white">Mein Profil</h1>
-          <p className="mt-2 text-gray-400">Verwalten Sie Ihre Kontoinformationen</p>
+        <div className="bg-gray-800 rounded-xl p-6 shadow-xl">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold text-white">Mein Profil</h2>
+            <p className="mt-2 text-gray-400">Verwalten Sie Ihre Kontoinformationen und Gesundheitsdaten</p>
+          </div>
         </div>
 
         {/* Gesundheits-Statistiken */}
@@ -544,24 +543,6 @@ export const ProfilePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <button
-              onClick={handleLogout}
-              className="flex-1 bg-red-600 hover:bg-red-700 px-6 py-3 rounded-lg flex items-center justify-center space-x-2 text-white font-medium transition-colors"
-            >
-              <LogOut className="w-5 h-5" />
-              <span>Abmelden</span>
-            </button>
-            
-            <button
-              onClick={() => navigate('/')}
-              className="flex-1 bg-gray-600 hover:bg-gray-500 px-6 py-3 rounded-lg text-white font-medium transition-colors"
-            >
-              Zurück zur App
-            </button>
-          </div>
-
           {/* Danger Zone */}
           <div className="mt-8 pt-8 border-t border-gray-700">
             <h3 className="text-lg font-semibold text-red-400 mb-4">Gefahrenbereich</h3>
@@ -589,7 +570,6 @@ export const ProfilePage: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
     </div>
   );
 };

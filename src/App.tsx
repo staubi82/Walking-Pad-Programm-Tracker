@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { Activity, BarChart3, History, AlertCircle, Play, LogOut, Settings } from 'lucide-react';
+import { Activity, BarChart3, History, AlertCircle, Play, LogOut, Settings, User } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
 import { logoutUser } from './firebase/auth';
-import { ProtectedRoute } from './components/Auth/ProtectedRoute';
 import { LandingPage } from './components/LandingPage';
 import { PasswordResetPage } from './components/Auth/PasswordResetPage';
 import { ProfilePage } from './components/Auth/ProfilePage';
@@ -26,7 +25,7 @@ interface RecordingState {
 const MainApp: React.FC = () => {
   const { currentUser, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'overview' | 'tracker' | 'history' | 'stats'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'tracker' | 'history' | 'stats' | 'profile'>('overview');
   const [sessions, setSessions] = useState<TrainingSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [firebaseConfigured, setFirebaseConfigured] = useState(true);
@@ -249,7 +248,8 @@ const MainApp: React.FC = () => {
     { id: 'overview', label: 'Übersicht', icon: Activity },
     { id: 'tracker', label: 'Live Tracking', icon: Play },
     { id: 'history', label: 'Programme', icon: History },
-    { id: 'stats', label: 'Statistiken', icon: BarChart3 }
+    { id: 'stats', label: 'Statistiken', icon: BarChart3 },
+    { id: 'profile', label: 'Profil', icon: User }
   ] as const;
 
   return (
@@ -296,7 +296,7 @@ const MainApp: React.FC = () => {
               
               {/* Quick Actions */}
               <button
-                onClick={() => navigate('/profile')}
+                onClick={() => setActiveTab('profile')}
                 className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-all"
                 title="Profil-Einstellungen"
               >
@@ -315,7 +315,7 @@ const MainApp: React.FC = () => {
               {currentUser && (
                 <div className="flex items-center space-x-3 bg-gray-700/50 rounded-xl px-3 py-2 border border-gray-600/50">
                   <button
-                    onClick={() => navigate('/profile')}
+                    onClick={() => setActiveTab('profile')}
                     className="w-8 h-8 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center hover:from-green-500 hover:to-blue-600 transition-all ring-2 ring-transparent hover:ring-white/20"
                   >
                     {currentUser.photoURL ? (
@@ -433,6 +433,10 @@ const MainApp: React.FC = () => {
         {activeTab === 'stats' && (
           <Statistics sessions={sessions} />
         )}
+        
+        {activeTab === 'profile' && (
+          <ProfilePage />
+        )}
       </main>
 
       <footer className="bg-gray-800 border-t border-gray-700 mt-12">
@@ -543,13 +547,6 @@ function App() {
       <Route path="/login" element={<LandingPage />} />
       <Route path="/register" element={<LandingPage />} />
       <Route path="/forgot-password" element={<PasswordResetPage />} />
-      
-      {/* Protected Routes */}
-      <Route path="/profile" element={
-        <ProtectedRoute>
-          <ProfilePage />
-        </ProtectedRoute>
-      } />
       
       {/* Main Route */}
       <Route path="/" element={

@@ -12,4 +12,4 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, isR
 }; // Added missing closing bracket for LiveTracker component
 ```
 
-The main issue was a missing closing curly brace `}` at the very end of the file to close the LiveTracker component definition. The rest of the code appears to be properly balanced in terms of brackets and parentheses.
+The main issue was a missing closing curly brace `}` at the very end of the file to close the LiveTracker component definition. The rest of the code appears to be properly balanced with brackets.

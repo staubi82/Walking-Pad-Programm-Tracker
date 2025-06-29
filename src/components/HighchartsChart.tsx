@@ -357,7 +357,7 @@ export const HighchartsChart: React.FC<HighchartsChartProps> = ({ session, onDel
       </div>
       
       {/* Details */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <div className="flex items-center space-x-2">
           <Clock className="w-4 h-4 text-blue-400" />
           <div>
@@ -389,11 +389,11 @@ export const HighchartsChart: React.FC<HighchartsChartProps> = ({ session, onDel
         
         {/* Schritte - falls verfügbar */}
         {session.steps && (
-          <div className="flex items-center space-x-2 md:col-span-2">
+          <div className="flex items-center space-x-2">
             <Footprints className="w-4 h-4 text-cyan-400" />
             <div>
               <p className="text-xs text-gray-400">Schritte</p>
-              <p className="text-sm font-medium text-white">{session.steps.toLocaleString()}</p>
+              <p className="text-sm font-medium text-white">{(session.steps / 1000).toFixed(1)}k</p>
             </div>
           </div>
         )}

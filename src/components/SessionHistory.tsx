@@ -94,6 +94,9 @@ export const SessionHistory: React.FC<SessionHistoryProps> = ({
         case 'calories':
           comparison = a.calories - b.calories;
           break;
+        case 'steps':
+          comparison = (a.steps || 0) - (b.steps || 0);
+          break;
       }
       
       return filters.sortOrder === 'asc' ? comparison : -comparison;
@@ -165,6 +168,7 @@ export const SessionHistory: React.FC<SessionHistoryProps> = ({
                 <option value="duration">Dauer</option>
                 <option value="distance">Distanz</option>
                 <option value="calories">Kalorien</option>
+                <option value="steps">Schritte</option>
               </select>
             </div>
             <div>
@@ -317,6 +321,18 @@ export const SessionHistory: React.FC<SessionHistoryProps> = ({
               <span>Kcal</span>
               {getSortIcon('calories')}
             </button>
+            
+            <button
+              onClick={() => handleSortClick('steps')}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                filters.sortBy === 'steps'
+                  ? 'bg-green-600 text-white shadow-lg'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              <span>Schritte</span>
+              {getSortIcon('steps')}
+            </button>
           </div>
           
           {/* Sortier-Info */}
@@ -327,6 +343,7 @@ export const SessionHistory: React.FC<SessionHistoryProps> = ({
                 {filters.sortBy === 'difficulty' && 'Schwierigkeitslevel'}
                 {filters.sortBy === 'distance' && 'Distanz'}
                 {filters.sortBy === 'calories' && 'Kalorien'}
+                {filters.sortBy === 'steps' && 'Schritte'}
               </span>
               {' '}({filters.sortOrder === 'asc' ? 'A-Z / niedrigste zuerst' : 'Z-A / höchste zuerst'})
             </span>
@@ -398,9 +415,9 @@ export const SessionHistory: React.FC<SessionHistoryProps> = ({
                   
                   {/* Schritte - falls verfügbar */}
                   {session.steps && (
-                    <div className="flex items-center space-x-2 md:col-span-2">
+                    <div className="flex items-center space-x-2">
                       <Footprints className="w-4 h-4 text-cyan-400" />
-                      <span className="text-sm text-gray-300">{session.steps.toLocaleString()} Schritte</span>
+                      <span className="text-sm text-gray-300">{session.steps.toLocaleString()}</span>
                     </div>
                   )}
                 </div>

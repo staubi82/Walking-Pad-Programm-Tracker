@@ -613,14 +613,24 @@ const MainApp: React.FC = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 pb-20 md:pb-8">
         {activeTab === 'overview' && (
           <div className="space-y-4 sm:space-y-6">
-            <div className="bg-gray-800 rounded-xl p-4 sm:p-6 shadow-xl">
-              <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">
+            <div className={`rounded-xl p-4 sm:p-6 shadow-xl transition-colors duration-200 ${
+              isDark ? 'bg-gray-800' : 'bg-white border border-gray-200'
+            }`}>
+              <h2 className={`text-xl sm:text-2xl font-bold mb-4 sm:mb-6 transition-colors duration-200 ${
+                isDark ? 'text-white' : 'text-gray-900'
+              }`}>
                 Willkommen zurück, {currentUser?.displayName || 'Benutzer'}!
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                <div className="bg-gray-700 rounded-lg p-4">
-                  <h3 className="text-base sm:text-lg font-semibold text-white mb-3">Schnellstart</h3>
-                  <p className="text-sm sm:text-base text-gray-300 mb-4">Starten Sie sofort ein neues Training</p>
+                <div className={`rounded-lg p-4 transition-colors duration-200 ${
+                  isDark ? 'bg-gray-700' : 'bg-gray-100'
+                }`}>
+                  <h3 className={`text-base sm:text-lg font-semibold mb-3 transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>Schnellstart</h3>
+                  <p className={`text-sm sm:text-base mb-4 transition-colors duration-200 ${
+                    isDark ? 'text-gray-300' : 'text-gray-600'
+                  }`}>Starten Sie sofort ein neues Training</p>
                   <button
                     onClick={() => handleTabChange('tracker')}
                     className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg flex items-center space-x-2 text-white font-medium transition-colors w-full sm:w-auto justify-center sm:justify-start"
@@ -629,16 +639,26 @@ const MainApp: React.FC = () => {
                     <span>Neues Training</span>
                   </button>
                 </div>
-                <div className="bg-gray-700 rounded-lg p-4">
-                  <h3 className="text-base sm:text-lg font-semibold text-white mb-3">Letzte Aktivität</h3>
+                <div className={`rounded-lg p-4 transition-colors duration-200 ${
+                  isDark ? 'bg-gray-700' : 'bg-gray-100'
+                }`}>
+                  <h3 className={`text-base sm:text-lg font-semibold mb-3 transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>Letzte Aktivität</h3>
                   {sessions.length > 0 ? (
                     <div>
-                      <p className="text-sm sm:text-base text-gray-300 truncate">{sessions[0].name}</p>
-                      <p className="text-xs sm:text-sm text-gray-400">{formatDate(sessions[0].date)}</p>
+                      <p className={`text-sm sm:text-base truncate transition-colors duration-200 ${
+                        isDark ? 'text-gray-300' : 'text-gray-700'
+                      }`}>{sessions[0].name}</p>
+                      <p className={`text-xs sm:text-sm transition-colors duration-200 ${
+                        isDark ? 'text-gray-400' : 'text-gray-600'
+                      }`}>{formatDate(sessions[0].date)}</p>
                       <p className="text-sm sm:text-base text-green-400 font-medium">{(sessions[0].distance || 0).toFixed(2)} km</p>
                     </div>
                   ) : (
-                    <p className="text-sm sm:text-base text-gray-400">Noch keine Trainings absolviert</p>
+                    <p className={`text-sm sm:text-base transition-colors duration-200 ${
+                      isDark ? 'text-gray-400' : 'text-gray-600'
+                    }`}>Noch keine Trainings absolviert</p>
                   )}
                 </div>
               </div>

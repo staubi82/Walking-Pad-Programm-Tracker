@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, Square, Plus, Minus, Clock, Edit3, Trash2, CheckCircle } from 'lucide-react';
 import { calculateDistance, calculateCalories, formatDuration, roundToNearestHalfMinute } from '../utils/calculations';
 import { SpeedPoint } from '../types';
+import { SessionSummary } from './SessionSummary';
 
 interface TimelineEntry {
   id: string;
@@ -20,6 +21,8 @@ interface LiveTrackerProps {
     speedHistory: SpeedPoint[];
     difficulty?: string;
   }) => void;
+  isRecording: boolean;
+  onRecordingChange: (recording: boolean) => void;
 }
 
 const difficultyLevels = [
@@ -52,6 +55,18 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete }) =
   const [timelineNameError, setTimelineNameError] = useState('');
   const [timelineDifficulty, setTimelineDifficulty] = useState('');
   
+  // Session Summary State
+  const [showSessionSummary, setShowSessionSummary] = useState(false);
+  const [completedSessionData, setCompletedSessionData] = useState<{
+    name: string;
+    duration: number;
+    distance: number;
+    calories: number;
+    averageSpeed: number;
+    maxSpeed: number;
+    speedHistory: SpeedPoint[];
+  } | null>(null);
+  
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number>(0);
   const pausedTimeRef = useRef<number>(0);
@@ -68,10 +83,24 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete }) =
 
   useEffect(() => {
     if (isRunning && !isPaused) {
+      // Update recording state für Header
+      onRecordingChange(true, {
+        sessionName: sessionName,
+        duration: duration,
+        currentSpeed: currentSpeed
+      });
+      
       intervalRef.current = setInterval(() => {
         const now = Date.now();
         const elapsed = Math.floor((now - startTimeRef.current - pausedTimeRef.current) / 1000);
         setDuration(elapsed);
+        
+        // Update recording state
+        onRecordingChange(true, {
+          sessionName: sessionName,
+          duration: elapsed,
+          currentSpeed: currentSpeed
+        });
         
         // Berechne verbleibende Zeit wenn Timer gesetzt ist
         if (targetDuration) {
@@ -114,6 +143,11 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete }) =
     setIsRunning(true);
     setIsPaused(false);
     setDuration(0);
+    onRecordingChange(true, {
+      sessionName: sessionName,
+      duration: 0,
+      currentSpeed: currentSpeed
+    });
     setSpeedHistory([{ timestamp: now, speed: currentSpeed }]);
     
     // Setze verbleibende Zeit wenn Timer aktiv
@@ -124,12 +158,18 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete }) =
 
   const pauseSession = () => {
     setIsPaused(true);
+    onRecordingChange(false);
   };
 
   const resumeSession = () => {
     const pauseStart = Date.now();
     pausedTimeRef.current += pauseStart - (startTimeRef.current + duration * 1000 + pausedTimeRef.current);
     setIsPaused(false);
+    onRecordingChange(true, {
+      sessionName: sessionName,
+      duration: duration,
+      currentSpeed: currentSpeed
+    });
   };
 
   const stopSession = () => {
@@ -146,28 +186,53 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete }) =
     const averageSpeed = speedHistory.reduce((sum, point) => sum + point.speed, 0) / speedHistory.length;
     const maxSpeed = Math.max(...speedHistory.map(point => point.speed));
 
-    onSessionComplete({
+    // Zeige Session Summary anstatt direkt zu speichern
+    const sessionData = {
       name: sessionName,
       duration: roundedDuration,
       distance,
       calories,
       averageSpeed: Math.round(averageSpeed * 10) / 10,
       maxSpeed,
-      speedHistory,
-      difficulty: selectedDifficulty
-    });
+      speedHistory
+    };
+    
+    setCompletedSessionData(sessionData);
+    setShowSessionSummary(true);
 
     // Reset
     setIsRunning(false);
     setIsPaused(false);
+    onRecordingChange(false);
     setDuration(0);
     setCurrentSpeed(1.0);
     setSpeedHistory([]);
     setSessionName('');
     setNameError('');
-    setSelectedDifficulty('');
     setTargetDuration(null);
     setRemainingTime(null);
+  };
+
+  const handleSessionSave = (sessionData: {
+    name: string;
+    duration: number;
+    distance: number;
+    calories: number;
+    averageSpeed: number;
+    maxSpeed: number;
+    speedHistory: SpeedPoint[];
+    difficulty?: string;
+  }) => {
+    onSessionComplete(sessionData);
+    setShowSessionSummary(false);
+    setCompletedSessionData(null);
+    setSelectedDifficulty('');
+  };
+
+  const handleSessionCancel = () => {
+    setShowSessionSummary(false);
+    setCompletedSessionData(null);
+    onRecordingChange(false);
   };
 
   const adjustSpeed = (delta: number) => {
@@ -617,6 +682,15 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete }) =
             )}
           </div>
         </div>
+      )}
+      
+      {/* Session Summary Modal */}
+      {showSessionSummary && completedSessionData && (
+        <SessionSummary
+          sessionData={completedSessionData}
+          onSave={handleSessionSave}
+          onCancel={handleSessionCancel}
+        />
       )}
 
       {/* Live Tracking */}

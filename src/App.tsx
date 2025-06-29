@@ -8,6 +8,13 @@ import { saveTrainingSession, getTrainingSessions, deleteTrainingSession } from 
 import { formatDate } from './utils/calculations';
 import { SessionEditModal } from './components/SessionEditModal';
 
+interface RecordingState {
+  isRecording: boolean;
+  sessionName: string;
+  duration: number;
+  currentSpeed: number;
+}
+
 type TabType = 'overview' | 'tracker' | 'history' | 'stats';
 
 function App() {
@@ -16,6 +23,14 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [firebaseConfigured, setFirebaseConfigured] = useState(true);
   const [editingSession, setEditingSession] = useState<TrainingSession | null>(null);
+
+  // Recording State für Header-Indikator
+  const [recordingState, setRecordingState] = useState<RecordingState>({
+    isRecording: false,
+    sessionName: '',
+    duration: 0,
+    currentSpeed: 0
+  });
 
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
     show: boolean;
@@ -164,6 +179,14 @@ function App() {
     }
   };
 
+  const handleRecordingChange = (isRecording: boolean, sessionData?: Partial<RecordingState>) => {
+    setRecordingState(prev => ({
+      ...prev,
+      isRecording,
+      ...sessionData
+    }));
+  };
+
   const tabs = [
     { id: 'overview', label: 'Übersicht', icon: Activity },
     { id: 'tracker', label: 'Live Tracking', icon: Play },
@@ -190,6 +213,23 @@ function App() {
             <div className="flex items-center space-x-3">
               <Activity className="w-8 h-8 text-green-500" />
               <h1 className="text-2xl font-bold text-white">Walking-Pad Tracker</h1>
+              
+              {/* Recording Indicator */}
+              {recordingState.isRecording && (
+                <div 
+                  onClick={() => setActiveTab('tracker')}
+                  className="flex items-center space-x-3 bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg cursor-pointer transition-all animate-pulse"
+                  title="Klicken um zur laufenden Aufzeichnung zu wechseln"
+                >
+                  <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
+                  <div className="text-white">
+                    <div className="text-sm font-medium">🔴 AUFZEICHNUNG LÄUFT</div>
+                    <div className="text-xs opacity-90">
+                      {recordingState.sessionName || 'Unbenanntes Training'} • {formatDuration(recordingState.duration)}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
             
             {!firebaseConfigured && (
@@ -267,7 +307,11 @@ function App() {
         )}
         
         {activeTab === 'tracker' && (
-          <LiveTracker onSessionComplete={handleSessionComplete} />
+          <LiveTracker 
+            onSessionComplete={handleSessionComplete}
+            isRecording={recordingState.isRecording}
+            onRecordingChange={handleRecordingChange}
+          />
         )}
         
         {activeTab === 'history' && (

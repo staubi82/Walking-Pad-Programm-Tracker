@@ -363,13 +363,15 @@ const MainApp: React.FC = () => {
             {/* Right Side */}
             <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
               {/* Theme Toggle */}
-              <ThemeToggle className="hidden sm:flex" />
+              <div className="hidden sm:block">
+                <ThemeToggle />
+              </div>
               
               {/* Firebase Status - Nur Desktop */}
               {!firebaseConfigured && (
-                <div className={`hidden lg:flex items-center space-x-2 text-yellow-400 px-3 py-1 rounded-lg border border-yellow-400/30 transition-colors duration-200 ${
+                <div className={`hidden lg:flex items-center space-x-2 px-3 py-2 rounded-lg border transition-all duration-200 hover:scale-105 ${
                   isDark ? 'bg-yellow-400/10' : 'bg-yellow-50'
-                }`}>
+                } border-yellow-400/30 text-yellow-600`}>
                   <AlertCircle className="w-4 h-4" />
                   <span className="text-sm">Lokale Speicherung</span>
                 </div>
@@ -377,8 +379,8 @@ const MainApp: React.FC = () => {
               
               {/* User Info - Desktop */}
               {currentUser && (
-                <div className="hidden md:flex items-center space-x-3">
-                  <div className="flex flex-col items-end">
+                <div className="hidden md:flex items-center space-x-3 group">
+                  <div className="flex flex-col items-end transition-all duration-200 group-hover:scale-105">
                     <p className={`text-sm font-medium leading-tight transition-colors duration-200 ${
                       isDark ? 'text-white' : 'text-gray-900'
                     }`}>
@@ -391,42 +393,52 @@ const MainApp: React.FC = () => {
                   
                   <button
                     onClick={() => handleTabChange('profile')}
-                    className="relative w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center hover:from-green-500 hover:to-blue-600 transition-all ring-2 ring-transparent hover:ring-white/20 shadow-lg overflow-hidden"
+                    className="relative w-10 h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-xl hover:from-green-500 hover:to-blue-600 ring-2 ring-transparent hover:ring-white/30 shadow-lg overflow-hidden group"
                     title="Profil öffnen"
                   >
                     {profileImage ? (
                       <img
                         src={profileImage}
                         alt="Profil"
-                        className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
+                        className="w-10 h-10 rounded-full object-cover transition-transform duration-300 group-hover:scale-110"
                       />
                     ) : (
-                      <span className="text-white font-bold text-xs sm:text-sm">
+                      <span className="text-white font-bold text-sm transition-transform duration-300 group-hover:scale-110">
                         {(currentUser.displayName || currentUser.email || 'U').charAt(0).toUpperCase()}
                       </span>
                     )}
+                    {/* Hover Indicator */}
+                    <div className="absolute inset-0 rounded-full bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   </button>
                   
-                  <button
+                  <div className="relative">
+                    <button
                     onClick={handleLogout}
-                    className={`p-2 hover:text-red-400 rounded-lg transition-all group ${
+                    className={`p-2 rounded-lg transition-all duration-300 hover:scale-110 hover:shadow-lg group relative ${
                       isDark 
-                        ? 'text-gray-400 hover:bg-red-500/10' 
-                        : 'text-gray-600 hover:bg-red-50'
+                        ? 'text-gray-400 hover:text-red-400 hover:bg-red-500/20' 
+                        : 'text-gray-600 hover:text-red-600 hover:bg-red-50'
                     }`}
                     title="Abmelden"
                   >
-                    <LogOut className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform" />
+                    <LogOut className="w-5 h-5 transition-transform duration-300 group-hover:rotate-12" />
+                    {/* Tooltip */}
+                    <div className={`absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none ${
+                      isDark ? 'bg-gray-700 text-white' : 'bg-gray-800 text-white'
+                    }`}>
+                      Abmelden
+                    </div>
                   </button>
+                  </div>
                 </div>
               )}
 
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className={`md:hidden p-2 hover:text-green-400 transition-colors ${
+                className={`md:hidden p-2 rounded-lg transition-all duration-300 hover:scale-110 hover:shadow-lg ${
                   isDark ? 'text-white' : 'text-gray-900'
-                }`}
+                } hover:text-green-400 hover:bg-green-400/10`}
               >
                 {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>

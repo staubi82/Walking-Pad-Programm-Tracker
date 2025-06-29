@@ -21,7 +21,9 @@ import {
   ArrowRight,
   CheckCircle,
   Star,
-  Zap
+  Zap,
+  Menu,
+  X
 } from 'lucide-react';
 import { loginUser, registerUser, getAuthErrorMessage } from '../firebase/auth';
 import { useNavigate } from 'react-router-dom';
@@ -31,6 +33,7 @@ export const LandingPage: React.FC = () => {
   const backgroundPattern = "data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E";
 
   const [authMode, setAuthMode] = useState<'login' | 'register' | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [formData, setFormData] = useState({
     displayName: '',
     email: '',
@@ -112,6 +115,7 @@ export const LandingPage: React.FC = () => {
 
   const switchAuthMode = (mode: 'login' | 'register') => {
     setAuthMode(mode);
+    setMobileMenuOpen(false);
     resetForm();
   };
 
@@ -170,16 +174,22 @@ export const LandingPage: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-br from-green-900/20 via-gray-900 to-blue-900/20"></div>
         <div className={`absolute inset-0 bg-[url('${backgroundPattern}')] opacity-20`}></div>
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-12">
           {/* Header */}
-          <header className="flex justify-between items-center mb-16">
+          <header className="flex justify-between items-center mb-8 lg:mb-16">
             <div className="flex items-center space-x-3">
-              <Activity className="w-10 h-10 text-green-500" />
-              <h1 className="text-2xl font-bold text-white">Walking-Pad Tracker</h1>
+              <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-xl flex items-center justify-center shadow-lg">
+                <Activity className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl lg:text-2xl font-bold text-white">Walking-Pad Tracker</h1>
+                <p className="text-xs text-gray-400 hidden sm:block">Professionelles Training</p>
+              </div>
             </div>
             
+            {/* Desktop Navigation */}
             {!authMode && (
-              <div className="flex space-x-4">
+              <div className="hidden md:flex space-x-4">
                 <button
                   onClick={() => switchAuthMode('login')}
                   className="px-6 py-2 text-green-400 hover:text-green-300 font-medium transition-colors"
@@ -188,63 +198,105 @@ export const LandingPage: React.FC = () => {
                 </button>
                 <button
                   onClick={() => switchAuthMode('register')}
-                  className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                  className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors shadow-lg"
                 >
                   Registrieren
                 </button>
               </div>
             )}
+
+            {/* Mobile Menu Button */}
+            {!authMode && (
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="md:hidden p-2 text-white hover:text-green-400 transition-colors"
+              >
+                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+            )}
+
+            {/* Back Button for Auth Mode */}
+            {authMode && (
+              <button
+                onClick={() => setAuthMode(null)}
+                className="p-2 text-gray-400 hover:text-white transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            )}
           </header>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          {/* Mobile Menu */}
+          {mobileMenuOpen && !authMode && (
+            <div className="md:hidden mb-8 bg-gray-800/95 backdrop-blur-sm rounded-xl p-6 border border-gray-700 shadow-2xl">
+              <div className="space-y-4">
+                <button
+                  onClick={() => switchAuthMode('login')}
+                  className="w-full bg-gray-700 hover:bg-gray-600 px-6 py-3 rounded-lg text-white font-medium transition-colors flex items-center justify-center space-x-2"
+                >
+                  <LogIn className="w-5 h-5" />
+                  <span>Anmelden</span>
+                </button>
+                <button
+                  onClick={() => switchAuthMode('register')}
+                  className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 px-6 py-3 rounded-lg text-white font-medium transition-colors flex items-center justify-center space-x-2"
+                >
+                  <UserPlus className="w-5 h-5" />
+                  <span>Registrieren</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             {/* Left Column - Content */}
-            <div className="space-y-8">
+            <div className="space-y-6 lg:space-y-8 order-2 lg:order-1">
               <div>
-                <h2 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-4 lg:mb-6 leading-tight">
                   Ihr professioneller
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500">
                     {' '}Walking-Pad
                   </span>
                   {' '}Tracker
                 </h2>
-                <p className="text-xl text-gray-300 mb-8 leading-relaxed">
+                <p className="text-lg lg:text-xl text-gray-300 mb-6 lg:mb-8 leading-relaxed">
                   Verfolgen Sie Ihre Trainings in Echtzeit, analysieren Sie Ihre Fortschritte und erreichen Sie Ihre Fitness-Ziele mit unserem fortschrittlichen Walking-Pad Tracker.
                 </p>
               </div>
 
               {/* Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
                 {stats.map((stat, index) => (
-                  <div key={index} className="text-center p-4 bg-gray-800/50 rounded-lg backdrop-blur-sm">
-                    <stat.icon className="w-6 h-6 text-green-400 mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-white">{stat.value}</div>
-                    <div className="text-sm text-gray-400">{stat.label}</div>
+                  <div key={index} className="text-center p-3 lg:p-4 bg-gray-800/50 rounded-lg backdrop-blur-sm border border-gray-700/50">
+                    <stat.icon className="w-5 h-5 lg:w-6 lg:h-6 text-green-400 mx-auto mb-2" />
+                    <div className="text-lg lg:text-2xl font-bold text-white">{stat.value}</div>
+                    <div className="text-xs lg:text-sm text-gray-400">{stat.label}</div>
                   </div>
                 ))}
               </div>
 
               {/* Benefits */}
-              <div className="space-y-3">
+              <div className="space-y-2 lg:space-y-3">
                 {benefits.map((benefit, index) => (
-                  <div key={index} className="flex items-center space-x-3">
-                    <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
-                    <span className="text-gray-300">{benefit}</span>
+                  <div key={index} className="flex items-start space-x-3">
+                    <CheckCircle className="w-4 h-4 lg:w-5 lg:h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm lg:text-base text-gray-300">{benefit}</span>
                   </div>
                 ))}
               </div>
 
               {!authMode && (
-                <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex flex-col sm:flex-row gap-3 lg:gap-4">
                   <button
                     onClick={() => switchAuthMode('register')}
-                    className="flex-1 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 px-8 py-4 rounded-lg text-white font-semibold text-lg transition-all transform hover:scale-105 flex items-center justify-center space-x-2"
+                    className="flex-1 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 px-6 lg:px-8 py-3 lg:py-4 rounded-lg text-white font-semibold text-base lg:text-lg transition-all transform hover:scale-105 flex items-center justify-center space-x-2 shadow-lg"
                   >
                     <UserPlus className="w-5 h-5" />
                     <span>Kostenlos starten</span>
                   </button>
                   <button
                     onClick={() => switchAuthMode('login')}
-                    className="flex-1 bg-gray-800 hover:bg-gray-700 px-8 py-4 rounded-lg text-white font-semibold text-lg transition-all border border-gray-600 flex items-center justify-center space-x-2"
+                    className="flex-1 bg-gray-800 hover:bg-gray-700 px-6 lg:px-8 py-3 lg:py-4 rounded-lg text-white font-semibold text-base lg:text-lg transition-all border border-gray-600 flex items-center justify-center space-x-2"
                   >
                     <LogIn className="w-5 h-5" />
                     <span>Anmelden</span>
@@ -254,15 +306,15 @@ export const LandingPage: React.FC = () => {
             </div>
 
             {/* Right Column - Auth Form or Demo */}
-            <div className="lg:pl-8">
+            <div className="order-1 lg:order-2 lg:pl-8">
               {authMode ? (
                 /* Auth Form */
-                <div className="bg-gray-800/80 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-gray-700">
+                <div className="bg-gray-800/90 backdrop-blur-sm rounded-2xl p-6 lg:p-8 shadow-2xl border border-gray-700">
                   <div className="text-center mb-6">
-                    <h3 className="text-2xl font-bold text-white mb-2">
+                    <h3 className="text-xl lg:text-2xl font-bold text-white mb-2">
                       {authMode === 'login' ? 'Willkommen zurück!' : 'Konto erstellen'}
                     </h3>
-                    <p className="text-gray-400">
+                    <p className="text-sm lg:text-base text-gray-400">
                       {authMode === 'login' 
                         ? 'Melden Sie sich in Ihrem Konto an' 
                         : 'Starten Sie Ihre Fitness-Reise noch heute'
@@ -270,7 +322,7 @@ export const LandingPage: React.FC = () => {
                     </p>
                   </div>
 
-                  <form onSubmit={handleSubmit} className="space-y-6">
+                  <form onSubmit={handleSubmit} className="space-y-4 lg:space-y-6">
                     {error && (
                       <div className="bg-red-900/50 border border-red-700 rounded-lg p-4">
                         <p className="text-red-300 text-sm">{error}</p>
@@ -290,7 +342,7 @@ export const LandingPage: React.FC = () => {
                             required
                             value={formData.displayName}
                             onChange={handleChange}
-                            className="w-full pl-10 pr-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+                            className="w-full pl-10 pr-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 text-base"
                             placeholder="Max Mustermann"
                           />
                         </div>
@@ -309,7 +361,7 @@ export const LandingPage: React.FC = () => {
                           required
                           value={formData.email}
                           onChange={handleChange}
-                          className="w-full pl-10 pr-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+                          className="w-full pl-10 pr-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 text-base"
                           placeholder="ihre.email@beispiel.de"
                         />
                       </div>
@@ -327,13 +379,13 @@ export const LandingPage: React.FC = () => {
                           required
                           value={formData.password}
                           onChange={handleChange}
-                          className="w-full pl-10 pr-10 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+                          className="w-full pl-10 pr-10 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 text-base"
                           placeholder={authMode === 'register' ? 'Mindestens 6 Zeichen' : 'Ihr Passwort'}
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1"
                         >
                           {showPassword ? (
                             <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-300" />
@@ -357,13 +409,13 @@ export const LandingPage: React.FC = () => {
                             required
                             value={formData.confirmPassword}
                             onChange={handleChange}
-                            className="w-full pl-10 pr-10 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+                            className="w-full pl-10 pr-10 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 text-base"
                             placeholder="Passwort wiederholen"
                           />
                           <button
                             type="button"
                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1"
                           >
                             {showConfirmPassword ? (
                               <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-300" />
@@ -402,7 +454,7 @@ export const LandingPage: React.FC = () => {
                     <button
                       type="submit"
                       disabled={loading}
-                      className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 py-3 px-4 rounded-lg text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                      className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 py-3 px-4 rounded-lg text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 text-base"
                     >
                       {loading ? (
                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
@@ -444,43 +496,43 @@ export const LandingPage: React.FC = () => {
                 /* Demo Preview */
                 <div className="space-y-6">
                   {/* Mock App Screenshot */}
-                  <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl border border-gray-700">
-                    <div className="bg-gray-900 rounded-lg p-4 mb-4">
+                  <div className="bg-gray-800/90 backdrop-blur-sm rounded-2xl p-4 lg:p-6 shadow-2xl border border-gray-700">
+                    <div className="bg-gray-900 rounded-lg p-3 lg:p-4 mb-4">
                       <div className="flex items-center space-x-2 mb-4">
-                        <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                        <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                        <div className="w-2 h-2 lg:w-3 lg:h-3 bg-red-500 rounded-full"></div>
+                        <div className="w-2 h-2 lg:w-3 lg:h-3 bg-yellow-500 rounded-full"></div>
+                        <div className="w-2 h-2 lg:w-3 lg:h-3 bg-green-500 rounded-full"></div>
                       </div>
                       
                       {/* Mock Live Tracking */}
-                      <div className="space-y-4">
+                      <div className="space-y-3 lg:space-y-4">
                         <div className="text-center">
-                          <div className="text-4xl font-mono font-bold text-green-400 mb-2">25:30</div>
-                          <div className="text-sm text-gray-400">Live Training</div>
+                          <div className="text-2xl lg:text-4xl font-mono font-bold text-green-400 mb-2">25:30</div>
+                          <div className="text-xs lg:text-sm text-gray-400">Live Training</div>
                         </div>
                         
-                        <div className="grid grid-cols-3 gap-3">
-                          <div className="bg-gray-800 rounded-lg p-3 text-center">
-                            <div className="text-lg font-bold text-blue-400">2.1 km</div>
+                        <div className="grid grid-cols-3 gap-2 lg:gap-3">
+                          <div className="bg-gray-800 rounded-lg p-2 lg:p-3 text-center">
+                            <div className="text-sm lg:text-lg font-bold text-blue-400">2.1 km</div>
                             <div className="text-xs text-gray-400">Distanz</div>
                           </div>
-                          <div className="bg-gray-800 rounded-lg p-3 text-center">
-                            <div className="text-lg font-bold text-orange-400">156 kcal</div>
+                          <div className="bg-gray-800 rounded-lg p-2 lg:p-3 text-center">
+                            <div className="text-sm lg:text-lg font-bold text-orange-400">156 kcal</div>
                             <div className="text-xs text-gray-400">Kalorien</div>
                           </div>
-                          <div className="bg-gray-800 rounded-lg p-3 text-center">
-                            <div className="text-lg font-bold text-purple-400">4.8 km/h</div>
+                          <div className="bg-gray-800 rounded-lg p-2 lg:p-3 text-center">
+                            <div className="text-sm lg:text-lg font-bold text-purple-400">4.8 km/h</div>
                             <div className="text-xs text-gray-400">Speed</div>
                           </div>
                         </div>
                         
                         {/* Mock Speed Chart */}
-                        <div className="bg-gray-800 rounded-lg p-3">
-                          <div className="h-20 bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded flex items-end justify-between px-2">
+                        <div className="bg-gray-800 rounded-lg p-2 lg:p-3">
+                          <div className="h-16 lg:h-20 bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded flex items-end justify-between px-2">
                             {[40, 60, 80, 70, 90, 85, 95, 75].map((height, i) => (
                               <div
                                 key={i}
-                                className="bg-green-500 w-2 rounded-t"
+                                className="bg-green-500 w-1 lg:w-2 rounded-t"
                                 style={{ height: `${height}%` }}
                               ></div>
                             ))}
@@ -492,7 +544,7 @@ export const LandingPage: React.FC = () => {
                     
                     <div className="text-center">
                       <div className="text-sm text-gray-400 mb-2">Live Demo</div>
-                      <div className="text-lg font-semibold text-white">Professionelles Training-Interface</div>
+                      <div className="text-base lg:text-lg font-semibold text-white">Professionelles Training-Interface</div>
                     </div>
                   </div>
                 </div>
@@ -503,26 +555,26 @@ export const LandingPage: React.FC = () => {
       </div>
 
       {/* Features Section */}
-      <section className="py-20 bg-gray-800/50">
+      <section className="py-12 lg:py-20 bg-gray-800/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4">
+          <div className="text-center mb-12 lg:mb-16">
+            <h2 className="text-2xl lg:text-4xl font-bold text-white mb-4">
               Alles was Sie für erfolgreiches Training brauchen
             </h2>
-            <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+            <p className="text-lg lg:text-xl text-gray-400 max-w-3xl mx-auto">
               Unser Walking-Pad Tracker bietet professionelle Features für ambitionierte Fitness-Enthusiasten
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
             {features.map((feature, index) => (
               <div key={index} className="group">
                 <div className="bg-gray-800 rounded-xl p-6 h-full hover:bg-gray-700 transition-all duration-300 transform group-hover:scale-105 border border-gray-700">
                   <div className={`${feature.bgColor} w-12 h-12 rounded-lg flex items-center justify-center mb-4`}>
                     <feature.icon className={`w-6 h-6 ${feature.color}`} />
                   </div>
-                  <h3 className="text-xl font-semibold text-white mb-3">{feature.title}</h3>
-                  <p className="text-gray-400 leading-relaxed">{feature.description}</p>
+                  <h3 className="text-lg lg:text-xl font-semibold text-white mb-3">{feature.title}</h3>
+                  <p className="text-sm lg:text-base text-gray-400 leading-relaxed">{feature.description}</p>
                 </div>
               </div>
             ))}
@@ -531,11 +583,11 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* How it Works */}
-      <section className="py-20">
+      <section className="py-12 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4">So einfach geht's</h2>
-            <p className="text-xl text-gray-400">In nur 3 Schritten zu Ihrem perfekten Training</p>
+          <div className="text-center mb-12 lg:mb-16">
+            <h2 className="text-2xl lg:text-4xl font-bold text-white mb-4">So einfach geht's</h2>
+            <p className="text-lg lg:text-xl text-gray-400">In nur 3 Schritten zu Ihrem perfekten Training</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -561,15 +613,15 @@ export const LandingPage: React.FC = () => {
             ].map((item, index) => (
               <div key={index} className="text-center group">
                 <div className="relative mb-6">
-                  <div className="w-20 h-20 bg-gradient-to-r from-green-600 to-blue-600 rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
-                    <item.icon className="w-8 h-8 text-white" />
+                  <div className="w-16 h-16 lg:w-20 lg:h-20 bg-gradient-to-r from-green-600 to-blue-600 rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform shadow-lg">
+                    <item.icon className="w-6 h-6 lg:w-8 lg:h-8 text-white" />
                   </div>
-                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center border-2 border-green-500">
-                    <span className="text-sm font-bold text-green-400">{item.step}</span>
+                  <div className="absolute -top-2 -right-2 w-6 h-6 lg:w-8 lg:h-8 bg-gray-800 rounded-full flex items-center justify-center border-2 border-green-500">
+                    <span className="text-xs lg:text-sm font-bold text-green-400">{item.step}</span>
                   </div>
                 </div>
-                <h3 className="text-xl font-semibold text-white mb-3">{item.title}</h3>
-                <p className="text-gray-400">{item.description}</p>
+                <h3 className="text-lg lg:text-xl font-semibold text-white mb-3">{item.title}</h3>
+                <p className="text-sm lg:text-base text-gray-400">{item.description}</p>
               </div>
             ))}
           </div>
@@ -577,19 +629,19 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-green-900/20 to-blue-900/20">
+      <section className="py-12 lg:py-20 bg-gradient-to-r from-green-900/20 to-blue-900/20">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-white mb-4 lg:mb-6">
             Bereit für Ihr nächstes Training?
           </h2>
-          <p className="text-xl text-gray-300 mb-8">
+          <p className="text-lg lg:text-xl text-gray-300 mb-6 lg:mb-8">
             Starten Sie noch heute kostenlos und entdecken Sie, wie einfach professionelles Training-Tracking sein kann.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
               onClick={() => switchAuthMode('register')}
-              className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 px-8 py-4 rounded-lg text-white font-semibold text-lg transition-all transform hover:scale-105 flex items-center justify-center space-x-2"
+              className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 px-6 lg:px-8 py-3 lg:py-4 rounded-lg text-white font-semibold text-base lg:text-lg transition-all transform hover:scale-105 flex items-center justify-center space-x-2 shadow-lg"
             >
               <UserPlus className="w-5 h-5" />
               <span>Jetzt kostenlos starten</span>
@@ -604,21 +656,23 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-800 border-t border-gray-700 py-12">
+      <footer className="bg-gray-800 border-t border-gray-700 py-8 lg:py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center space-x-3 mb-4 md:mb-0">
-              <Activity className="w-8 h-8 text-green-500" />
-              <span className="text-xl font-bold text-white">Walking-Pad Tracker</span>
+          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-blue-500 rounded-xl flex items-center justify-center">
+                <Activity className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-lg lg:text-xl font-bold text-white">Walking-Pad Tracker</span>
             </div>
             
-            <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-6 text-gray-400">
-              <p>&copy; 2025 Walking-Pad Tracker by Staubi. Bleiben Sie aktiv und gesund!</p>
+            <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-6 text-gray-400 text-center md:text-left">
+              <p className="text-sm">&copy; 2025 Walking-Pad Tracker by Staubi. Bleiben Sie aktiv und gesund!</p>
               <a 
                 href="https://github.com/staubi82" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-blue-400 hover:text-blue-300 transition-colors flex items-center space-x-1"
+                className="text-blue-400 hover:text-blue-300 transition-colors flex items-center space-x-1 text-sm"
               >
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>

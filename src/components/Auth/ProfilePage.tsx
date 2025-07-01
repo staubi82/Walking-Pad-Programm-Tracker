@@ -1,6 +1,3 @@
-Here's the fixed version with all missing closing brackets added:
-
-```typescript
 import React, { useState } from 'react';
 import { User, Mail, Calendar, Edit3, Save, X, Trash2, Activity, TrendingUp, Target, Scale, Camera, Upload } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';

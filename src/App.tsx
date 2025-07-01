@@ -692,7 +692,7 @@ const MainApp: React.FC = () => {
         )}
         
         {activeTab === 'profile' && (
-          <ProfilePage sessions={sessions} />
+          <ProfilePage />
         )}
       </main>
 

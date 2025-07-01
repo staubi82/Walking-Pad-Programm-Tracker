@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, Square, Plus, Minus, Clock, Edit3, Trash2, CheckCircle } from 'lucide-react';
+import { Play, Pause, Square, Plus, Minus, Clock, Edit3, Trash2, CheckCircle, Timer, Target, Zap, Activity } from 'lucide-react';
 import { calculateDistance, calculateCalories, calculateSteps, formatDuration, roundToNearestHalfMinute } from '../utils/calculations';
 import { SpeedPoint } from '../types';
 import { SessionSummary } from './SessionSummary';
@@ -41,7 +41,7 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [duration, setDuration] = useState(0);
-  const [targetDuration, setTargetDuration] = useState<number | null>(null); // in Sekunden
+  const [targetDuration, setTargetDuration] = useState<number | null>(null);
   const [remainingTime, setRemainingTime] = useState<number | null>(null);
   const [currentSpeed, setCurrentSpeed] = useState(1.0);
   const [speedHistory, setSpeedHistory] = useState<SpeedPoint[]>([]);
@@ -86,7 +86,6 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
         setUserProfile(profile);
       } catch (error) {
         console.warn('Konnte Benutzerprofil nicht laden:', error);
-        // Verwende Standardwerte
         setUserProfile({});
       }
     };
@@ -111,12 +110,10 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
         const elapsed = Math.floor((now - startTimeRef.current - pausedTimeRef.current) / 1000);
         setDuration(elapsed);
         
-        // Berechne verbleibende Zeit wenn Timer gesetzt ist
         if (targetDuration) {
           const remaining = targetDuration - elapsed;
           setRemainingTime(Math.max(0, remaining));
           
-          // Automatisch stoppen wenn Zeit abgelaufen
           if (remaining <= 0) {
             stopSession();
             return;
@@ -126,14 +123,12 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
         setSpeedHistory(prev => [...prev, { timestamp: now, speed: currentSpeed }]);
       }, 1000);
       
-      // Update recording state für Header
       onRecordingChange(true, {
         sessionName: sessionName,
         duration: duration,
         currentSpeed: currentSpeed
       });
     } else {
-      // Clear interval when not running or paused
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
@@ -162,7 +157,6 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
     setDuration(0);
     setSpeedHistory([{ timestamp: now, speed: currentSpeed }]);
     
-    // Setze verbleibende Zeit wenn Timer aktiv
     if (targetDuration) {
       setRemainingTime(targetDuration);
     }
@@ -183,16 +177,13 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
       return;
     }
 
-    // Runde die Dauer auf nächste 30 Sekunden
     const roundedDuration = roundToNearestHalfMinute(duration);
-
     const distance = calculateDistance(speedHistory);
     const calories = calculateCalories(speedHistory);
     const steps = calculateSteps(speedHistory, userProfile);
     const averageSpeed = speedHistory.reduce((sum, point) => sum + point.speed, 0) / speedHistory.length;
     const maxSpeed = Math.max(...speedHistory.map(point => point.speed));
 
-    // Zeige Session Summary anstatt direkt zu speichern
     const sessionData = {
       name: sessionName,
       duration: roundedDuration,
@@ -207,7 +198,6 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
     setCompletedSessionData(sessionData);
     setShowSessionSummary(true);
 
-    // Reset
     setIsRunning(false);
     setIsPaused(false);
     setDuration(0);
@@ -219,7 +209,6 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
     setRemainingTime(null);
   };
 
-  // Separate useEffect für Recording State Updates
   useEffect(() => {
     if (isRunning && !isPaused) {
       onRecordingChange(true, {
@@ -296,17 +285,14 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
       return;
     }
 
-    // Sortiere Einträge nach Minuten
     const sortedEntries = [...timelineEntries].sort((a, b) => a.minute - b.minute);
     
-    // Validierung
     if (sortedEntries.length < 2) {
       alert('Mindestens 2 Timeline-Einträge erforderlich.');
       return;
     }
 
     const maxMinute = Math.max(...sortedEntries.map(entry => entry.minute));
-    // Runde die Dauer auf nächste 30 Sekunden
     const newDuration = roundToNearestHalfMinute(maxMinute * 60);
     if (maxMinute < 1) {
       alert('Training muss mindestens 1 Minute dauern.');
@@ -315,15 +301,12 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
 
     setTimelineNameError('');
 
-    // Erstelle Geschwindigkeitsverlauf basierend auf Timeline
     const now = Date.now();
     const simulatedHistory: SpeedPoint[] = [];
     
     for (let minute = 0; minute <= maxMinute; minute++) {
-      // Finde die Geschwindigkeit für diese Minute
       let currentSpeedForMinute = 1.0;
       
-      // Finde den letzten Eintrag vor oder bei dieser Minute
       for (let i = sortedEntries.length - 1; i >= 0; i--) {
         if (sortedEntries[i].minute <= minute) {
           currentSpeedForMinute = sortedEntries[i].speed;
@@ -331,7 +314,6 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
         }
       }
       
-      // Füge Datenpunkte für diese Minute hinzu (alle 10 Sekunden)
       for (let second = 0; second < 60; second += 10) {
         simulatedHistory.push({
           timestamp: now + (minute * 60 + second) * 1000,
@@ -358,7 +340,6 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
       difficulty: timelineDifficulty
     });
 
-    // Reset
     setTimelineName('');
     setTimelineNameError('');
     setTimelineDifficulty('');
@@ -377,88 +358,364 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
   const currentCalories = calculateCalories(speedHistory);
   const currentSteps = calculateSteps(speedHistory, userProfile);
   
-  // Berechne Fortschritt in Prozent
   const progressPercentage = targetDuration && targetDuration > 0 
     ? Math.min(100, (duration / targetDuration) * 100)
     : 0;
 
-  return (
-    <div className="space-y-6">
-      {/* Stoppuhr-Anzeige */}
-      <div className={`rounded-xl p-6 shadow-xl transition-colors duration-200 ${
-        isDark ? 'bg-gray-800' : 'bg-white border border-gray-200'
-      }`}>
-        <div className="flex items-center justify-center mb-4">
-          <Clock className="w-8 h-8 text-blue-400 mr-3" />
-          <h2 className={`text-3xl font-bold transition-colors duration-200 ${
-            isDark ? 'text-white' : 'text-gray-900'
-          }`}>
-            {targetDuration ? 'Timer' : 'Stoppuhr'}
-          </h2>
-        </div>
-        
-        <div className="text-center">
+  // Wenn Training läuft - kompakte Dashboard-Ansicht
+  if (isRunning) {
+    return (
+      <div className="space-y-4">
+        {/* Session Summary Modal */}
+        {showSessionSummary && completedSessionData && (
+          <SessionSummary
+            sessionData={completedSessionData}
+            onSave={handleSessionSave}
+            onCancel={handleSessionCancel}
+          />
+        )}
+
+        {/* Kompaktes Live Dashboard */}
+        <div className={`rounded-xl p-4 sm:p-6 shadow-xl transition-colors duration-200 ${
+          isDark ? 'bg-gray-800' : 'bg-white border border-gray-200'
+        }`}>
+          {/* Header mit Session Name und Status */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 space-y-2 sm:space-y-0">
+            <div>
+              <h2 className={`text-lg sm:text-xl font-bold transition-colors duration-200 ${
+                isDark ? 'text-white' : 'text-gray-900'
+              }`}>{sessionName}</h2>
+              <div className="flex items-center space-x-2">
+                {isPaused ? (
+                  <div className="flex items-center text-yellow-400">
+                    <Pause className="w-4 h-4 mr-1" />
+                    <span className="text-sm">Pausiert</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center text-green-400">
+                    <Play className="w-4 h-4 mr-1" />
+                    <span className="text-sm">Live Training</span>
+                  </div>
+                )}
+                {selectedDifficulty && (
+                  <span className={`px-2 py-1 rounded-full text-white text-xs font-medium ${
+                    difficultyLevels.find(l => l.id === selectedDifficulty)?.color || 'bg-gray-500'
+                  }`}>
+                    {difficultyLevels.find(l => l.id === selectedDifficulty)?.label}
+                  </span>
+                )}
+              </div>
+            </div>
+            
+            {/* Control Buttons */}
+            <div className="flex space-x-2">
+              {isPaused ? (
+                <button
+                  onClick={resumeSession}
+                  className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg flex items-center space-x-2 text-white font-medium transition-colors"
+                >
+                  <Play className="w-4 h-4" />
+                  <span className="hidden sm:inline">Fortsetzen</span>
+                </button>
+              ) : (
+                <button
+                  onClick={pauseSession}
+                  className="bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded-lg flex items-center space-x-2 text-white font-medium transition-colors"
+                >
+                  <Pause className="w-4 h-4" />
+                  <span className="hidden sm:inline">Pause</span>
+                </button>
+              )}
+              <button
+                onClick={stopSession}
+                className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg flex items-center space-x-2 text-white font-medium transition-colors"
+              >
+                <Square className="w-4 h-4" />
+                <span className="hidden sm:inline">Stop</span>
+              </button>
+            </div>
+          </div>
+
           {/* Hauptzeit-Anzeige */}
-          <div className="mb-4">
-            <div className="text-6xl font-mono font-bold text-green-400 mb-2">
+          <div className="text-center mb-6">
+            <div className="text-4xl sm:text-6xl font-mono font-bold text-green-400 mb-2">
               {targetDuration && remainingTime !== null 
                 ? formatDuration(remainingTime)
                 : formatDuration(duration)
               }
             </div>
             
-            {/* Zusätzliche Zeit-Info bei Timer */}
             {targetDuration && (
-              <div className={`text-lg transition-colors duration-200 ${
-                isDark ? 'text-gray-400' : 'text-gray-600'
-              }`}>
-                <span>Verstrichene Zeit: {formatDuration(duration)}</span>
-                <span className="mx-2">•</span>
-                <span>Zielzeit: {formatDuration(targetDuration)}</span>
-              </div>
+              <>
+                <div className={`text-sm mb-2 transition-colors duration-200 ${
+                  isDark ? 'text-gray-400' : 'text-gray-600'
+                }`}>
+                  Verstrichene Zeit: {formatDuration(duration)} / {formatDuration(targetDuration)}
+                </div>
+                <div className={`w-full rounded-full h-2 mb-2 transition-colors duration-200 ${
+                  isDark ? 'bg-gray-700' : 'bg-gray-200'
+                }`}>
+                  <div 
+                    className="bg-gradient-to-r from-green-500 to-blue-500 h-2 rounded-full transition-all duration-1000 ease-out"
+                    style={{ width: `${progressPercentage}%` }}
+                  ></div>
+                </div>
+              </>
             )}
           </div>
-          
-          {/* Fortschrittsbalken bei Timer */}
-          {targetDuration && (
-            <div className="mb-4">
-              <div className={`w-full rounded-full h-3 mb-2 transition-colors duration-200 ${
-                isDark ? 'bg-gray-700' : 'bg-gray-200'
-              }`}>
-                <div 
-                  className="bg-gradient-to-r from-green-500 to-blue-500 h-3 rounded-full transition-all duration-1000 ease-out"
-                  style={{ width: `${progressPercentage}%` }}
-                ></div>
+
+          {/* Live Statistiken Grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+            <div className={`rounded-lg p-3 sm:p-4 transition-colors duration-200 ${
+              isDark ? 'bg-gray-700' : 'bg-gray-100'
+            }`}>
+              <div className="flex items-center space-x-2 mb-1">
+                <Target className="w-4 h-4 text-green-400" />
+                <span className={`text-xs sm:text-sm transition-colors duration-200 ${
+                  isDark ? 'text-gray-400' : 'text-gray-600'
+                }`}>Distanz</span>
               </div>
-              <div className={`text-sm transition-colors duration-200 ${
-                isDark ? 'text-gray-400' : 'text-gray-600'
-              }`}>
-                Fortschritt: {progressPercentage.toFixed(1)}%
-              </div>
+              <div className="text-lg sm:text-2xl font-bold text-green-400">{currentDistance.toFixed(2)} km</div>
             </div>
-          )}
-          
-          <div className="flex justify-center space-x-4">
-            {!isRunning ? (
-              <div className={`transition-colors duration-200 ${
-                isDark ? 'text-gray-400' : 'text-gray-600'
-              }`}>Bereit zum Start</div>
-            ) : isPaused ? (
-              <div className="text-yellow-400 flex items-center">
-                <Pause className="w-4 h-4 mr-2" />
-                Pausiert
+            
+            <div className={`rounded-lg p-3 sm:p-4 transition-colors duration-200 ${
+              isDark ? 'bg-gray-700' : 'bg-gray-100'
+            }`}>
+              <div className="flex items-center space-x-2 mb-1">
+                <Zap className="w-4 h-4 text-orange-400" />
+                <span className={`text-xs sm:text-sm transition-colors duration-200 ${
+                  isDark ? 'text-gray-400' : 'text-gray-600'
+                }`}>Kalorien</span>
               </div>
-            ) : (
-              <div className="text-green-400 flex items-center">
-                <Play className="w-4 h-4 mr-2" />
-                Läuft
+              <div className="text-lg sm:text-2xl font-bold text-orange-400">{currentCalories}</div>
+            </div>
+            
+            <div className={`rounded-lg p-3 sm:p-4 transition-colors duration-200 ${
+              isDark ? 'bg-gray-700' : 'bg-gray-100'
+            }`}>
+              <div className="flex items-center space-x-2 mb-1">
+                <Activity className="w-4 h-4 text-blue-400" />
+                <span className={`text-xs sm:text-sm transition-colors duration-200 ${
+                  isDark ? 'text-gray-400' : 'text-gray-600'
+                }`}>Speed</span>
               </div>
-            )}
+              <div className="text-lg sm:text-2xl font-bold text-blue-400">{currentSpeed.toFixed(1)} km/h</div>
+            </div>
+            
+            <div className={`rounded-lg p-3 sm:p-4 transition-colors duration-200 ${
+              isDark ? 'bg-gray-700' : 'bg-gray-100'
+            }`}>
+              <div className="flex items-center space-x-2 mb-1">
+                <Timer className="w-4 h-4 text-purple-400" />
+                <span className={`text-xs sm:text-sm transition-colors duration-200 ${
+                  isDark ? 'text-gray-400' : 'text-gray-600'
+                }`}>Schritte</span>
+              </div>
+              <div className="text-lg sm:text-2xl font-bold text-purple-400">{(currentSteps / 1000).toFixed(1)}k</div>
+            </div>
+          </div>
+
+          {/* Geschwindigkeits-Kontrolle */}
+          <div className="mb-4">
+            <div className="flex items-center justify-center space-x-4 mb-3">
+              <button
+                onClick={() => adjustSpeed(-0.5)}
+                disabled={currentSpeed <= 1.0}
+                className="bg-red-600 hover:bg-red-700 disabled:bg-gray-600 p-2 sm:p-3 rounded-lg transition-colors"
+              >
+                <Minus className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              </button>
+              
+              <div className="flex items-center space-x-2">
+                <input
+                  type="number"
+                  min="1.0"
+                  max="6.0"
+                  step="0.5"
+                  value={currentSpeed}
+                  onChange={(e) => handleSpeedInputChange(e.target.value)}
+                  className={`w-16 sm:w-20 px-2 sm:px-3 py-2 border rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors duration-200 ${
+                    isDark 
+                      ? 'bg-gray-700 border-gray-600 text-white' 
+                      : 'bg-white border-gray-300 text-gray-900'
+                  }`}
+                />
+                <span className={`text-sm transition-colors duration-200 ${
+                  isDark ? 'text-gray-300' : 'text-gray-700'
+                }`}>km/h</span>
+              </div>
+              
+              <button
+                onClick={() => adjustSpeed(0.5)}
+                disabled={currentSpeed >= 6.0}
+                className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 p-2 sm:p-3 rounded-lg transition-colors"
+              >
+                <Plus className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              </button>
+            </div>
+
+            {/* Schnell-Buttons für Geschwindigkeit */}
+            <div className="grid grid-cols-6 lg:grid-cols-11 gap-1 sm:gap-2">
+              {speedButtons.map((speed) => (
+                <button
+                  key={speed}
+                  onClick={() => setCurrentSpeed(speed)}
+                  className={`px-2 py-1 sm:px-3 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
+                    currentSpeed === speed
+                      ? 'bg-green-600 text-white'
+                      : isDark 
+                        ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' 
+                        : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                  }`}
+                >
+                  {speed.toFixed(1)}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
+    );
+  }
 
-      {/* Timeline-Dateneingabe */}
+  // Setup-Ansicht wenn nicht läuft
+  return (
+    <div className="space-y-6">
+      {/* Session Summary Modal */}
+      {showSessionSummary && completedSessionData && (
+        <SessionSummary
+          sessionData={completedSessionData}
+          onSave={handleSessionSave}
+          onCancel={handleSessionCancel}
+        />
+      )}
+
+      {/* Training Setup */}
+      <div className={`rounded-xl p-6 shadow-xl transition-colors duration-200 ${
+        isDark ? 'bg-gray-800' : 'bg-white border border-gray-200'
+      }`}>
+        <h2 className={`text-2xl font-bold mb-6 transition-colors duration-200 ${
+          isDark ? 'text-white' : 'text-gray-900'
+        }`}>Neues Training starten</h2>
+        
+        <div className="space-y-6">
+          {/* Trainingsname */}
+          <div>
+            <label className={`block text-sm font-medium mb-2 transition-colors duration-200 ${
+              isDark ? 'text-gray-300' : 'text-gray-700'
+            }`}>
+              Name der Trainingseinheit
+            </label>
+            <input
+              type="text"
+              value={sessionName}
+              onChange={(e) => {
+                setSessionName(e.target.value);
+                if (nameError) setNameError('');
+              }}
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors duration-200 ${
+                isDark 
+                  ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                  : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+              }`}
+              placeholder="z.B. Morgendliches Walking"
+            />
+            {nameError && (
+              <p className="mt-1 text-sm text-red-400">{nameError}</p>
+            )}
+          </div>
+          
+          {/* Schwierigkeitslevel */}
+          <div>
+            <label className={`block text-sm font-medium mb-3 transition-colors duration-200 ${
+              isDark ? 'text-gray-300' : 'text-gray-700'
+            }`}>
+              Schwierigkeitslevel (optional)
+            </label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {difficultyLevels.map(level => (
+                <button
+                  key={level.id}
+                  onClick={() => setSelectedDifficulty(level.id)}
+                  className={`${level.color} hover:opacity-80 px-3 py-2 rounded-lg text-white text-sm font-medium transition-all ${
+                    selectedDifficulty === level.id ? 'ring-2 ring-white' : ''
+                  }`}
+                  title={level.description}
+                >
+                  {level.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Timer-Einstellungen */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <label className={`text-sm font-medium transition-colors duration-200 ${
+                isDark ? 'text-gray-300' : 'text-gray-700'
+              }`}>
+                Timer verwenden
+              </label>
+              <button
+                onClick={() => {
+                  if (targetDuration) {
+                    setTargetDuration(null);
+                    setRemainingTime(null);
+                  } else {
+                    setTargetDuration(30 * 60);
+                    setRemainingTime(30 * 60);
+                  }
+                }}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  targetDuration ? 'bg-green-600' : 'bg-gray-600'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    targetDuration ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+            
+            {targetDuration && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                  {timerPresets.map((preset) => (
+                    <button
+                      key={preset.value}
+                      onClick={() => {
+                        setTargetDuration(preset.value);
+                        setRemainingTime(preset.value);
+                      }}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        targetDuration === preset.value
+                          ? 'bg-green-600 text-white'
+                          : isDark 
+                            ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' 
+                            : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                      }`}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Start Button */}
+          <button
+            onClick={startSession}
+            className="w-full bg-green-600 hover:bg-green-700 px-6 py-4 rounded-lg flex items-center justify-center space-x-3 text-white font-medium transition-colors text-lg shadow-lg"
+          >
+            <Play className="w-6 h-6" />
+            <span>Training starten</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Timeline-Editor */}
       <div className={`rounded-xl p-6 shadow-xl transition-colors duration-200 ${
         isDark ? 'bg-gray-800' : 'bg-white border border-gray-200'
       }`}>
@@ -471,13 +728,12 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
             className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg flex items-center space-x-2 text-white transition-colors"
           >
             <Edit3 className="w-4 h-4" />
-            <span>{showManualEntry ? 'Ausblenden' : 'Timeline-Eingabe'}</span>
+            <span>{showManualEntry ? 'Ausblenden' : 'Timeline-Editor'}</span>
           </button>
         </div>
 
         {showManualEntry && (
           <div className="space-y-6">
-            {/* Name und Schwierigkeit */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className={`block text-sm font-medium mb-2 transition-colors duration-200 ${
@@ -527,21 +783,18 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
               </div>
             </div>
 
-            {/* Timeline-Einträge */}
             <div>
               <div className="flex justify-between items-center mb-3">
                 <h4 className={`text-lg font-semibold transition-colors duration-200 ${
                   isDark ? 'text-white' : 'text-gray-900'
                 }`}>Geschwindigkeits-Timeline</h4>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={addTimelineEntry}
-                    className="bg-green-600 hover:bg-green-700 px-3 py-1 rounded-lg flex items-center space-x-1 text-white text-sm transition-colors"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Hinzufügen</span>
-                  </button>
-                </div>
+                <button
+                  onClick={addTimelineEntry}
+                  className="bg-green-600 hover:bg-green-700 px-3 py-1 rounded-lg flex items-center space-x-1 text-white text-sm transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Hinzufügen</span>
+                </button>
               </div>
               
               <div className="space-y-3 max-h-60 overflow-y-auto">
@@ -601,50 +854,6 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
                   </div>
                 ))}
               </div>
-              
-              <div className={`mt-4 p-3 rounded-lg border transition-colors duration-200 ${
-                isDark ? 'bg-blue-900/30 border-blue-700' : 'bg-blue-50 border-blue-300'
-              }`}>
-                <p className={`text-sm transition-colors duration-200 ${
-                  isDark ? 'text-blue-300' : 'text-blue-800'
-                }`}>
-                  💡 <strong>So funktioniert's:</strong> 
-                  <br />• Fügen Sie Zeitpunkte mit verschiedenen Geschwindigkeiten hinzu
-                  <br />• Die App berechnet automatisch die Gesamtstatistiken
-                  <br />• Klicken Sie "Timeline-Training hinzufügen" um die Aufzeichnung zu beenden
-                </p>
-              </div>
-              
-              {/* Vorschau der Timeline */}
-              {timelineEntries.length > 1 && (
-                <div className={`mt-4 p-3 rounded-lg transition-colors duration-200 ${
-                  isDark ? 'bg-gray-700' : 'bg-gray-100'
-                }`}>
-                  <h5 className={`text-sm font-semibold mb-2 transition-colors duration-200 ${
-                    isDark ? 'text-white' : 'text-gray-900'
-                  }`}>Timeline-Vorschau:</h5>
-                  <div className={`text-xs space-y-1 transition-colors duration-200 ${
-                    isDark ? 'text-gray-300' : 'text-gray-700'
-                  }`}>
-                    {timelineEntries
-                      .sort((a, b) => a.minute - b.minute)
-                      .map((entry, index) => (
-                        <div key={entry.id} className="flex justify-between">
-                          <span>Minute {entry.minute}:</span>
-                          <span className="text-blue-400">{entry.speed} km/h</span>
-                        </div>
-                      ))}
-                    <div className={`border-t pt-1 mt-2 flex justify-between font-semibold transition-colors duration-200 ${
-                      isDark ? 'border-gray-600' : 'border-gray-300'
-                    }`}>
-                      <span>Gesamtdauer:</span>
-                      <span className="text-green-400">
-                        {Math.max(...timelineEntries.map(e => e.minute))} Minuten
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
 
             <div className="flex space-x-4">
@@ -672,464 +881,6 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
           </div>
         )}
       </div>
-
-      {/* Timer-Einstellungen */}
-      {!isRunning && !showManualEntry && (
-        <div className={`rounded-xl p-6 shadow-xl transition-colors duration-200 ${
-          isDark ? 'bg-gray-800' : 'bg-white border border-gray-200'
-        }`}>
-          <h3 className={`text-xl font-bold mb-4 transition-colors duration-200 ${
-            isDark ? 'text-white' : 'text-gray-900'
-          }`}>Timer-Einstellungen</h3>
-          
-          <div className="space-y-4">
-            {/* Timer Ein/Aus */}
-            <div className="flex items-center justify-between">
-              <label className={`text-sm font-medium transition-colors duration-200 ${
-                isDark ? 'text-gray-300' : 'text-gray-700'
-              }`}>
-                Timer verwenden
-              </label>
-              <button
-                onClick={() => {
-                  if (targetDuration) {
-                    setTargetDuration(null);
-                    setRemainingTime(null);
-                  } else {
-                    setTargetDuration(30 * 60); // Standard: 30 Minuten
-                    setRemainingTime(30 * 60);
-                  }
-                }}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  targetDuration ? 'bg-green-600' : 'bg-gray-600'
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    targetDuration ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
-              </button>
-            </div>
-            
-            {/* Timer-Presets */}
-            {targetDuration && (
-              <div>
-                <label className={`block text-sm font-medium mb-3 transition-colors duration-200 ${
-                  isDark ? 'text-gray-300' : 'text-gray-700'
-                }`}>
-                  Zielzeit auswählen
-                </label>
-                <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
-                  {timerPresets.map((preset) => (
-                    <button
-                      key={preset.value}
-                      onClick={() => {
-                        setTargetDuration(preset.value);
-                        setRemainingTime(preset.value);
-                      }}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        targetDuration === preset.value
-                          ? 'bg-green-600 text-white'
-                          : isDark 
-                            ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' 
-                            : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-                      }`}
-                    >
-                      {preset.label}
-                    </button>
-                  ))}
-                </div>
-                
-                {/* Benutzerdefinierte Zeit */}
-                <div className="mt-4">
-                  <label className={`block text-sm font-medium mb-2 transition-colors duration-200 ${
-                    isDark ? 'text-gray-300' : 'text-gray-700'
-                  }`}>
-                    Benutzerdefinierte Zeit (Minuten)
-                  </label>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="number"
-                      min="1"
-                      max="180"
-                      value={targetDuration ? Math.round(targetDuration / 60) : 30}
-                      onChange={(e) => {
-                        const minutes = parseInt(e.target.value) || 30;
-                        const seconds = minutes * 60;
-                        setTargetDuration(seconds);
-                        setRemainingTime(seconds);
-                      }}
-                      className={`w-20 px-3 py-2 border rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors duration-200 ${
-                        isDark 
-                          ? 'bg-gray-700 border-gray-600 text-white' 
-                          : 'bg-white border-gray-300 text-gray-900'
-                      }`}
-                    />
-                    <span className={`transition-colors duration-200 ${
-                      isDark ? 'text-gray-300' : 'text-gray-700'
-                    }`}>Minuten</span>
-                  </div>
-                </div>
-                
-                {/* Timer-Info */}
-                <div className="mt-4 p-3 bg-blue-900/30 rounded-lg border border-blue-700">
-                  <p className="text-blue-300 text-sm">
-                    ⏰ <strong>Timer aktiv:</strong> Das Training stoppt automatisch nach {formatDuration(targetDuration)}
-                    <br />🎯 <strong>Ziel:</strong> Erreichen Sie Ihre gewünschte Trainingszeit
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-      
-      {/* Session Summary Modal */}
-      {showSessionSummary && completedSessionData && (
-        <SessionSummary
-          sessionData={completedSessionData}
-          onSave={handleSessionSave}
-          onCancel={handleSessionCancel}
-        />
-      )}
-
-      {/* Live Tracking */}
-      <div className={`rounded-xl p-6 shadow-xl transition-colors duration-200 ${
-        isDark ? 'bg-gray-800' : 'bg-white border border-gray-200'
-      }`}>
-        <h2 className={`text-2xl font-bold mb-6 transition-colors duration-200 ${
-          isDark ? 'text-white' : 'text-gray-900'
-        }`}>Live Tracking</h2>
-        
-        {!isRunning && !showManualEntry && (
-          <div className="space-y-4 mb-6">
-            <div>
-              <label className={`block text-sm font-medium mb-2 transition-colors duration-200 ${
-                isDark ? 'text-gray-300' : 'text-gray-700'
-              }`}>
-                Name der Trainingseinheit
-              </label>
-              <input
-                type="text"
-                value={sessionName}
-                onChange={(e) => {
-                  setSessionName(e.target.value);
-                  if (nameError) setNameError('');
-                }}
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors duration-200 ${
-                  isDark 
-                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
-                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-                }`}
-                placeholder="z.B. Morgendliches Walking"
-              />
-              {nameError && (
-                <p className="mt-1 text-sm text-red-400">{nameError}</p>
-              )}
-            </div>
-            
-            <div>
-              <label className={`block text-sm font-medium mb-3 transition-colors duration-200 ${
-                isDark ? 'text-gray-300' : 'text-gray-700'
-              }`}>
-                Schwierigkeitslevel
-              </label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                {difficultyLevels.map(level => (
-                  <button
-                    key={level.id}
-                    onClick={() => setSelectedDifficulty(level.id)}
-                    className={`${level.color} hover:opacity-80 px-3 py-2 rounded-lg text-white text-sm font-medium transition-all ${
-                      selectedDifficulty === level.id ? 'ring-2 ring-white' : ''
-                    }`}
-                    title={level.description}
-                  >
-                    {level.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className={`rounded-lg p-4 transition-colors duration-200 ${
-            isDark ? 'bg-gray-700' : 'bg-gray-100'
-          }`}>
-            <div className={`text-sm transition-colors duration-200 ${
-              isDark ? 'text-gray-400' : 'text-gray-600'
-            }`}>Zeit</div>
-            <div className={`text-2xl font-bold transition-colors duration-200 ${
-              isDark ? 'text-white' : 'text-gray-900'
-            }`}>{formatDuration(duration)}</div>
-          </div>
-          <div className={`rounded-lg p-4 transition-colors duration-200 ${
-            isDark ? 'bg-gray-700' : 'bg-gray-100'
-          }`}>
-            <div className={`text-sm transition-colors duration-200 ${
-              isDark ? 'text-gray-400' : 'text-gray-600'
-            }`}>Distanz</div>
-            <div className="text-2xl font-bold text-green-400">{currentDistance.toFixed(2)} km</div>
-          </div>
-          <div className={`rounded-lg p-4 transition-colors duration-200 ${
-            isDark ? 'bg-gray-700' : 'bg-gray-100'
-          }`}>
-            <div className={`text-sm transition-colors duration-200 ${
-              isDark ? 'text-gray-400' : 'text-gray-600'
-            }`}>Kalorien</div>
-            <div className="text-2xl font-bold text-orange-400">{currentCalories}</div>
-          </div>
-          <div className={`rounded-lg p-4 transition-colors duration-200 ${
-            isDark ? 'bg-gray-700' : 'bg-gray-100'
-          }`}>
-            <div className={`text-sm transition-colors duration-200 ${
-              isDark ? 'text-gray-400' : 'text-gray-600'
-            }`}>Geschwindigkeit</div>
-            <div className="text-2xl font-bold text-blue-400">{currentSpeed.toFixed(1)} km/h</div>
-          </div>
-        </div>
-
-        {/* Zusätzliche Statistiken - Schritte */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className={`rounded-lg p-4 transition-colors duration-200 ${
-            isDark ? 'bg-gray-700' : 'bg-gray-100'
-          }`}>
-            <div className={`text-sm transition-colors duration-200 ${
-              isDark ? 'text-gray-400' : 'text-gray-600'
-            }`}>Schritte</div>
-            <div className="text-2xl font-bold text-purple-400">{currentSteps.toLocaleString()}</div>
-            <div className={`text-xs mt-1 transition-colors duration-200 ${
-              isDark ? 'text-gray-500' : 'text-gray-600'
-            }`}>Geschätzt basierend auf Körpergröße</div>
-          </div>
-          <div className={`rounded-lg p-4 transition-colors duration-200 ${
-            isDark ? 'bg-gray-700' : 'bg-gray-100'
-          }`}>
-            <div className={`text-sm transition-colors duration-200 ${
-              isDark ? 'text-gray-400' : 'text-gray-600'
-            }`}>Schritte/Min</div>
-            <div className="text-2xl font-bold text-cyan-400">
-              {duration > 0 ? Math.round(currentSteps / (duration / 60)) : 0}
-            </div>
-            <div className={`text-xs mt-1 transition-colors duration-200 ${
-              isDark ? 'text-gray-500' : 'text-gray-600'
-            }`}>Durchschnittliche Frequenz</div>
-          </div>
-          <div className={`rounded-lg p-4 transition-colors duration-200 ${
-            isDark ? 'bg-gray-700' : 'bg-gray-100'
-          }`}>
-            <div className={`text-sm transition-colors duration-200 ${
-              isDark ? 'text-gray-400' : 'text-gray-600'
-            }`}>Tempo</div>
-            <div className="text-2xl font-bold text-yellow-400">
-              {currentDistance > 0 ? formatDuration(Math.round((duration / currentDistance) * 60)) : '--:--'}
-            </div>
-            <div className={`text-xs mt-1 transition-colors duration-200 ${
-              isDark ? 'text-gray-500' : 'text-gray-600'
-            }`}>Min/km</div>
-          </div>
-        </div>
-
-        <div className="mb-6">
-          <label className={`block text-sm font-medium mb-3 transition-colors duration-200 ${
-            isDark ? 'text-gray-300' : 'text-gray-700'
-          }`}>
-            Geschwindigkeit einstellen
-          </label>
-          
-          <div className="mb-4">
-            <div className="flex items-center justify-center space-x-4">
-              <button
-                onClick={() => adjustSpeed(-0.5)}
-                disabled={!isRunning || currentSpeed <= 1.0}
-                className="bg-red-600 hover:bg-red-700 disabled:bg-gray-600 p-2 rounded-lg transition-colors"
-              >
-                <Minus className="w-4 h-4 text-white" />
-              </button>
-              
-              <div className="flex items-center space-x-2">
-                <input
-                  type="number"
-                  min="1.0"
-                  max="6.0"
-                  step="0.5"
-                  value={currentSpeed}
-                  onChange={(e) => handleSpeedInputChange(e.target.value)}
-                  disabled={!isRunning}
-                  className={`w-20 px-3 py-2 border rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors duration-200 ${
-                    isDark 
-                      ? 'bg-gray-700 border-gray-600 text-white disabled:bg-gray-600' 
-                      : 'bg-white border-gray-300 text-gray-900 disabled:bg-gray-200'
-                  }`}
-                />
-                <span className={`text-sm transition-colors duration-200 ${
-                  isDark ? 'text-gray-300' : 'text-gray-700'
-                }`}>km/h</span>
-              </div>
-              
-              <button
-                onClick={() => adjustSpeed(0.5)}
-                disabled={!isRunning || currentSpeed >= 6.0}
-                className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 p-2 rounded-lg transition-colors"
-              >
-                <Plus className="w-4 h-4 text-white" />
-              </button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-6 md:grid-cols-11 gap-2">
-            {speedButtons.map((speed) => (
-              <button
-                key={speed}
-                onClick={() => setCurrentSpeed(speed)}
-                disabled={!isRunning}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  currentSpeed === speed
-                    ? 'bg-green-600 text-white'
-                    : isDark 
-                      ? 'bg-gray-700 hover:bg-gray-600 text-gray-300 disabled:bg-gray-600 disabled:text-gray-500' 
-                      : 'bg-gray-200 hover:bg-gray-300 text-gray-700 disabled:bg-gray-300 disabled:text-gray-500'
-                }`}
-              >
-                {speed.toFixed(1)}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex justify-center space-x-4">
-          {!isRunning ? (
-            <button
-              onClick={startSession}
-              className="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg flex items-center space-x-2 text-white font-medium transition-colors"
-            >
-              <Play className="w-5 h-5" />
-              <span>Training starten</span>
-            </button>
-          ) : (
-            <>
-              {isPaused ? (
-                <button
-                  onClick={resumeSession}
-                  className="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg flex items-center space-x-2 text-white font-medium transition-colors"
-                >
-                  <Play className="w-5 h-5" />
-                  <span>Fortsetzen</span>
-                </button>
-              ) : (
-                <button
-                  onClick={pauseSession}
-                  className="bg-yellow-600 hover:bg-yellow-700 px-6 py-3 rounded-lg flex items-center space-x-2 text-white font-medium transition-colors"
-                >
-                  <Pause className="w-4 h-4 mr-2" />
-                  <span>Pausieren</span>
-                </button>
-              )}
-              <button
-                onClick={stopSession}
-                className="bg-red-600 hover:bg-red-700 px-6 py-3 rounded-lg flex items-center space-x-2 text-white font-medium transition-colors"
-              >
-                <Square className="w-5 h-5" />
-                <span>Training beenden</span>
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-      
-      {/* Schrittzähler-Info */}
-      {!isRunning && !showManualEntry && (
-        <div className={`rounded-xl p-6 shadow-xl transition-colors duration-200 ${
-          isDark ? 'bg-gray-800' : 'bg-white border border-gray-200'
-        }`}>
-          <h3 className={`text-xl font-bold mb-4 transition-colors duration-200 ${
-            isDark ? 'text-white' : 'text-gray-900'
-          }`}>🚶‍♂️ Schrittzähler-Information</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <h4 className={`text-lg font-semibold transition-colors duration-200 ${
-                isDark ? 'text-white' : 'text-gray-900'
-              }`}>Wie funktioniert's?</h4>
-              <div className={`space-y-2 text-sm transition-colors duration-200 ${
-                isDark ? 'text-gray-300' : 'text-gray-700'
-              }`}>
-                <p>• <strong>Automatische Berechnung:</strong> Schritte werden basierend auf Ihrer Geschwindigkeit und Körpergröße geschätzt</p>
-                <p>• <strong>Schrittlänge:</strong> Wird aus Ihrer Körpergröße berechnet (Männer: 41.5%, Frauen: 41.3%)</p>
-                <p>• <strong>Echtzeit-Tracking:</strong> Sehen Sie Ihre Schritte während des Trainings live</p>
-                <p>• <strong>Genauigkeit:</strong> Die Schätzung ist sehr präzise für Walking-Pad Training</p>
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              <h4 className={`text-lg font-semibold transition-colors duration-200 ${
-                isDark ? 'text-white' : 'text-gray-900'
-              }`}>Profil-Optimierung</h4>
-              <div className={`space-y-2 text-sm transition-colors duration-200 ${
-                isDark ? 'text-gray-300' : 'text-gray-700'
-              }`}>
-                <p>• <strong>Körpergröße:</strong> {userProfile.height ? `${userProfile.height} cm` : 'Nicht festgelegt (Standard: 170 cm)'}</p>
-                <p>• <strong>Geschlecht:</strong> {userProfile.gender ? (userProfile.gender === 'male' ? 'Männlich' : userProfile.gender === 'female' ? 'Weiblich' : 'Divers') : 'Nicht festgelegt (Standard: Männlich)'}</p>
-                <p>• <strong>Schrittlänge:</strong> {userProfile.height && userProfile.gender ? 
-                  `~${Math.round((userProfile.height * (userProfile.gender === 'male' ? 0.415 : 0.413)))} cm` : 
-                  '~70 cm (geschätzt)'}</p>
-                <p>• <strong>Tipp:</strong> Gehen Sie zu Ihrem Profil, um genauere Schrittzählungen zu erhalten!</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className={`mt-6 p-4 rounded-lg transition-colors duration-200 ${
-            isDark ? 'bg-blue-900/30 border-blue-700' : 'bg-blue-50 border-blue-300'
-          }`}>
-            <h4 className={`text-lg font-semibold mb-2 transition-colors duration-200 ${
-              isDark ? 'text-blue-300' : 'text-blue-700'
-            }`}>💡 Gesundheitstipps</h4>
-            <div className={`text-sm space-y-1 transition-colors duration-200 ${
-              isDark ? 'text-blue-200' : 'text-blue-600'
-            }`}>
-              <p>• Regelmäßiges Walking stärkt das Herz-Kreislauf-System</p>
-              <p>• 30 Minuten täglich können das Risiko für Herzkrankheiten reduzieren</p>
-              <p>• Walking ist gelenkschonend und für alle Altersgruppen geeignet</p>
-              <p>• Bereits 2.000 zusätzliche Schritte täglich machen einen Unterschied</p>
-            </div>
-          </div>
-          
-          <div className={`mt-6 p-4 rounded-lg border transition-colors duration-200 ${
-            isDark ? 'bg-purple-900/30 border-purple-700' : 'bg-purple-50 border-purple-300'
-          }`}>
-            <h5 className={`font-semibold mb-2 transition-colors duration-200 ${
-              isDark ? 'text-purple-300' : 'text-purple-700'
-            }`}>💡 Schrittziel-Empfehlungen</h5>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div className="text-center">
-                <div className={`text-lg font-bold transition-colors duration-200 ${
-                  isDark ? 'text-purple-400' : 'text-purple-600'
-                }`}>5.000</div>
-                <div className={`transition-colors duration-200 ${
-                  isDark ? 'text-purple-300' : 'text-purple-600'
-                }`}>Minimum täglich</div>
-              </div>
-              <div className="text-center">
-                <div className={`text-lg font-bold transition-colors duration-200 ${
-                  isDark ? 'text-purple-400' : 'text-purple-600'
-                }`}>10.000</div>
-                <div className={`transition-colors duration-200 ${
-                  isDark ? 'text-purple-300' : 'text-purple-600'
-                }`}>Empfohlenes Tagesziel</div>
-              </div>
-              <div className="text-center">
-                <div className={`text-lg font-bold transition-colors duration-200 ${
-                  isDark ? 'text-purple-400' : 'text-purple-600'
-                }`}>15.000+</div>
-                <div className={`transition-colors duration-200 ${
-                  isDark ? 'text-purple-300' : 'text-purple-600'
-                }`}>Sehr aktiver Lebensstil</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

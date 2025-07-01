@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, Square, Plus, Minus, Clock, Edit3, Trash2, CheckCircle, Timer, Target, Zap, Activity } from 'lucide-react';
+import { Play, Pause, Square, Plus, Minus, Clock, Edit3, Trash2, CheckCircle, Timer, Target, Zap, Activity, Footprints, TrendingUp } from 'lucide-react';
 import { calculateDistance, calculateCalories, calculateSteps, formatDuration, roundToNearestHalfMinute } from '../utils/calculations';
 import { SpeedPoint } from '../types';
 import { SessionSummary } from './SessionSummary';
@@ -45,10 +45,8 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
   const [remainingTime, setRemainingTime] = useState<number | null>(null);
   const [currentSpeed, setCurrentSpeed] = useState(1.0);
   const [speedHistory, setSpeedHistory] = useState<SpeedPoint[]>([]);
-  const [sessionName, setSessionName] = useState('');
-  const [nameError, setNameError] = useState('');
   const [showManualEntry, setShowManualEntry] = useState(false);
-  const [selectedDifficulty, setSelectedDifficulty] = useState('');
+  const [designMode, setDesignMode] = useState<'compact' | 'minimal'>('compact');
   
   // Timeline-Eingabe
   const [timelineEntries, setTimelineEntries] = useState<TimelineEntry[]>([
@@ -124,7 +122,6 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
       }, 1000);
       
       onRecordingChange(true, {
-        sessionName: sessionName,
         duration: duration,
         currentSpeed: currentSpeed
       });
@@ -143,12 +140,6 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
   }, [isRunning, isPaused, currentSpeed]);
 
   const startSession = () => {
-    if (!sessionName.trim()) {
-      setNameError('Bitte geben Sie einen Namen für die Trainingseinheit ein.');
-      return;
-    }
-    
-    setNameError('');
     const now = Date.now();
     startTimeRef.current = now;
     pausedTimeRef.current = 0;
@@ -185,7 +176,7 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
     const maxSpeed = Math.max(...speedHistory.map(point => point.speed));
 
     const sessionData = {
-      name: sessionName,
+      name: 'Training', // Wird im Summary Modal eingegeben
       duration: roundedDuration,
       distance,
       calories,
@@ -203,8 +194,6 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
     setDuration(0);
     setCurrentSpeed(1.0);
     setSpeedHistory([]);
-    setSessionName('');
-    setNameError('');
     setTargetDuration(null);
     setRemainingTime(null);
   };
@@ -212,14 +201,13 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
   useEffect(() => {
     if (isRunning && !isPaused) {
       onRecordingChange(true, {
-        sessionName: sessionName,
         duration: duration,
         currentSpeed: currentSpeed
       });
     } else {
       onRecordingChange(false);
     }
-  }, [isRunning, isPaused, sessionName, duration, currentSpeed, onRecordingChange]);
+  }, [isRunning, isPaused, duration, currentSpeed, onRecordingChange]);
 
   const handleSessionSave = (sessionData: {
     name: string;
@@ -235,7 +223,6 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
     onSessionComplete(sessionData);
     setShowSessionSummary(false);
     setCompletedSessionData(null);
-    setSelectedDifficulty('');
   };
 
   const handleSessionCancel = () => {
@@ -364,6 +351,178 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
 
   // Wenn Training läuft - kompakte Dashboard-Ansicht
   if (isRunning) {
+    if (designMode === 'minimal') {
+      // ALTERNATIVE: Ultra-minimales Design
+      return (
+        <div className="space-y-4">
+          {/* Session Summary Modal */}
+          {showSessionSummary && completedSessionData && (
+            <SessionSummary
+              sessionData={completedSessionData}
+              onSave={handleSessionSave}
+              onCancel={handleSessionCancel}
+            />
+          )}
+
+          {/* Ultra-minimales Live Dashboard */}
+          <div className={`rounded-2xl p-6 shadow-2xl border-2 transition-all duration-300 ${
+            isDark 
+              ? 'bg-gradient-to-br from-gray-900 to-gray-800 border-gray-700' 
+              : 'bg-gradient-to-br from-white to-gray-50 border-gray-200'
+          }`}>
+            {/* Hauptzeit - Zentral und groß */}
+            <div className="text-center mb-8">
+              <div className="text-7xl sm:text-8xl font-mono font-black bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text text-transparent mb-2">
+                {targetDuration && remainingTime !== null 
+                  ? formatDuration(remainingTime)
+                  : formatDuration(duration)
+                }
+              </div>
+              
+              {/* Status-Indikator */}
+              <div className="flex items-center justify-center space-x-2 mb-4">
+                {isPaused ? (
+                  <div className="flex items-center text-yellow-400">
+                    <div className="w-3 h-3 bg-yellow-400 rounded-full animate-pulse mr-2"></div>
+                    <span className="text-lg font-medium">PAUSIERT</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center text-green-400">
+                    <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse mr-2"></div>
+                    <span className="text-lg font-medium">LIVE</span>
+                  </div>
+                )}
+              </div>
+              
+              {/* Progress Bar */}
+              {targetDuration && (
+                <div className={`w-full max-w-md mx-auto rounded-full h-3 mb-4 transition-colors duration-200 ${
+                  isDark ? 'bg-gray-700' : 'bg-gray-200'
+                }`}>
+                  <div 
+                    className="bg-gradient-to-r from-green-500 to-blue-500 h-3 rounded-full transition-all duration-1000 ease-out shadow-lg"
+                    style={{ width: `${progressPercentage}%` }}
+                  ></div>
+                </div>
+              )}
+            </div>
+
+            {/* Kompakte Statistiken - 2x2 Grid */}
+            <div className="grid grid-cols-2 gap-4 mb-8">
+              <div className={`rounded-xl p-4 text-center transition-all duration-200 hover:scale-105 ${
+                isDark 
+                  ? 'bg-gradient-to-br from-green-900/30 to-green-800/30 border border-green-700/50' 
+                  : 'bg-gradient-to-br from-green-50 to-green-100 border border-green-200'
+              }`}>
+                <div className="text-2xl sm:text-3xl font-bold text-green-400 mb-1">{currentDistance.toFixed(2)}</div>
+                <div className={`text-sm font-medium transition-colors duration-200 ${
+                  isDark ? 'text-green-300' : 'text-green-700'
+                }`}>km</div>
+              </div>
+              
+              <div className={`rounded-xl p-4 text-center transition-all duration-200 hover:scale-105 ${
+                isDark 
+                  ? 'bg-gradient-to-br from-orange-900/30 to-orange-800/30 border border-orange-700/50' 
+                  : 'bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200'
+              }`}>
+                <div className="text-2xl sm:text-3xl font-bold text-orange-400 mb-1">{currentCalories}</div>
+                <div className={`text-sm font-medium transition-colors duration-200 ${
+                  isDark ? 'text-orange-300' : 'text-orange-700'
+                }`}>kcal</div>
+              </div>
+              
+              <div className={`rounded-xl p-4 text-center transition-all duration-200 hover:scale-105 ${
+                isDark 
+                  ? 'bg-gradient-to-br from-blue-900/30 to-blue-800/30 border border-blue-700/50' 
+                  : 'bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200'
+              }`}>
+                <div className="text-2xl sm:text-3xl font-bold text-blue-400 mb-1">{currentSpeed.toFixed(1)}</div>
+                <div className={`text-sm font-medium transition-colors duration-200 ${
+                  isDark ? 'text-blue-300' : 'text-blue-700'
+                }`}>km/h</div>
+              </div>
+              
+              <div className={`rounded-xl p-4 text-center transition-all duration-200 hover:scale-105 ${
+                isDark 
+                  ? 'bg-gradient-to-br from-purple-900/30 to-purple-800/30 border border-purple-700/50' 
+                  : 'bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200'
+              }`}>
+                <div className="text-2xl sm:text-3xl font-bold text-purple-400 mb-1">{currentSteps.toLocaleString()}</div>
+                <div className={`text-sm font-medium transition-colors duration-200 ${
+                  isDark ? 'text-purple-300' : 'text-purple-700'
+                }`}>Schritte</div>
+              </div>
+            </div>
+
+            {/* Geschwindigkeits-Kontrolle - Minimalistisch */}
+            <div className="mb-6">
+              <div className="flex items-center justify-center space-x-6 mb-4">
+                <button
+                  onClick={() => adjustSpeed(-0.5)}
+                  disabled={currentSpeed <= 1.0}
+                  className="w-14 h-14 bg-red-500 hover:bg-red-600 disabled:bg-gray-500 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 disabled:scale-100 shadow-lg"
+                >
+                  <Minus className="w-6 h-6 text-white" />
+                </button>
+                
+                <div className={`px-6 py-3 rounded-2xl border-2 transition-colors duration-200 ${
+                  isDark 
+                    ? 'bg-gray-800 border-gray-600' 
+                    : 'bg-white border-gray-300'
+                }`}>
+                  <div className="text-center">
+                    <div className={`text-3xl font-bold transition-colors duration-200 ${
+                      isDark ? 'text-white' : 'text-gray-900'
+                    }`}>{currentSpeed.toFixed(1)}</div>
+                    <div className={`text-sm transition-colors duration-200 ${
+                      isDark ? 'text-gray-400' : 'text-gray-600'
+                    }`}>km/h</div>
+                  </div>
+                </div>
+                
+                <button
+                  onClick={() => adjustSpeed(0.5)}
+                  disabled={currentSpeed >= 6.0}
+                  className="w-14 h-14 bg-green-500 hover:bg-green-600 disabled:bg-gray-500 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 disabled:scale-100 shadow-lg"
+                >
+                  <Plus className="w-6 h-6 text-white" />
+                </button>
+              </div>
+            </div>
+
+            {/* Control Buttons - Minimalistisch */}
+            <div className="flex justify-center space-x-4">
+              {isPaused ? (
+                <button
+                  onClick={resumeSession}
+                  className="bg-green-500 hover:bg-green-600 px-8 py-4 rounded-2xl flex items-center space-x-3 text-white font-bold text-lg transition-all duration-200 hover:scale-105 shadow-lg"
+                >
+                  <Play className="w-6 h-6" />
+                  <span>Fortsetzen</span>
+                </button>
+              ) : (
+                <button
+                  onClick={pauseSession}
+                  className="bg-yellow-500 hover:bg-yellow-600 px-8 py-4 rounded-2xl flex items-center space-x-3 text-white font-bold text-lg transition-all duration-200 hover:scale-105 shadow-lg"
+                >
+                  <Pause className="w-6 h-6" />
+                  <span>Pause</span>
+                </button>
+              )}
+              <button
+                onClick={stopSession}
+                className="bg-red-500 hover:bg-red-600 px-8 py-4 rounded-2xl flex items-center space-x-3 text-white font-bold text-lg transition-all duration-200 hover:scale-105 shadow-lg"
+              >
+                <Square className="w-6 h-6" />
+                <span>Stop</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Standard kompakte Ansicht
     return (
       <div className="space-y-4">
         {/* Session Summary Modal */}
@@ -375,36 +534,56 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
           />
         )}
 
+        {/* Design Mode Toggle */}
+        <div className="flex justify-center mb-4">
+          <div className={`inline-flex rounded-lg p-1 transition-colors duration-200 ${
+            isDark ? 'bg-gray-700' : 'bg-gray-200'
+          }`}>
+            <button
+              onClick={() => setDesignMode('compact')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                designMode === 'compact'
+                  ? 'bg-green-600 text-white shadow-lg'
+                  : isDark 
+                    ? 'text-gray-300 hover:text-white' 
+                    : 'text-gray-700 hover:text-gray-900'
+              }`}
+            >
+              Kompakt
+            </button>
+            <button
+              onClick={() => setDesignMode('minimal')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                designMode === 'minimal'
+                  ? 'bg-green-600 text-white shadow-lg'
+                  : isDark 
+                    ? 'text-gray-300 hover:text-white' 
+                    : 'text-gray-700 hover:text-gray-900'
+              }`}
+            >
+              Minimal
+            </button>
+          </div>
+        </div>
+
         {/* Kompaktes Live Dashboard */}
         <div className={`rounded-xl p-4 sm:p-6 shadow-xl transition-colors duration-200 ${
           isDark ? 'bg-gray-800' : 'bg-white border border-gray-200'
         }`}>
-          {/* Header mit Session Name und Status */}
+          {/* Header mit Status */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 space-y-2 sm:space-y-0">
-            <div>
-              <h2 className={`text-lg sm:text-xl font-bold transition-colors duration-200 ${
-                isDark ? 'text-white' : 'text-gray-900'
-              }`}>{sessionName}</h2>
-              <div className="flex items-center space-x-2">
-                {isPaused ? (
-                  <div className="flex items-center text-yellow-400">
-                    <Pause className="w-4 h-4 mr-1" />
-                    <span className="text-sm">Pausiert</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center text-green-400">
-                    <Play className="w-4 h-4 mr-1" />
-                    <span className="text-sm">Live Training</span>
-                  </div>
-                )}
-                {selectedDifficulty && (
-                  <span className={`px-2 py-1 rounded-full text-white text-xs font-medium ${
-                    difficultyLevels.find(l => l.id === selectedDifficulty)?.color || 'bg-gray-500'
-                  }`}>
-                    {difficultyLevels.find(l => l.id === selectedDifficulty)?.label}
-                  </span>
-                )}
-              </div>
+            <div className="flex items-center space-x-2">
+              {isPaused ? (
+                <div className="flex items-center text-yellow-400">
+                  <Pause className="w-5 h-5 mr-2" />
+                  <span className="text-lg font-medium">Training pausiert</span>
+                </div>
+              ) : (
+                <div className="flex items-center text-green-400">
+                  <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse mr-2"></div>
+                  <span className="text-lg font-medium">Live Training</span>
+                </div>
+              )}
             </div>
             
             {/* Control Buttons */}
@@ -506,12 +685,12 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
               isDark ? 'bg-gray-700' : 'bg-gray-100'
             }`}>
               <div className="flex items-center space-x-2 mb-1">
-                <Timer className="w-4 h-4 text-purple-400" />
+                <Footprints className="w-4 h-4 text-purple-400" />
                 <span className={`text-xs sm:text-sm transition-colors duration-200 ${
                   isDark ? 'text-gray-400' : 'text-gray-600'
                 }`}>Schritte</span>
               </div>
-              <div className="text-lg sm:text-2xl font-bold text-purple-400">{(currentSteps / 1000).toFixed(1)}k</div>
+              <div className="text-lg sm:text-2xl font-bold text-purple-400">{currentSteps.toLocaleString()}</div>
             </div>
           </div>
 
@@ -599,55 +778,6 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
         }`}>Neues Training starten</h2>
         
         <div className="space-y-6">
-          {/* Trainingsname */}
-          <div>
-            <label className={`block text-sm font-medium mb-2 transition-colors duration-200 ${
-              isDark ? 'text-gray-300' : 'text-gray-700'
-            }`}>
-              Name der Trainingseinheit
-            </label>
-            <input
-              type="text"
-              value={sessionName}
-              onChange={(e) => {
-                setSessionName(e.target.value);
-                if (nameError) setNameError('');
-              }}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors duration-200 ${
-                isDark 
-                  ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
-                  : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-              }`}
-              placeholder="z.B. Morgendliches Walking"
-            />
-            {nameError && (
-              <p className="mt-1 text-sm text-red-400">{nameError}</p>
-            )}
-          </div>
-          
-          {/* Schwierigkeitslevel */}
-          <div>
-            <label className={`block text-sm font-medium mb-3 transition-colors duration-200 ${
-              isDark ? 'text-gray-300' : 'text-gray-700'
-            }`}>
-              Schwierigkeitslevel (optional)
-            </label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-              {difficultyLevels.map(level => (
-                <button
-                  key={level.id}
-                  onClick={() => setSelectedDifficulty(level.id)}
-                  className={`${level.color} hover:opacity-80 px-3 py-2 rounded-lg text-white text-sm font-medium transition-all ${
-                    selectedDifficulty === level.id ? 'ring-2 ring-white' : ''
-                  }`}
-                  title={level.description}
-                >
-                  {level.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* Timer-Einstellungen */}
           <div>
             <div className="flex items-center justify-between mb-4">

@@ -2,13 +2,18 @@ import React, { useState } from 'react';
 import { User, Mail, Calendar, Edit3, Save, X, Trash2, Activity, TrendingUp, Target, Scale, Camera, Upload } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import { TrainingSession } from '../../types';
 import { updateUserProfile, PhotoUrlTooLongError } from '../../firebase/auth';
 import { saveUserProfile, getUserProfile } from '../../firebase/services';
 import { UserProfile } from '../../types';
 import { calculateBMI, getBMICategory, calculateBMR, calculateTDEE, calculateIdealWeight } from '../../utils/calculations';
 import { useEffect } from 'react';
 
-export const ProfilePage: React.FC = () => {
+interface ProfilePageProps {
+  sessions?: TrainingSession[];
+}
+
+export const ProfilePage: React.FC<ProfilePageProps> = ({ sessions = [] }) => {
   const { currentUser } = useAuth();
   const { isDark } = useTheme();
   
@@ -236,15 +241,16 @@ export const ProfilePage: React.FC = () => {
           isDark ? 'bg-gray-800' : 'bg-white border border-gray-200'
         }`}>
           <div className="text-center">
-            <h2 className={`text-3xl font-bold transition-colors duration-200 ${
-              isDark ? 'text-white' : 'text-gray-900'
-            }`}>Mein Profil</h2>
-            <p className={`mt-2 transition-colors duration-200 ${
+            <div className="text-2xl font-bold text-green-400">{sessions?.length || 0}</div>
+            <div className={`text-sm transition-colors duration-200 ${
+            <div className="text-2xl font-bold text-blue-400">
+              {sessions?.reduce((sum, s) => sum + (s.distance || 0), 0).toFixed(1) || '0.0'} km
+            </div>
+            <div className={`text-sm transition-colors duration-200 ${
               isDark ? 'text-gray-400' : 'text-gray-600'
-            }`}>Verwalten Sie Ihre Kontoinformationen und Gesundheitsdaten</p>
+            }`}>Gesamtdistanz</div>
           </div>
         </div>
-
         {/* Gesundheits-Statistiken */}
         {(userProfile.weight || userProfile.height || userProfile.age) && (
           <div className={`rounded-xl p-8 shadow-xl mb-6 transition-colors duration-200 ${
@@ -862,9 +868,12 @@ export const ProfilePage: React.FC = () => {
                 >
                   <Trash2 className="w-4 h-4" />
                   <span>Löschen</span>
-                </button>
-              </div>
+            <div className="text-2xl font-bold text-orange-400">
+              {sessions?.reduce((sum, s) => sum + (s.calories || 0), 0) || 0} kcal
             </div>
+            <div className={`text-sm transition-colors duration-200 ${
+              isDark ? 'text-gray-400' : 'text-gray-600'
+            }`}>Verbrannte Kalorien</div>
           </div>
         </div>
     </div>

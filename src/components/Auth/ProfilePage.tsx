@@ -22,6 +22,11 @@ export const ProfilePage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [accountStats, setAccountStats] = useState({
+    totalSessions: 0,
+    totalDistance: 0,
+    totalCalories: 0
+  });
 
   // Lade Benutzerprofil beim Laden der Komponente
   useEffect(() => {
@@ -44,6 +49,50 @@ export const ProfilePage: React.FC = () => {
     loadProfile();
   }, [currentUser]);
 
+  // Lade Konto-Statistiken
+  useEffect(() => {
+    const loadAccountStats = async () => {
+      if (currentUser?.uid) {
+        try {
+          // Versuche zuerst Firebase zu laden
+          const { getTrainingSessions } = await import('../../firebase/services');
+          const sessions = await getTrainingSessions();
+          
+          const stats = {
+            totalSessions: sessions.length,
+            totalDistance: sessions.reduce((sum, session) => sum + session.distance, 0),
+            totalCalories: sessions.reduce((sum, session) => sum + session.calories, 0)
+          };
+          
+          setAccountStats(stats);
+        } catch (error) {
+          console.warn('Firebase nicht verfügbar, lade lokale Daten:', error);
+          
+          // Fallback: Lade aus localStorage
+          try {
+            const localSessions = JSON.parse(localStorage.getItem('walkingPadSessions') || '[]');
+            const validSessions = localSessions.map((session: any) => ({
+              distance: Number(session.distance) || 0,
+              calories: Number(session.calories) || 0
+            }));
+            
+            const stats = {
+              totalSessions: validSessions.length,
+              totalDistance: validSessions.reduce((sum: number, session: any) => sum + session.distance, 0),
+              totalCalories: validSessions.reduce((sum: number, session: any) => sum + session.calories, 0)
+            };
+            
+            setAccountStats(stats);
+          } catch (parseError) {
+            console.error('Fehler beim Parsen der lokalen Daten:', parseError);
+            setAccountStats({ totalSessions: 0, totalDistance: 0, totalCalories: 0 });
+          }
+        }
+      }
+    };
+    
+    loadAccountStats();
+  }, [currentUser]);
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -812,24 +861,60 @@ export const ProfilePage: React.FC = () => {
             }`}>Konto-Statistiken</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-400">0</div>
+                <div className="text-2xl font-bold text-green-400">{accountStats.totalSessions}</div>
                 <div className={`text-sm transition-colors duration-200 ${
                   isDark ? 'text-gray-400' : 'text-gray-600'
                 }`}>Trainingseinheiten</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-blue-400">0.0 km</div>
+                <div className="text-2xl font-bold text-blue-400">{accountStats.totalDistance.toFixed(1)} km</div>
                 <div className={`text-sm transition-colors duration-200 ${
                   isDark ? 'text-gray-400' : 'text-gray-600'
                 }`}>Gesamtdistanz</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-orange-400">0 kcal</div>
+                <div className="text-2xl font-bold text-orange-400">{accountStats.totalCalories} kcal</div>
                 <div className={`text-sm transition-colors duration-200 ${
                   isDark ? 'text-gray-400' : 'text-gray-600'
                 }`}>Verbrannte Kalorien</div>
               </div>
             </div>
+            
+            {/* Zusätzliche Statistiken */}
+            {accountStats.totalSessions > 0 && (
+              <div className="mt-6 pt-4 border-t border-gray-600">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-purple-400">
+                      {(accountStats.totalDistance / accountStats.totalSessions).toFixed(1)} km
+                    </div>
+                    <div className={`text-sm transition-colors duration-200 ${
+                      isDark ? 'text-gray-400' : 'text-gray-600'
+                    }`}>Ø Distanz pro Training</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-cyan-400">
+                      {Math.round(accountStats.totalCalories / accountStats.totalSessions)} kcal
+                    </div>
+                    <div className={`text-sm transition-colors duration-200 ${
+                      isDark ? 'text-gray-400' : 'text-gray-600'
+                    }`}>Ø Kalorien pro Training</div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {accountStats.totalSessions === 0 && (
+              <div className={`mt-4 p-4 rounded-lg border transition-colors duration-200 ${
+                isDark ? 'bg-blue-900/30 border-blue-700' : 'bg-blue-50 border-blue-300'
+              }`}>
+                <p className={`text-sm text-center transition-colors duration-200 ${
+                  isDark ? 'text-blue-300' : 'text-blue-700'
+                }`}>
+                  🏃‍♂️ Starten Sie Ihr erstes Training, um hier Ihre Fortschritte zu sehen!
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Danger Zone */}

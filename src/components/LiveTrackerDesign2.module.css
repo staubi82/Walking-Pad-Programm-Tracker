@@ -1,0 +1,202 @@
+:root {
+    --bg: #121212;
+    --card: #1E1E1E;
+    --text: #FFFFFF;
+    --accent: #4DABF7;
+    --danger: #FF8787;
+    --border: rgba(255,255,255,0.08);
+    --highlight: rgba(77, 171, 247, 0.1);
+}
+
+body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    line-height: 1.4;
+}
+
+.container {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 32px;
+    width: 100%;
+    max-width: 460px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border);
+}
+
+.header {
+    margin-bottom: 32px;
+    text-align: center;
+}
+
+.appTitle {
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 4px;
+    letter-spacing: -0.5px;
+}
+
+.sessionInfo {
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.6);
+}
+
+.timerContainer {
+    text-align: center;
+    margin: 24px 0;
+}
+
+.elapsedTime {
+    font-size: 2.4rem;
+    font-weight: 400;
+    letter-spacing: -1px;
+    color: var(--text);
+}
+
+.remainingTime {
+    font-size: 1rem;
+    color: var(--accent);
+    font-weight: 500;
+    margin-top: 4px;
+}
+
+.progressContainer {
+    height: 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+    margin: 28px 0;
+    overflow: hidden;
+}
+
+.progressBar {
+    height: 100%;
+    background: var(--accent);
+    width: 50%; /* Wird dynamisch gesetzt */
+    transition: width 0.3s ease;
+}
+
+/* EKG-Graph Container */
+.speedGraph {
+    height: 80px;
+    margin: 25px 0;
+    position: relative;
+}
+
+#speedCanvas {
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.2);
+    border-radius: 6px;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin: 24px 0;
+}
+
+.statCard {
+    text-align: center;
+    padding: 12px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+}
+
+.statValue {
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 4px;
+}
+
+.statLabel {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.speedControl {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin: 28px 0;
+}
+
+.speedBtn {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 14px 0;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.speedBtn:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.speedBtn.active {
+    background: var(--accent);
+    color: var(--card);
+    border-color: var(--accent);
+    font-weight: 500;
+    transform: scale(1.05);
+}
+
+.actionBtns {
+    display: flex;
+    gap: 12px;
+    margin-top: 32px;
+}
+
+.btn {
+    flex: 1;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btnPause {
+    background: rgba(255,255,255,0.1);
+    color: var(--text);
+}
+
+.btnStop {
+    background: var(--danger);
+    color: white;
+}
+
+@media (max-width: 500px) {
+    .container {
+        padding: 24px;
+        border-radius: 0;
+        max-width: 100%;
+        min-height: 100vh;
+        border: none;
+    }
+
+    .stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .speedControl {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}

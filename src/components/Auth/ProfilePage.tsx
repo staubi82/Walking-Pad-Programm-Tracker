@@ -294,6 +294,71 @@ export const ProfilePage: React.FC = () => {
           </div>
         </div>
 
+        {/* Konto-Statistiken */}
+        <div className={`rounded-xl p-8 shadow-xl transition-colors duration-200 ${
+          isDark ? 'bg-gray-800' : 'bg-white border border-gray-200'
+        }`}>
+          <h3 className={`text-lg font-semibold mb-4 transition-colors duration-200 ${
+            isDark ? 'text-white' : 'text-gray-900'
+          }`}>Konto-Statistiken</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-400">{accountStats.totalSessions}</div>
+              <div className={`text-sm transition-colors duration-200 ${
+                isDark ? 'text-gray-400' : 'text-gray-600'
+              }`}>Trainingseinheiten</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-400">{accountStats.totalDistance.toFixed(1)} km</div>
+              <div className={`text-sm transition-colors duration-200 ${
+                isDark ? 'text-gray-400' : 'text-gray-600'
+              }`}>Gesamtdistanz</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-orange-400">{accountStats.totalCalories} kcal</div>
+              <div className={`text-sm transition-colors duration-200 ${
+                isDark ? 'text-gray-400' : 'text-gray-600'
+              }`}>Verbrannte Kalorien</div>
+            </div>
+          </div>
+          
+          {/* Zusätzliche Statistiken */}
+          {accountStats.totalSessions > 0 && (
+            <div className="mt-6 pt-4 border-t border-gray-600">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-purple-400">
+                    {(accountStats.totalDistance / accountStats.totalSessions).toFixed(1)} km
+                  </div>
+                  <div className={`text-sm transition-colors duration-200 ${
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  }`}>Ø Distanz pro Training</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-cyan-400">
+                    {Math.round(accountStats.totalCalories / accountStats.totalSessions)} kcal
+                  </div>
+                  <div className={`text-sm transition-colors duration-200 ${
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  }`}>Ø Kalorien pro Training</div>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {accountStats.totalSessions === 0 && (
+            <div className={`mt-4 p-4 rounded-lg border transition-colors duration-200 ${
+              isDark ? 'bg-blue-900/30 border-blue-700' : 'bg-blue-50 border-blue-300'
+            }`}>
+              <p className={`text-sm text-center transition-colors duration-200 ${
+                isDark ? 'text-blue-300' : 'text-blue-700'
+              }`}>
+                🏃‍♂️ Starten Sie Ihr erstes Training, um hier Ihre Fortschritte zu sehen!
+              </p>
+            </div>
+          )}
+        </div>
+
         {/* Gesundheits-Statistiken */}
         {(userProfile.weight || userProfile.height || userProfile.age) && (
           <div className={`rounded-xl p-8 shadow-xl mb-6 transition-colors duration-200 ${
@@ -850,71 +915,6 @@ export const ProfilePage: React.FC = () => {
                 </span>
               </div>
             </div>
-          </div>
-
-          {/* Account Statistics */}
-          <div className={`rounded-lg p-6 mb-8 transition-colors duration-200 ${
-            isDark ? 'bg-gray-700' : 'bg-gray-100'
-          }`}>
-            <h3 className={`text-lg font-semibold mb-4 transition-colors duration-200 ${
-              isDark ? 'text-white' : 'text-gray-900'
-            }`}>Konto-Statistiken</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-400">{accountStats.totalSessions}</div>
-                <div className={`text-sm transition-colors duration-200 ${
-                  isDark ? 'text-gray-400' : 'text-gray-600'
-                }`}>Trainingseinheiten</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-400">{accountStats.totalDistance.toFixed(1)} km</div>
-                <div className={`text-sm transition-colors duration-200 ${
-                  isDark ? 'text-gray-400' : 'text-gray-600'
-                }`}>Gesamtdistanz</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-orange-400">{accountStats.totalCalories} kcal</div>
-                <div className={`text-sm transition-colors duration-200 ${
-                  isDark ? 'text-gray-400' : 'text-gray-600'
-                }`}>Verbrannte Kalorien</div>
-              </div>
-            </div>
-            
-            {/* Zusätzliche Statistiken */}
-            {accountStats.totalSessions > 0 && (
-              <div className="mt-6 pt-4 border-t border-gray-600">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="text-center">
-                    <div className="text-lg font-bold text-purple-400">
-                      {(accountStats.totalDistance / accountStats.totalSessions).toFixed(1)} km
-                    </div>
-                    <div className={`text-sm transition-colors duration-200 ${
-                      isDark ? 'text-gray-400' : 'text-gray-600'
-                    }`}>Ø Distanz pro Training</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-lg font-bold text-cyan-400">
-                      {Math.round(accountStats.totalCalories / accountStats.totalSessions)} kcal
-                    </div>
-                    <div className={`text-sm transition-colors duration-200 ${
-                      isDark ? 'text-gray-400' : 'text-gray-600'
-                    }`}>Ø Kalorien pro Training</div>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {accountStats.totalSessions === 0 && (
-              <div className={`mt-4 p-4 rounded-lg border transition-colors duration-200 ${
-                isDark ? 'bg-blue-900/30 border-blue-700' : 'bg-blue-50 border-blue-300'
-              }`}>
-                <p className={`text-sm text-center transition-colors duration-200 ${
-                  isDark ? 'text-blue-300' : 'text-blue-700'
-                }`}>
-                  🏃‍♂️ Starten Sie Ihr erstes Training, um hier Ihre Fortschritte zu sehen!
-                </p>
-              </div>
-            )}
           </div>
 
           {/* Danger Zone */}

@@ -610,7 +610,209 @@ const MainApp: React.FC = () => {
             <div className={`rounded-xl p-4 sm:p-6 shadow-xl transition-colors duration-200 ${
               isDark ? 'bg-gray-800' : 'bg-white border border-gray-200'
             }`}>
-              <h2 className={`text-xl sm:text-2xl font-bold mb-4 sm:mb-6 transition-colors duration-200 ${
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
+                <h2 className={`text-xl sm:text-2xl font-bold transition-colors duration-200 ${
+                  isDark ? 'text-white' : 'text-gray-900'
+                }`}>
+                  Dashboard
+                </h2>
+                <p className={`text-sm sm:text-base mt-2 sm:mt-0 transition-colors duration-200 ${
+                  isDark ? 'text-gray-400' : 'text-gray-600'
+                }`}>
+                  Willkommen zurück, {currentUser?.displayName || 'Benutzer'}!
+                </p>
+              </div>
+              
+              {/* Aktuelle Trainings-Übersicht */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-6">
+                <div className={`rounded-lg p-4 transition-colors duration-200 ${
+                  isDark ? 'bg-gray-700' : 'bg-gray-100'
+                }`}>
+                  <h3 className={`text-base sm:text-lg font-semibold mb-3 transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>📊 Heute</h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className={`text-sm transition-colors duration-200 ${
+                        isDark ? 'text-gray-400' : 'text-gray-600'
+                      }`}>Trainings:</span>
+                      <span className={`text-sm font-medium transition-colors duration-200 ${
+                        isDark ? 'text-white' : 'text-gray-900'
+                      }`}>
+                        {sessions.filter(s => {
+                          const today = new Date();
+                          const sessionDate = new Date(s.date);
+                          return sessionDate.toDateString() === today.toDateString();
+                        }).length}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className={`text-sm transition-colors duration-200 ${
+                        isDark ? 'text-gray-400' : 'text-gray-600'
+                      }`}>Distanz:</span>
+                      <span className="text-sm font-medium text-green-400">
+                        {sessions.filter(s => {
+                          const today = new Date();
+                          const sessionDate = new Date(s.date);
+                          return sessionDate.toDateString() === today.toDateString();
+                        }).reduce((sum, s) => sum + s.distance, 0).toFixed(1)} km
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className={`rounded-lg p-4 transition-colors duration-200 ${
+                  isDark ? 'bg-gray-700' : 'bg-gray-100'
+                }`}>
+                  <h3 className={`text-base sm:text-lg font-semibold mb-3 transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>🎯 Diese Woche</h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className={`text-sm transition-colors duration-200 ${
+                        isDark ? 'text-gray-400' : 'text-gray-600'
+                      }`}>Trainings:</span>
+                      <span className={`text-sm font-medium transition-colors duration-200 ${
+                        isDark ? 'text-white' : 'text-gray-900'
+                      }`}>
+                        {sessions.filter(s => {
+                          const weekAgo = new Date();
+                          weekAgo.setDate(weekAgo.getDate() - 7);
+                          return s.date >= weekAgo;
+                        }).length}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className={`text-sm transition-colors duration-200 ${
+                        isDark ? 'text-gray-400' : 'text-gray-600'
+                      }`}>Kalorien:</span>
+                      <span className="text-sm font-medium text-orange-400">
+                        {sessions.filter(s => {
+                          const weekAgo = new Date();
+                          weekAgo.setDate(weekAgo.getDate() - 7);
+                          return s.date >= weekAgo;
+                        }).reduce((sum, s) => sum + s.calories, 0)} kcal
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className={`rounded-lg p-4 transition-colors duration-200 ${
+                  isDark ? 'bg-gray-700' : 'bg-gray-100'
+                }`}>
+                  <h3 className={`text-base sm:text-lg font-semibold mb-3 transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>🚀 Schnellstart</h3>
+                  <p className={`text-sm sm:text-base mb-4 transition-colors duration-200 ${
+                    isDark ? 'text-gray-300' : 'text-gray-600'
+                  }`}>Neues Training starten</p>
+                  <button
+                    onClick={() => handleTabChange('tracker')}
+                    className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg flex items-center space-x-2 text-white font-medium transition-colors w-full sm:w-auto justify-center sm:justify-start"
+                  >
+                    <Play className="w-4 h-4" />
+                    <span>Jetzt starten</span>
+                  </button>
+                </div>
+              </div>
+              
+              {/* Motivations-Bereich */}
+              {sessions.length > 0 && (
+                <div className={`rounded-lg p-4 border transition-colors duration-200 ${
+                  isDark 
+                    ? 'bg-gradient-to-r from-green-900/30 to-blue-900/30 border-green-700' 
+                    : 'bg-gradient-to-r from-green-100/50 to-blue-100/50 border-green-300'
+                }`}>
+                  <div className="flex items-center space-x-3">
+                    <div className="text-2xl">🏆</div>
+                    <div>
+                      <h4 className={`text-base sm:text-lg font-bold transition-colors duration-200 ${
+                        isDark ? 'text-green-300' : 'text-green-700'
+                      }`}>Großartige Fortschritte!</h4>
+                      <p className={`text-sm transition-colors duration-200 ${
+                        isDark ? 'text-green-200' : 'text-green-600'
+                      }`}>
+                        Sie haben bereits {sessions.length} Training{sessions.length !== 1 ? 's' : ''} absolviert und 
+                        {' '}{sessions.reduce((sum, s) => sum + s.distance, 0).toFixed(1)} km zurückgelegt!
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <SessionHistory 
+              sessions={sessions.slice(0, 5)} 
+              onDeleteSession={handleDeleteSession}
+              onEditSession={handleEditSession}
+              showTitle={true}
+              title="Letzte Programme"
+              showControls={false}
+            />
+          </div>
+        )}
+        
+        {activeTab === 'tracker' && (
+          <LiveTracker 
+            onSessionComplete={handleSessionComplete}
+            isRecording={recordingState.isRecording}
+            onRecordingChange={handleRecordingChange}
+          />
+        )}
+        
+        {activeTab === 'history' && (
+          <SessionHistory 
+            sessions={sessions} 
+            onDeleteSession={handleDeleteSession}
+            onEditSession={handleEditSession}
+            showTitle={false}
+            showControls={true}
+          />
+        )}
+        
+        {activeTab === 'stats' && (
+          <Statistics sessions={sessions} />
+        )}
+        
+        {activeTab === 'profile' && (
+          <ProfilePage />
+        )}
+      </main>
+
+      {/* Footer - Nur Desktop */}
+      <footer className={`border-t mt-12 hidden md:block transition-colors duration-200 ${
+        isDark 
+          ? 'bg-gray-800 border-gray-700' 
+          : 'bg-white border-gray-200'
+      }`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className={`text-center transition-colors duration-200 ${
+            isDark ? 'text-gray-400' : 'text-gray-600'
+          }`}>
+            <div className="flex flex-col md:flex-row justify-center items-center space-y-2 md:space-y-0 md:space-x-4">
+              <p>&copy; 2025 Walking-Pad Tracker by Staubi. Bleiben Sie aktiv und gesund!</p>
+              <button
+                onClick={() => handleTabChange('overview')}
+                className="text-blue-400 hover:text-blue-300 transition-colors flex items-center space-x-1 cursor-pointer"
+              >
+                <Activity className="w-4 h-4" />
+                <span>Walking-Pad Tracker</span>
+              </button>
+              <a 
+                href="https://github.com/staubi82" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-400 hover:text-blue-300 transition-colors flex items-center space-x-1"
+              >
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                </svg>
+                <span>GitHub</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </footer>
                 isDark ? 'text-white' : 'text-gray-900'
               }`}>
                 Willkommen zurück, {currentUser?.displayName || 'Benutzer'}!

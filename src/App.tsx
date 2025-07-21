@@ -734,19 +734,19 @@ const MainApp: React.FC = () => {
                       }`}>
                         Sie haben bereits {sessions.length} Training{sessions.length !== 1 ? 's' : ''} absolviert und 
                         {' '}{sessions.reduce((sum, s) => sum + s.distance, 0).toFixed(1)} km zurückgelegt!
-         \             </p>
+                      </p>
                     </div>
                   </div>
                 </div>
               )}
             </div>
             
-            <Sessio\nHistory 
+            <SessionHistory 
               sessions={sessions.slice(0, 5)} 
               onDeleteSession={handleDeleteSession}
               onEditSession={handleEditSession}
               showTitle={true}
-              title\="Letzte Programme"
+              title="Letzte Programme"
               showControls={false}
             />
           </div>
@@ -770,14 +770,14 @@ const MainApp: React.FC = () => {
           />
         )}
         
-        {activeTab === 'stat\s' && (
+        {activeTab === 'stats' && (
           <Statistics sessions={sessions} />
         )}
         
         {activeTab === 'profile' && (
           <ProfilePage />
         )}
-      </main>\
+      </main>
 
       {/* Footer - Nur Desktop */}
       <footer className={`border-t mt-12 hidden md:block transition-colors duration-200 ${
@@ -785,17 +785,17 @@ const MainApp: React.FC = () => {
           ? 'bg-gray-800 border-gray-700' 
           : 'bg-white border-gray-200'
       }`}>
-        <div className="max-w-7xl mx-auto px-4 \sm:px-6 lg:px-8 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className={`text-center transition-colors duration-200 ${
-            isDark ? 'text-\gray-400' : 'text-gray-600'
+            isDark ? 'text-gray-400' : 'text-gray-600'
           }`}>
-            <div className="flex flex-col md:flex-r\ow justify-center items-center space-y-2 md:space-y-0 md:space-x-4">
+            <div className="flex flex-col md:flex-row justify-center items-center space-y-2 md:space-y-0 md:space-x-4">
               <p>&copy; 2025 Walking-Pad Tracker by Staubi. Bleiben Sie aktiv und gesund!</p>
-             \ <button
+              <button
                 onClick={() => handleTabChange('overview')}
                 className="text-blue-400 hover:text-blue-300 transition-colors flex items-center space-x-1 cursor-pointer"
               >
-                \<Activity className="w-4 h-4" />
+                <Activity className="w-4 h-4" />
                 <span>Walking-Pad Tracker</span>
               </button>
               <a 
@@ -826,13 +826,13 @@ const MainApp: React.FC = () => {
       {/* Delete Confirmation Modal */}
       {deleteConfirmation.show && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className={\`rounded-xl p-6 w-full max-w-md shadow-2xl border transition-colors duration-200 ${
+          <div className={`rounded-xl p-6 w-full max-w-md shadow-2xl border transition-colors duration-200 ${
             isDark 
               ? 'bg-gray-800 border-gray-700' 
               : 'bg-white border-gray-200'
           }`}>
             <div className="flex items-center space-x-3 mb-4">
-              <div className={\`w-12 h-12 rounded-full flex items-center justify-center ${
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
                 isDark ? 'bg-red-100' : 'bg-red-100'
               }`}>
                 <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -840,20 +840,20 @@ const MainApp: React.FC = () => {
                 </svg>
               </div>
               <div>
-                <h3 className={\`text-lg font-semibold transition-colors duration-200 ${
+                <h3 className={`text-lg font-semibold transition-colors duration-200 ${
                   isDark ? 'text-white' : 'text-gray-900'
                 }`}>Programm löschen</h3>
-                <p className={\`text-sm transition-colors duration-200 ${
+                <p className={`text-sm transition-colors duration-200 ${
                   isDark ? 'text-gray-400' : 'text-gray-600'
                 }`}>Diese Aktion kann nicht rückgängig gemacht werden</p>
               </div>
             </div>
             
             <div className="mb-6">
-              <p className={\`transition-colors duration-200 ${
+              <p className={`transition-colors duration-200 ${
                 isDark ? 'text-gray-300' : 'text-gray-700'
               }`}>
-                Möchten Sie das Programm <span className={\`font-semibold transition-colors duration-200 ${
+                Möchten Sie das Programm <span className={`font-semibold transition-colors duration-200 ${
                   isDark ? 'text-white' : 'text-gray-900'
                 }`}>"{deleteConfirmation.sessionName}"</span> wirklich löschen?
               </p>
@@ -871,7 +871,7 @@ const MainApp: React.FC = () => {
               </button>
               <button
                 onClick={() => setDeleteConfirmation({ show: false, sessionId: '', sessionName: '' })}
-                className={\`flex-1 px-4 py-2 rounded-lg text-white font-medium transition-colors ${
+                className={`flex-1 px-4 py-2 rounded-lg text-white font-medium transition-colors ${
                   isDark 
                     ? 'bg-gray-600 hover:bg-gray-500' 
                     : 'bg-gray-500 hover:bg-gray-600'
@@ -894,9 +894,9 @@ function formatDuration(seconds: number): string {
   const secs = seconds % 60;
   
   if (hours > 0) {
-    return \`${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   }
-  return \`${minutes}:${secs.toString().padStart(2, '0')}`;
+  return `${minutes}:${secs.toString().padStart(2, '0')}`;
 }
 
 function App() {
@@ -905,12 +905,12 @@ function App() {
 
   if (loading) {
     return (
-      <div className={\`min-h-screen flex items-center justify-center transition-colors duration-200 ${
+      <div className={`min-h-screen flex items-center justify-center transition-colors duration-200 ${
         isDark ? 'bg-gray-900' : 'bg-gray-50'
       }`}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
-          <p className={\`transition-colors duration-200 ${
+          <p className={`transition-colors duration-200 ${
             isDark ? 'text-white' : 'text-gray-900'
           }`}>Lade...</p>
         </div>

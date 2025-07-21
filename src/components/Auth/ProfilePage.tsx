@@ -280,211 +280,7 @@ export const ProfilePage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-        {/* Header */}
-        <div className={`rounded-xl p-6 shadow-xl transition-colors duration-200 ${
-          isDark ? 'bg-gray-800' : 'bg-white border border-gray-200'
-        }`}>
-          <div className="text-center">
-            <h2 className={`text-3xl font-bold transition-colors duration-200 ${
-              isDark ? 'text-white' : 'text-gray-900'
-            }`}>Mein Profil</h2>
-            <p className={`mt-2 transition-colors duration-200 ${
-              isDark ? 'text-gray-400' : 'text-gray-600'
-            }`}>Verwalten Sie Ihre Kontoinformationen und Gesundheitsdaten</p>
-          </div>
-        </div>
-
-        {/* Konto-Statistiken */}
-        <div className={`rounded-xl p-8 shadow-xl transition-colors duration-200 ${
-          isDark ? 'bg-gray-800' : 'bg-white border border-gray-200'
-        }`}>
-          <h3 className={`text-lg font-semibold mb-4 transition-colors duration-200 ${
-            isDark ? 'text-white' : 'text-gray-900'
-          }`}>Konto-Statistiken</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-400">{accountStats.totalSessions}</div>
-              <div className={`text-sm transition-colors duration-200 ${
-                isDark ? 'text-gray-400' : 'text-gray-600'
-              }`}>Trainingseinheiten</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-400">{accountStats.totalDistance.toFixed(1)} km</div>
-              <div className={`text-sm transition-colors duration-200 ${
-                isDark ? 'text-gray-400' : 'text-gray-600'
-              }`}>Gesamtdistanz</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-orange-400">{accountStats.totalCalories} kcal</div>
-              <div className={`text-sm transition-colors duration-200 ${
-                isDark ? 'text-gray-400' : 'text-gray-600'
-              }`}>Verbrannte Kalorien</div>
-            </div>
-          </div>
-          
-          {/* Zusätzliche Statistiken */}
-          {accountStats.totalSessions > 0 && (
-            <div className="mt-6 pt-4 border-t border-gray-600">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="text-center">
-                  <div className="text-lg font-bold text-purple-400">
-                    {(accountStats.totalDistance / accountStats.totalSessions).toFixed(1)} km
-                  </div>
-                  <div className={`text-sm transition-colors duration-200 ${
-                    isDark ? 'text-gray-400' : 'text-gray-600'
-                  }`}>Ø Distanz pro Training</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-lg font-bold text-cyan-400">
-                    {Math.round(accountStats.totalCalories / accountStats.totalSessions)} kcal
-                  </div>
-                  <div className={`text-sm transition-colors duration-200 ${
-                    isDark ? 'text-gray-400' : 'text-gray-600'
-                  }`}>Ø Kalorien pro Training</div>
-                </div>
-              </div>
-            </div>
-          )}
-          
-          {accountStats.totalSessions === 0 && (
-            <div className={`mt-4 p-4 rounded-lg border transition-colors duration-200 ${
-              isDark ? 'bg-blue-900/30 border-blue-700' : 'bg-blue-50 border-blue-300'
-            }`}>
-              <p className={`text-sm text-center transition-colors duration-200 ${
-                isDark ? 'text-blue-300' : 'text-blue-700'
-              }`}>
-                🏃‍♂️ Starten Sie Ihr erstes Training, um hier Ihre Fortschritte zu sehen!
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Gesundheits-Statistiken */}
-        {(userProfile.weight || userProfile.height || userProfile.age) && (
-          <div className={`rounded-xl p-8 shadow-xl mb-6 transition-colors duration-200 ${
-            isDark ? 'bg-gray-800' : 'bg-white border border-gray-200'
-          }`}>
-            <h3 className={`text-xl font-bold mb-6 transition-colors duration-200 ${
-              isDark ? 'text-white' : 'text-gray-900'
-            }`}>📊 Gesundheits-Statistiken</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {/* BMI */}
-              {bmi && bmiCategory && (
-                <div className={`rounded-lg p-4 transition-colors duration-200 ${
-                  isDark ? 'bg-gray-700' : 'bg-gray-100'
-                }`}>
-                  <div className="flex items-center space-x-3 mb-2">
-                    <Target className="w-6 h-6 text-blue-400" />
-                    <h4 className={`font-semibold transition-colors duration-200 ${
-                      isDark ? 'text-white' : 'text-gray-900'
-                    }`}>BMI</h4>
-                  </div>
-                  <div className={`text-2xl font-bold mb-1 transition-colors duration-200 ${
-                    isDark ? 'text-white' : 'text-gray-900'
-                  }`}>{bmi}</div>
-                  <div className={`text-sm ${bmiCategory.color}`}>{bmiCategory.category}</div>
-                  <div className={`text-xs mt-1 transition-colors duration-200 ${
-                    isDark ? 'text-gray-400' : 'text-gray-600'
-                  }`}>{bmiCategory.description}</div>
-                </div>
-              )}
-              
-              {/* Grundumsatz */}
-              {bmr && (
-                <div className={`rounded-lg p-4 transition-colors duration-200 ${
-                  isDark ? 'bg-gray-700' : 'bg-gray-100'
-                }`}>
-                  <div className="flex items-center space-x-3 mb-2">
-                    <Activity className="w-6 h-6 text-green-400" />
-                    <h4 className={`font-semibold transition-colors duration-200 ${
-                      isDark ? 'text-white' : 'text-gray-900'
-                    }`}>Grundumsatz</h4>
-                  </div>
-                  <div className={`text-2xl font-bold mb-1 transition-colors duration-200 ${
-                    isDark ? 'text-white' : 'text-gray-900'
-                  }`}>{bmr}</div>
-                  <div className="text-sm text-green-400">kcal/Tag</div>
-                  <div className={`text-xs mt-1 transition-colors duration-200 ${
-                    isDark ? 'text-gray-400' : 'text-gray-600'
-                  }`}>Ruheumsatz</div>
-                </div>
-              )}
-              
-              {/* Gesamtumsatz */}
-              {tdee && (
-                <div className={`rounded-lg p-4 transition-colors duration-200 ${
-                  isDark ? 'bg-gray-700' : 'bg-gray-100'
-                }`}>
-                  <div className="flex items-center space-x-3 mb-2">
-                    <TrendingUp className="w-6 h-6 text-orange-400" />
-                    <h4 className={`font-semibold transition-colors duration-200 ${
-                      isDark ? 'text-white' : 'text-gray-900'
-                    }`}>Gesamtumsatz</h4>
-                  </div>
-                  <div className={`text-2xl font-bold mb-1 transition-colors duration-200 ${
-                    isDark ? 'text-white' : 'text-gray-900'
-                  }`}>{tdee}</div>
-                  <div className="text-sm text-orange-400">kcal/Tag</div>
-                  <div className={`text-xs mt-1 transition-colors duration-200 ${
-                    isDark ? 'text-gray-400' : 'text-gray-600'
-                  }`}>Mit Aktivität</div>
-                </div>
-              )}
-              
-              {/* Idealgewicht */}
-              {idealWeight && (
-                <div className={`rounded-lg p-4 transition-colors duration-200 ${
-                  isDark ? 'bg-gray-700' : 'bg-gray-100'
-                }`}>
-                  <div className="flex items-center space-x-3 mb-2">
-                    <Scale className="w-6 h-6 text-purple-400" />
-                    <h4 className={`font-semibold transition-colors duration-200 ${
-                      isDark ? 'text-white' : 'text-gray-900'
-                    }`}>Idealgewicht</h4>
-                  </div>
-                  <div className={`text-lg font-bold mb-1 transition-colors duration-200 ${
-                    isDark ? 'text-white' : 'text-gray-900'
-                  }`}>
-                    {idealWeight.min}-{idealWeight.max} kg
-                  </div>
-                  <div className="text-sm text-purple-400">Normalgewicht</div>
-                  <div className={`text-xs mt-1 transition-colors duration-200 ${
-                    isDark ? 'text-gray-400' : 'text-gray-600'
-                  }`}>BMI 18.5-24.9</div>
-                </div>
-              )}
-            </div>
-            
-            {/* Zusätzliche Informationen */}
-            <div className={`mt-6 p-4 rounded-lg border transition-colors duration-200 ${
-              isDark ? 'bg-blue-900/30 border-blue-700' : 'bg-blue-50 border-blue-300'
-            }`}>
-              <h4 className={`text-lg font-semibold mb-2 transition-colors duration-200 ${
-                isDark ? 'text-blue-300' : 'text-blue-700'
-              }`}>💡 Gesundheitstipps</h4>
-              <div className={`text-sm space-y-1 transition-colors duration-200 ${
-                isDark ? 'text-blue-200' : 'text-blue-600'
-              }`}>
-                {bmi && bmi < 18.5 && (
-                  <p>• Ihr BMI deutet auf Untergewicht hin. Konsultieren Sie einen Arzt für eine gesunde Gewichtszunahme.</p>
-                )}
-                {bmi && bmi >= 25 && bmi < 30 && (
-                  <p>• Regelmäßige Bewegung und eine ausgewogene Ernährung können beim Erreichen des Idealgewichts helfen.</p>
-                )}
-                {bmi && bmi >= 30 && (
-                  <p>• Bei Adipositas ist eine ärztliche Beratung empfehlenswert für einen gesunden Gewichtsverlust.</p>
-                )}
-                {tdee && (
-                  <p>• Ihr täglicher Kalorienbedarf liegt bei etwa {tdee} kcal. Für Gewichtsverlust: 300-500 kcal weniger, für Zunahme: 300-500 kcal mehr.</p>
-                )}
-                <p>• Diese Werte sind Richtwerte. Konsultieren Sie bei gesundheitlichen Fragen immer einen Arzt.</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Profile Card */}
+        {/* Profile Card - Persönliche Daten */}
         <div className={`rounded-xl p-8 shadow-xl transition-colors duration-200 ${
           isDark ? 'bg-gray-800' : 'bg-white border border-gray-200'
         }`}>
@@ -916,12 +712,203 @@ export const ProfilePage: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Gesundheits-Statistiken */}
+        {(userProfile.weight || userProfile.height || userProfile.age) && (
+          <div className={`rounded-xl p-8 shadow-xl mb-6 transition-colors duration-200 ${
+            isDark ? 'bg-gray-800' : 'bg-white border border-gray-200'
+          }`}>
+            <h3 className={`text-xl font-bold mb-6 transition-colors duration-200 ${
+              isDark ? 'text-white' : 'text-gray-900'
+            }`}>📊 Gesundheits-Statistiken</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* BMI */}
+              {bmi && bmiCategory && (
+                <div className={`rounded-lg p-4 transition-colors duration-200 ${
+                  isDark ? 'bg-gray-700' : 'bg-gray-100'
+                }`}>
+                  <div className="flex items-center space-x-3 mb-2">
+                    <Target className="w-6 h-6 text-blue-400" />
+                    <h4 className={`font-semibold transition-colors duration-200 ${
+                      isDark ? 'text-white' : 'text-gray-900'
+                    }`}>BMI</h4>
+                  </div>
+                  <div className={`text-2xl font-bold mb-1 transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>{bmi}</div>
+                  <div className={`text-sm ${bmiCategory.color}`}>{bmiCategory.category}</div>
+                  <div className={`text-xs mt-1 transition-colors duration-200 ${
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  }`}>{bmiCategory.description}</div>
+                </div>
+              )}
+              
+              {/* Grundumsatz */}
+              {bmr && (
+                <div className={`rounded-lg p-4 transition-colors duration-200 ${
+                  isDark ? 'bg-gray-700' : 'bg-gray-100'
+                }`}>
+                  <div className="flex items-center space-x-3 mb-2">
+                    <Activity className="w-6 h-6 text-green-400" />
+                    <h4 className={`font-semibold transition-colors duration-200 ${
+                      isDark ? 'text-white' : 'text-gray-900'
+                    }`}>Grundumsatz</h4>
+                  </div>
+                  <div className={`text-2xl font-bold mb-1 transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>{bmr}</div>
+                  <div className="text-sm text-green-400">kcal/Tag</div>
+                  <div className={`text-xs mt-1 transition-colors duration-200 ${
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  }`}>Ruheumsatz</div>
+                </div>
+              )}
+              
+              {/* Gesamtumsatz */}
+              {tdee && (
+                <div className={`rounded-lg p-4 transition-colors duration-200 ${
+                  isDark ? 'bg-gray-700' : 'bg-gray-100'
+                }`}>
+                  <div className="flex items-center space-x-3 mb-2">
+                    <TrendingUp className="w-6 h-6 text-orange-400" />
+                    <h4 className={`font-semibold transition-colors duration-200 ${
+                      isDark ? 'text-white' : 'text-gray-900'
+                    }`}>Gesamtumsatz</h4>
+                  </div>
+                  <div className={`text-2xl font-bold mb-1 transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>{tdee}</div>
+                  <div className="text-sm text-orange-400">kcal/Tag</div>
+                  <div className={`text-xs mt-1 transition-colors duration-200 ${
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  }`}>Mit Aktivität</div>
+                </div>
+              )}
+              
+              {/* Idealgewicht */}
+              {idealWeight && (
+                <div className={`rounded-lg p-4 transition-colors duration-200 ${
+                  isDark ? 'bg-gray-700' : 'bg-gray-100'
+                }`}>
+                  <div className="flex items-center space-x-3 mb-2">
+                    <Scale className="w-6 h-6 text-purple-400" />
+                    <h4 className={`font-semibold transition-colors duration-200 ${
+                      isDark ? 'text-white' : 'text-gray-900'
+                    }`}>Idealgewicht</h4>
+                  </div>
+                  <div className={`text-lg font-bold mb-1 transition-colors duration-200 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>
+                    {idealWeight.min}-{idealWeight.max} kg
+                  </div>
+                  <div className="text-sm text-purple-400">Normalgewicht</div>
+                  <div className={`text-xs mt-1 transition-colors duration-200 ${
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  }`}>BMI 18.5-24.9</div>
+                </div>
+              )}
+            </div>
+            
+            {/* Zusätzliche Informationen */}
+            <div className={`mt-6 p-4 rounded-lg border transition-colors duration-200 ${
+              isDark ? 'bg-blue-900/30 border-blue-700' : 'bg-blue-50 border-blue-300'
+            }`}>
+              <h4 className={`text-lg font-semibold mb-2 transition-colors duration-200 ${
+                isDark ? 'text-blue-300' : 'text-blue-700'
+              }`}>💡 Gesundheitstipps</h4>
+              <div className={`text-sm space-y-1 transition-colors duration-200 ${
+                isDark ? 'text-blue-200' : 'text-blue-600'
+              }`}>
+                {bmi && bmi < 18.5 && (
+                  <p>• Ihr BMI deutet auf Untergewicht hin. Konsultieren Sie einen Arzt für eine gesunde Gewichtszunahme.</p>
+                )}
+                {bmi && bmi >= 25 && bmi < 30 && (
+                  <p>• Regelmäßige Bewegung und eine ausgewogene Ernährung können beim Erreichen des Idealgewichts helfen.</p>
+                )}
+                {bmi && bmi >= 30 && (
+                  <p>• Bei Adipositas ist eine ärztliche Beratung empfehlenswert für einen gesunden Gewichtsverlust.</p>
+                )}
+                {tdee && (
+                  <p>• Ihr täglicher Kalorienbedarf liegt bei etwa {tdee} kcal. Für Gewichtsverlust: 300-500 kcal weniger, für Zunahme: 300-500 kcal mehr.</p>
+                )}
+                <p>• Diese Werte sind Richtwerte. Konsultieren Sie bei gesundheitlichen Fragen immer einen Arzt.</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Konto-Statistiken */}
+        <div className={`rounded-xl p-8 shadow-xl transition-colors duration-200 ${
+          isDark ? 'bg-gray-800' : 'bg-white border border-gray-200'
+        }`}>
+          <h3 className={`text-lg font-semibold mb-4 transition-colors duration-200 ${
+            isDark ? 'text-white' : 'text-gray-900'
+          }`}>Konto-Statistiken</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-400">{accountStats.totalSessions}</div>
+              <div className={`text-sm transition-colors duration-200 ${
+                isDark ? 'text-gray-400' : 'text-gray-600'
+              }`}>Trainingseinheiten</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-400">{accountStats.totalDistance.toFixed(1)} km</div>
+              <div className={`text-sm transition-colors duration-200 ${
+                isDark ? 'text-gray-400' : 'text-gray-600'
+              }`}>Gesamtdistanz</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-orange-400">{accountStats.totalCalories} kcal</div>
+              <div className={`text-sm transition-colors duration-200 ${
+                isDark ? 'text-gray-400' : 'text-gray-600'
+              }`}>Verbrannte Kalorien</div>
+            </div>
+          </div>
+          
+          {/* Zusätzliche Statistiken */}
+          {accountStats.totalSessions > 0 && (
+            <div className="mt-6 pt-4 border-t border-gray-600">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-purple-400">
+                    {(accountStats.totalDistance / accountStats.totalSessions).toFixed(1)} km
+                  </div>
+                  <div className={`text-sm transition-colors duration-200 ${
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  }`}>Ø Distanz pro Training</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-cyan-400">
+                    {Math.round(accountStats.totalCalories / accountStats.totalSessions)} kcal
+                  </div>
+                  <div className={`text-sm transition-colors duration-200 ${
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  }`}>Ø Kalorien pro Training</div>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {accountStats.totalSessions === 0 && (
+            <div className={`mt-4 p-4 rounded-lg border transition-colors duration-200 ${
+              isDark ? 'bg-blue-900/30 border-blue-700' : 'bg-blue-50 border-blue-300'
+            }`}>
+              <p className={`text-sm text-center transition-colors duration-200 ${
+                isDark ? 'text-blue-300' : 'text-blue-700'
+              }`}>
+                🏃‍♂️ Starten Sie Ihr erstes Training, um hier Ihre Fortschritte zu sehen!
+              </p>
+            </div>
+          )}
+        </div>
 
           {/* Danger Zone */}
-          <div className="mt-8 pt-8 border-t border-gray-700">
-            <h3 className={`text-lg font-semibold text-red-400 mb-4 transition-colors duration-200 ${
-              isDark ? 'border-gray-700' : 'border-gray-300'
-            }`}>Gefahrenbereich</h3>
+          <div className={`rounded-xl p-8 shadow-xl transition-colors duration-200 ${
+            isDark ? 'bg-gray-800' : 'bg-white border border-gray-200'
+          }`}>
+            <h3 className={`text-lg font-semibold text-red-400 mb-4 transition-colors duration-200`}>Gefahrenbereich</h3>
             <div className={`border rounded-lg p-4 transition-colors duration-200 ${
               isDark ? 'bg-red-900/20 border-red-700' : 'bg-red-50 border-red-300'
             }`}>
@@ -951,7 +938,6 @@ export const ProfilePage: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
     </div>
   );
 };

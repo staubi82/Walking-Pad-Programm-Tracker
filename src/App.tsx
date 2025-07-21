@@ -343,7 +343,10 @@ const MainApp: React.FC = () => {
           <div className="flex justify-between items-center h-14 sm:h-16">
             {/* Logo & Title */}
             <div className="flex items-center space-x-3 sm:space-x-6 flex-1 min-w-0">
-              <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+              <button
+                onClick={() => handleTabChange('overview')}
+                className="flex items-center space-x-2 sm:space-x-3 min-w-0 hover:opacity-80 transition-opacity"
+              >
                 <div className={`w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0 ${
                   !isDark ? 'shadow-gray-300' : ''
                 }`}>
@@ -357,7 +360,7 @@ const MainApp: React.FC = () => {
                     isDark ? 'text-gray-400' : 'text-gray-600'
                   }`}>Professionelles Training</p>
                 </div>
-              </div>
+              </button>
               
             </div>
             

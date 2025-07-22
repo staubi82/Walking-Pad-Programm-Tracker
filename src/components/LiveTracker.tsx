@@ -149,9 +149,22 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
     const averageSpeed = speedHistory.reduce((sum, point) => sum + point.speed, 0) / speedHistory.length;
     const maxSpeed = Math.max(...speedHistory.map(point => point.speed));
 
+    // Generiere automatischen Namen mit aktuellem Datum
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('de-DE', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+    const timeStr = now.toLocaleTimeString('de-DE', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    const defaultName = `Training ${dateStr} ${timeStr}`;
+
     const sessionData = {
-      name: 'Training', // Wird im Summary Modal eingegeben
-      duration: duration, // Verwende echte Dauer, nicht gerundet
+      name: defaultName,
+      duration: duration,
       distance,
       calories,
       steps,
@@ -232,7 +245,7 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
           />
         )}
 
-        {/* Professionelles Live Dashboard */}
+        {/* Professionelles Live Dashboard - Alles auf einer Ansicht */}
         <div className={`rounded-2xl p-4 sm:p-6 shadow-2xl border-2 transition-all duration-300 ${
           isDark 
             ? 'bg-gradient-to-br from-gray-900 to-gray-800 border-gray-700' 
@@ -383,7 +396,7 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
             </div>
           </div>
 
-          {/* Geschwindigkeits-Kontrolle */}
+          {/* Geschwindigkeits-Kontrolle - OHNE Scrollbalken */}
           <div className="mb-4">
             <div className="text-center mb-4">
               <h3 className={`text-lg sm:text-xl font-bold mb-2 transition-colors duration-200 ${
@@ -403,15 +416,15 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
               </div>
             </div>
 
-            {/* Geschwindigkeits-Buttons Grid */}
-            <div className="grid grid-cols-6 sm:grid-cols-8 lg:grid-cols-12 gap-1 sm:gap-2 max-h-32 sm:max-h-40 overflow-y-auto">
+            {/* Geschwindigkeits-Buttons Grid - OHNE overflow */}
+            <div className="grid grid-cols-6 sm:grid-cols-8 lg:grid-cols-12 gap-1 sm:gap-2">
               {speedButtons.map((speed) => (
                 <button
                   key={speed}
                   onClick={() => setCurrentSpeed(speed)}
-                  className={`px-2 py-2 sm:px-3 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all hover:scale-105 ${
+                  className={`px-2 py-2 sm:px-3 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                     currentSpeed === speed
-                      ? 'bg-green-600 text-white shadow-lg ring-2 ring-green-400'
+                      ? 'bg-green-600 text-white shadow-lg ring-2 ring-green-400 transform scale-105'
                       : isDark 
                         ? 'bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white' 
                         : 'bg-gray-200 hover:bg-gray-300 text-gray-700 hover:text-gray-900'
@@ -427,7 +440,7 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
     );
   }
 
-  // Setup-Ansicht wenn nicht läuft
+  // Setup-Ansicht wenn nicht läuft - ÜBERARBEITET
   return (
     <div className="space-y-6">
       {/* Session Summary Modal */}
@@ -439,7 +452,7 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
         />
       )}
 
-      {/* Training Setup */}
+      {/* Training Setup - ÜBERARBEITET */}
       <div className={`rounded-xl p-6 shadow-xl transition-colors duration-200 ${
         isDark ? 'bg-gray-800' : 'bg-white border border-gray-200'
       }`}>
@@ -448,66 +461,76 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
         }`}>Neues Training starten</h2>
         
         <div className="space-y-6">
-          {/* Timer-Einstellungen */}
+          {/* Timer-Buttons - IMMER SICHTBAR */}
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <label className={`text-sm font-medium transition-colors duration-200 ${
-                isDark ? 'text-gray-300' : 'text-gray-700'
-              }`}>
-                Timer verwenden
-              </label>
+            <h3 className={`text-lg font-semibold mb-4 transition-colors duration-200 ${
+              isDark ? 'text-white' : 'text-gray-900'
+            }`}>Trainingsart wählen</h3>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {/* Freies Training Button */}
               <button
                 onClick={() => {
-                  if (targetDuration) {
-                    setTargetDuration(null);
-                    setRemainingTime(null);
-                  } else {
-                    setTargetDuration(30 * 60);
-                    setRemainingTime(30 * 60);
-                  }
+                  setTargetDuration(null);
+                  setRemainingTime(null);
                 }}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  targetDuration ? 'bg-green-600' : 'bg-gray-600'
+                className={`px-4 py-3 rounded-lg font-medium transition-all shadow-lg ${
+                  !targetDuration
+                    ? 'bg-green-600 text-white ring-2 ring-green-400'
+                    : isDark 
+                      ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' 
+                      : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
                 }`}
               >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    targetDuration ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
+                <div className="text-center">
+                  <div className="text-lg mb-1">🆓</div>
+                  <div className="text-sm">Freies Training</div>
+                </div>
               </button>
+              
+              {/* Timer-Preset Buttons */}
+              {timerPresets.map((preset) => (
+                <button
+                  key={preset.value}
+                  onClick={() => {
+                    setTargetDuration(preset.value);
+                    setRemainingTime(preset.value);
+                  }}
+                  className={`px-4 py-3 rounded-lg font-medium transition-all shadow-lg ${
+                    targetDuration === preset.value
+                      ? 'bg-green-600 text-white ring-2 ring-green-400'
+                      : isDark 
+                        ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' 
+                        : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                  }`}
+                >
+                  <div className="text-center">
+                    <div className="text-lg mb-1">⏱️</div>
+                    <div className="text-sm">{preset.label}</div>
+                  </div>
+                </button>
+              ))}
             </div>
             
-            {targetDuration && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
-                  {timerPresets.map((preset) => (
-                    <button
-                      key={preset.value}
-                      onClick={() => {
-                        setTargetDuration(preset.value);
-                        setRemainingTime(preset.value);
-                      }}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        targetDuration === preset.value
-                          ? 'bg-green-600 text-white'
-                          : isDark 
-                            ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' 
-                            : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-                      }`}
-                    >
-                      {preset.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Info über gewählte Option */}
+            <div className={`mt-4 p-3 rounded-lg transition-colors duration-200 ${
+              isDark ? 'bg-blue-900/30 border border-blue-700' : 'bg-blue-50 border border-blue-300'
+            }`}>
+              <p className={`text-sm transition-colors duration-200 ${
+                isDark ? 'text-blue-300' : 'text-blue-700'
+              }`}>
+                {targetDuration 
+                  ? `⏱️ Timer-Training: ${formatDuration(targetDuration)} - Das Training stoppt automatisch nach Ablauf der Zeit.`
+                  : `🆓 Freies Training: Trainieren Sie so lange Sie möchten und stoppen manuell.`
+                }
+              </p>
+            </div>
           </div>
 
           {/* Start Button */}
           <button
             onClick={startSession}
-            className="w-full bg-green-600 hover:bg-green-700 px-6 py-4 rounded-lg flex items-center justify-center space-x-3 text-white font-medium transition-colors text-lg shadow-lg"
+            className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 px-6 py-4 rounded-lg flex items-center justify-center space-x-3 text-white font-medium transition-all text-lg shadow-lg transform hover:scale-105"
           >
             <Play className="w-6 h-6" />
             <span>Training starten</span>

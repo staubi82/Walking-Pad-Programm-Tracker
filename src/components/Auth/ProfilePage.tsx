@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { User, Mail, Calendar, Edit3, Save, X, Trash2, Activity, TrendingUp, Target, Scale, Camera, Upload } from 'lucide-react';
+import { User, Mail, Calendar, Edit3, Save, X, Trash2, Activity, TrendingUp, Target, Scale, Camera, Upload, ImageOff } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { updateUserProfile, PhotoUrlTooLongError } from '../../firebase/auth';
 import { saveUserProfile, getUserProfile } from '../../firebase/services';
+import { uploadProfileImage, deleteProfileImage, getProfileImageUrl } from '../../firebase/storage';
 import { UserProfile } from '../../types';
 import { calculateBMI, getBMICategory, calculateBMR, calculateTDEE, calculateIdealWeight } from '../../utils/calculations';
 import { useEffect } from 'react';
@@ -22,11 +23,6 @@ export const ProfilePage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [accountStats, setAccountStats] = useState({
-    totalSessions: 0,
-    totalDistance: 0,
-    totalCalories: 0
-  });
 
   // Lade Benutzerprofil beim Laden der Komponente
   useEffect(() => {
@@ -35,13 +31,25 @@ export const ProfilePage: React.FC = () => {
         try {
           const profile = await getUserProfile();
           setUserProfile(profile);
+          
+          // Lade Profilbild von Firebase Storage
+          const imageUrl = await getProfileImageUrl();
+          if (imageUrl) {
+            setProfileImage(imageUrl);
+          }
         } catch (error) {
           console.error('Fehler beim Laden des Profils:', error);
           setError('Profil konnte nicht geladen werden. Bitte versuchen Sie es später erneut.');
           
-          // Fallback auf localStorage
-          const saved = localStorage.getItem(`userProfile_${currentUser.uid}`);
-          setUserProfile(saved ? JSON.parse(saved) : {});
+          // Fallback auf localStorage für Profil
+          const savedProfile = localStorage.getItem(`userProfile_${currentUser.uid}`);
+          setUserProfile(savedProfile ? JSON.parse(savedProfile) : {});
+          
+          // Fallback auf localStorage für Profilbild
+          const savedImage = localStorage.getItem(`profileImage_${currentUser.uid}`);
+          if (savedImage) {
+            setProfileImage(savedImage);
+          }
         }
       }
     };
@@ -49,50 +57,6 @@ export const ProfilePage: React.FC = () => {
     loadProfile();
   }, [currentUser]);
 
-  // Lade Konto-Statistiken
-  useEffect(() => {
-    const loadAccountStats = async () => {
-      if (currentUser?.uid) {
-        try {
-          // Versuche zuerst Firebase zu laden
-          const { getTrainingSessions } = await import('../../firebase/services');
-          const sessions = await getTrainingSessions();
-          
-          const stats = {
-            totalSessions: sessions.length,
-            totalDistance: sessions.reduce((sum, session) => sum + session.distance, 0),
-            totalCalories: sessions.reduce((sum, session) => sum + session.calories, 0)
-          };
-          
-          setAccountStats(stats);
-        } catch (error) {
-          console.warn('Firebase nicht verfügbar, lade lokale Daten:', error);
-          
-          // Fallback: Lade aus localStorage
-          try {
-            const localSessions = JSON.parse(localStorage.getItem('walkingPadSessions') || '[]');
-            const validSessions = localSessions.map((session: any) => ({
-              distance: Number(session.distance) || 0,
-              calories: Number(session.calories) || 0
-            }));
-            
-            const stats = {
-              totalSessions: validSessions.length,
-              totalDistance: validSessions.reduce((sum: number, session: any) => sum + session.distance, 0),
-              totalCalories: validSessions.reduce((sum: number, session: any) => sum + session.calories, 0)
-            };
-            
-            setAccountStats(stats);
-          } catch (parseError) {
-            console.error('Fehler beim Parsen der lokalen Daten:', parseError);
-            setAccountStats({ totalSessions: 0, totalDistance: 0, totalCalories: 0 });
-          }
-        }
-      }
-    };
-    
-    loadAccountStats();
-  }, [currentUser]);
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -112,44 +76,39 @@ export const ProfilePage: React.FC = () => {
     setError('');
 
     try {
-      // Konvertiere zu Base64 für lokale Speicherung
+      // Lade zu Firebase Storage hoch
+      const downloadURL = await uploadProfileImage(file);
+      
+      // Aktualisiere Firebase Auth Profil
+      try {
+        await updateUserProfile(currentUser!, { photoURL: downloadURL });
+      } catch (authError) {
+        console.warn('Firebase Auth Update fehlgeschlagen, aber Storage erfolgreich:', authError);
+      }
+      
+      setProfileImage(downloadURL);
+      setSuccess('Profilbild erfolgreich hochgeladen!');
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (error: any) {
+      console.warn('Firebase Storage Fehler, verwende lokale Speicherung:', error);
+      
+      // Fallback: Lokale Speicherung
       const reader = new FileReader();
       reader.onload = async (e) => {
         const base64String = e.target?.result as string;
         
         try {
-          // Versuche Firebase zu aktualisieren
           await updateUserProfile(currentUser!, { photoURL: base64String });
-          setProfileImage(base64String);
-          setSuccess('Profilbild erfolgreich aktualisiert!');
-          
-          // Speichere auch lokal als Fallback
-          if (currentUser?.uid) {
-            localStorage.setItem(`profileImage_${currentUser.uid}`, base64String);
-          }
-          
-          setTimeout(() => setSuccess(''), 3000);
-        } catch (error: any) {
-          if (error instanceof PhotoUrlTooLongError) {
-            // Spezielle Behandlung für zu große Bilder
-            setProfileImage(base64String);
-            if (currentUser?.uid) {
-              localStorage.setItem(`profileImage_${currentUser.uid}`, base64String);
-            }
-            setSuccess('Profilbild wurde lokal gespeichert (zu groß für Firebase)');
-            setTimeout(() => setSuccess(''), 3000);
-          } else {
-            console.warn('Firebase-Fehler beim Speichern des Profilbilds:', error);
-          
-            // Fallback: Nur lokal speichern
-            setProfileImage(base64String);
-            if (currentUser?.uid) {
-              localStorage.setItem(`profileImage_${currentUser.uid}`, base64String);
-            }
-            setSuccess('Profilbild lokal gespeichert (Firebase nicht verfügbar)');
-            setTimeout(() => setSuccess(''), 3000);
-          }
+        } catch (authError) {
+          console.warn('Firebase Auth Update fehlgeschlagen:', authError);
         }
+        
+        setProfileImage(base64String);
+        if (currentUser?.uid) {
+          localStorage.setItem(`profileImage_${currentUser.uid}`, base64String);
+        }
+        setSuccess('Profilbild lokal gespeichert (Firebase nicht verfügbar)');
+        setTimeout(() => setSuccess(''), 3000);
       };
       
       reader.onerror = () => {
@@ -157,24 +116,53 @@ export const ProfilePage: React.FC = () => {
       };
       
       reader.readAsDataURL(file);
-    } catch (error: any) {
-      setError('Fehler beim Hochladen des Bildes: ' + error.message);
     } finally {
       setUploadingImage(false);
     }
   };
 
-  // Lade gespeichertes Profilbild
-  useEffect(() => {
-    if (currentUser?.uid) {
-      const savedImage = localStorage.getItem(`profileImage_${currentUser.uid}`);
-      if (savedImage) {
-        setProfileImage(savedImage);
-      } else if (currentUser.photoURL) {
-        setProfileImage(currentUser.photoURL);
-      }
+  const handleDeleteImage = async () => {
+    if (!confirm('Möchten Sie Ihr Profilbild wirklich löschen?')) {
+      return;
     }
-  }, [currentUser]);
+
+    setUploadingImage(true);
+    setError('');
+
+    try {
+      // Lösche von Firebase Storage
+      await deleteProfileImage();
+      
+      // Aktualisiere Firebase Auth Profil
+      try {
+        await updateUserProfile(currentUser!, { photoURL: null });
+      } catch (authError) {
+        console.warn('Firebase Auth Update fehlgeschlagen:', authError);
+      }
+      
+      setProfileImage(null);
+      
+      // Entferne auch aus localStorage
+      if (currentUser?.uid) {
+        localStorage.removeItem(`profileImage_${currentUser.uid}`);
+      }
+      
+      setSuccess('Profilbild erfolgreich gelöscht!');
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (error: any) {
+      console.warn('Firebase Storage Fehler:', error);
+      
+      // Fallback: Nur lokal löschen
+      setProfileImage(null);
+      if (currentUser?.uid) {
+        localStorage.removeItem(`profileImage_${currentUser.uid}`);
+      }
+      setSuccess('Profilbild lokal gelöscht!');
+      setTimeout(() => setSuccess(''), 3000);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!currentUser) return;
@@ -322,16 +310,28 @@ export const ProfilePage: React.FC = () => {
               
               {/* Upload Overlay */}
               <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                <label htmlFor="profile-image-upload" className="cursor-pointer flex flex-col items-center">
-                  {uploadingImage ? (
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-                  ) : (
-                    <>
-                      <Camera className="w-6 h-6 text-white mb-1" />
-                      <span className="text-xs text-white">Ändern</span>
-                    </>
+                <div className="flex space-x-2">
+                  <label htmlFor="profile-image-upload" className="cursor-pointer flex flex-col items-center">
+                    {uploadingImage ? (
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                    ) : (
+                      <>
+                        <Camera className="w-5 h-5 text-white mb-1" />
+                        <span className="text-xs text-white">Ändern</span>
+                      </>
+                    )}
+                  </label>
+                  
+                  {profileImage && !uploadingImage && (
+                    <button
+                      onClick={handleDeleteImage}
+                      className="flex flex-col items-center text-red-300 hover:text-red-200"
+                    >
+                      <ImageOff className="w-5 h-5 mb-1" />
+                      <span className="text-xs">Löschen</span>
+                    </button>
                   )}
-                </label>
+                </div>
                 <input
                   id="profile-image-upload"
                   type="file"
@@ -345,7 +345,7 @@ export const ProfilePage: React.FC = () => {
               {/* Upload Button für mobile Geräte */}
               <button
                 onClick={() => document.getElementById('profile-image-upload')?.click()}
-                className="absolute -bottom-2 -right-2 w-8 h-8 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center text-white shadow-lg transition-colors md:hidden"
+                className="absolute -bottom-2 -right-2 w-8 h-8 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center text-white shadow-lg transition-colors sm:hidden"
                 disabled={uploadingImage}
               >
                 {uploadingImage ? (
@@ -354,6 +354,16 @@ export const ProfilePage: React.FC = () => {
                   <Upload className="w-4 h-4" />
                 )}
               </button>
+              
+              {/* Delete Button für mobile Geräte */}
+              {profileImage && !uploadingImage && (
+                <button
+                  onClick={handleDeleteImage}
+                  className="absolute -bottom-2 -left-2 w-8 h-8 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center text-white shadow-lg transition-colors sm:hidden"
+                >
+                  <ImageOff className="w-4 h-4" />
+                </button>
+              )}
             </div>
             
             <div className="flex-1">
@@ -421,8 +431,8 @@ export const ProfilePage: React.FC = () => {
             }`}>
               <p>• Fahren Sie mit der Maus über Ihr Profilbild, um es zu ändern</p>
               <p>• Unterstützte Formate: JPG, PNG, GIF (max. 5MB)</p>
-              <p>• Das Bild wird automatisch auf eine runde Form zugeschnitten</p>
-              <p>• Ihr Profilbild wird lokal gespeichert und in der gesamten App angezeigt</p>
+              <p>• Das Bild wird in Firebase Storage gespeichert (mit lokalem Fallback)</p>
+              <p>• Klicken Sie auf "Löschen" um das Profilbild zu entfernen</p>
             </div>
           </div>
 

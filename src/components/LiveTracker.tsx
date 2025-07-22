@@ -73,7 +73,8 @@ export const LiveTracker: React.FC<LiveTrackerProps> = ({ onSessionComplete, onR
     { label: '30 Min', value: 30 * 60 },
     { label: '45 Min', value: 45 * 60 },
     { label: '60 Min', value: 60 * 60 },
-    { label: '90 Min', value: 90 * 60 }
+    { label: '90 Min', value: 90 * 60 },
+    { label: '120 Min', value: 120 * 60 }
   ];
 
   useEffect(() => {

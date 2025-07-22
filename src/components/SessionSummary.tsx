@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Save, X, Clock, MapPin, Flame, TrendingUp, Activity, Edit3, Footprints, Target, Zap, Award } from 'lucide-react';
+import { Save, X, Clock, MapPin, Flame, TrendingUp, Activity, Edit3, Footprints, Target, Zap, Award, Smile, ThumbsUp, Skull } from 'lucide-react';
 import { formatDuration } from '../utils/calculations';
 import { useTheme } from '../context/ThemeContext';
 
@@ -29,12 +29,12 @@ interface SessionSummaryProps {
 }
 
 const difficultyLevels = [
-  { id: 'anfaenger', label: 'Anfänger', emoji: '●', color: 'from-green-500 to-green-600', description: 'Gemütliches Tempo für Einsteiger' },
-  { id: 'leicht', label: 'Leicht', emoji: '●', color: 'from-blue-500 to-blue-600', description: 'Entspanntes Walking' },
-  { id: 'mittel', label: 'Mittel', emoji: '●', color: 'from-amber-500 to-amber-600', description: 'Moderates Tempo' },
-  { id: 'schwer', label: 'Schwer', emoji: '●', color: 'from-orange-500 to-orange-600', description: 'Anspruchsvolles Training' },
-  { id: 'extrem', label: 'Extrem', emoji: '●', color: 'from-red-500 to-red-600', description: 'Maximale Herausforderung' },
-  { id: 'selbstmord', label: 'Selbstmord', emoji: '●', color: 'from-gray-600 to-gray-700', description: 'Nur für Profis!' }
+  { id: 'anfaenger', label: 'Anfänger', icon: 'Smile', color: 'from-green-500 to-green-600', description: 'Gemütliches Tempo für Einsteiger' },
+  { id: 'leicht', label: 'Leicht', icon: 'ThumbsUp', color: 'from-blue-500 to-blue-600', description: 'Entspanntes Walking' },
+  { id: 'mittel', label: 'Mittel', icon: 'Zap', color: 'from-amber-500 to-amber-600', description: 'Moderates Tempo' },
+  { id: 'schwer', label: 'Schwer', icon: 'Flame', color: 'from-orange-500 to-orange-600', description: 'Anspruchsvolles Training' },
+  { id: 'extrem', label: 'Extrem', icon: 'TrendingUp', color: 'from-red-500 to-red-600', description: 'Maximale Herausforderung' },
+  { id: 'selbstmord', label: 'Selbstmord', icon: 'Skull', color: 'from-gray-600 to-gray-700', description: 'Nur für Profis!' }
 ];
 
 export const SessionSummary: React.FC<SessionSummaryProps> = ({ sessionData, onSave, onCancel }) => {
@@ -268,21 +268,17 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({ sessionData, onS
 
             {/* Schritte - Falls verfügbar */}
             {sessionData.steps && (
-              <div className={`rounded-xl p-6 border transition-colors duration-200 ${
+              <div className={`rounded-xl p-4 border transition-colors duration-200 ${
                 isDark 
                   ? 'bg-gray-800 border-gray-700' 
                   : 'bg-white border-gray-200'
               }`}>
-                <div className="flex items-center space-x-4">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors duration-200 ${
-                    isDark ? 'bg-gray-700' : 'bg-gray-100'
-                  }`}>
-                    <Footprints className={`w-6 h-6 transition-colors duration-200 ${
-                      isDark ? 'text-gray-400' : 'text-gray-600'
-                    }`} />
-                  </div>
+                <div className="flex items-center space-x-3">
+                  <Footprints className={`w-5 h-5 transition-colors duration-200 ${
+                    isDark ? 'text-gray-400' : 'text-gray-500'
+                  }`} />
                   <div className="flex-1">
-                    <div className={`text-2xl font-semibold mb-1 transition-colors duration-200 ${
+                    <div className={`text-lg font-semibold transition-colors duration-200 ${
                       isDark ? 'text-white' : 'text-gray-900'
                     }`}>
                       {sessionData.steps.toLocaleString()} Schritte
@@ -290,7 +286,7 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({ sessionData, onS
                     <div className={`text-sm transition-colors duration-200 ${
                       isDark ? 'text-gray-400' : 'text-gray-600'
                     }`}>
-                      {Math.round(sessionData.steps / (sessionData.duration / 60))} Schritte pro Minute
+                      {Math.round(sessionData.steps / (sessionData.duration / 60))} Schritte/Min
                     </div>
                   </div>
                 </div>
@@ -333,52 +329,60 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({ sessionData, onS
                 <span>Schwierigkeitslevel (optional)</span>
               </label>
               
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-2">
                 <button
                   onClick={() => setSelectedDifficulty('')}
-                  className={`p-3 rounded-lg text-sm font-medium transition-all duration-200 border ${
+                  className={`p-2 rounded-lg text-xs font-medium transition-all duration-200 border ${
                     !selectedDifficulty 
                       ? `${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-900 border-gray-900 text-white'}` 
                       : `${isDark ? 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`
                   }`}
                 >
                   <div className="text-center">
-                    <div className="mb-1">–</div>
+                    <div className={`mb-1 text-lg ${!selectedDifficulty ? 'text-white' : 'text-gray-400'}`}>–</div>
                     <div>Kein Level</div>
                   </div>
                 </button>
                 
-                {difficultyLevels.map(level => (
-                  <button
-                    key={level.id}
-                    onClick={() => setSelectedDifficulty(level.id)}
-                    className={`p-3 rounded-lg text-sm font-medium transition-all duration-200 border ${
-                      selectedDifficulty === level.id 
-                        ? `bg-gradient-to-r ${level.color} border-transparent text-white` 
-                        : `${isDark ? 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`
-                    }`}
-                    title={level.description}
-                  >
-                    <div className="text-center">
-                      <div className={`mb-1 ${selectedDifficulty === level.id ? 'text-white' : 'text-gray-400'}`}>
-                        {level.emoji}
+                {difficultyLevels.map(level => {
+                  const IconComponent = level.icon === 'Smile' ? Smile : 
+                                      level.icon === 'ThumbsUp' ? ThumbsUp : 
+                                      level.icon === 'Zap' ? Zap : 
+                                      level.icon === 'Flame' ? Flame : 
+                                      level.icon === 'TrendingUp' ? TrendingUp : 
+                                      Skull;
+                  
+                  return (
+                    <button
+                      key={level.id}
+                      onClick={() => setSelectedDifficulty(level.id)}
+                      className={`p-2 rounded-lg text-xs font-medium transition-all duration-200 border ${
+                        selectedDifficulty === level.id 
+                          ? `bg-gradient-to-r ${level.color} border-transparent text-white` 
+                          : `${isDark ? 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`
+                      }`}
+                      title={level.description}
+                    >
+                      <div className="text-center">
+                        <div className="mb-1 flex justify-center">
+                          <IconComponent className={`w-4 h-4 ${selectedDifficulty === level.id ? 'text-white' : 'text-gray-400'}`} />
+                        </div>
+                        <div className="leading-tight">{level.label}</div>
                       </div>
-                      <div>{level.label}</div>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  );
+                })}
               </div>
               
               {selectedDifficulty && (
-                <div className={`p-4 rounded-lg border-l-4 border-blue-500 transition-colors duration-200 ${
+                <div className={`mt-3 p-3 rounded-lg border-l-4 border-blue-500 transition-colors duration-200 ${
                   isDark ? 'bg-gray-800' : 'bg-blue-50'
                 }`}>
-                  <p className={`text-sm transition-colors duration-200 ${
+                  <p className={`text-xs transition-colors duration-200 ${
                     isDark ? 'text-gray-300' : 'text-gray-700'
                   }`}>
-                    <span className="font-medium">Level:</span> {difficultyLevels.find(l => l.id === selectedDifficulty)?.label}
-                    <br />
-                    <span className="font-medium">Beschreibung:</span> {difficultyLevels.find(l => l.id === selectedDifficulty)?.description}
+                    <span className="font-medium">Level:</span> {difficultyLevels.find(l => l.id === selectedDifficulty)?.label} • 
+                    <span className="font-medium"> Beschreibung:</span> {difficultyLevels.find(l => l.id === selectedDifficulty)?.description}
                   </p>
                 </div>
               )}

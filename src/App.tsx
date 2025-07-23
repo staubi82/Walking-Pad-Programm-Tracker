@@ -745,7 +745,7 @@ const MainApp: React.FC = () => {
             </div>
             
             <SessionHistory 
-              sessions={sessions.slice(0, 5)} 
+              sessions={[...sessions].sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 5)} 
               onDeleteSession={handleDeleteSession}
               onEditSession={handleEditSession}
               showTitle={true}

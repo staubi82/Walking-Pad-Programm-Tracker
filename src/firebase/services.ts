@@ -112,12 +112,15 @@ export const saveTrainingSession = async (session: Omit<TrainingSession, 'id'>) 
       throw new Error('Benutzer nicht angemeldet');
     }
 
-    const docRef = await addDoc(collection(db, 'trainingSessions'), {
+    // Bereite Daten für Firestore vor (undefined -> null)
+    const sessionData = {
       ...session,
       userId: user.uid,
       date: Timestamp.fromDate(session.date),
-      createdAt: Timestamp.fromDate(session.createdAt)
-    });
+      createdAt: Timestamp.fromDate(session.createdAt),
+      difficulty: session.difficulty || null // undefined wird zu null
+    };
+    const docRef = await addDoc(collection(db, 'trainingSessions'), sessionData);
     return docRef.id;
   } catch (error) {
     console.error('Fehler beim Speichern der Trainingseinheit:', error);

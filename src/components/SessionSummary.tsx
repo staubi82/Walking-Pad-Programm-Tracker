@@ -53,7 +53,7 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({ sessionData, onS
     onSave({
       ...sessionData,
       name: sessionName,
-      difficulty: selectedDifficulty || null
+      difficulty: selectedDifficulty || undefined
     });
   };
 

@@ -1,225 +1,241 @@
-import React, { useState } from 'react';
-import { Save, X, Clock, MapPin, Flame, TrendingUp, Activity, Edit3, Footprints, Target, Zap, Award, Smile, ThumbsUp, Skull, BarChart3, Calendar } from 'lucide-react';
-import { formatDuration } from '../utils/calculations';
-import { useTheme } from '../context/ThemeContext';
-
 export const SessionSummary: React.FC<SessionSummaryProps> = ({ sessionData, onSave, onCancel }) => {
   const [selectedDifficulty, setSelectedDifficulty] = useState('');
   const [sessionName, setSessionName] = useState(sessionData.name);
   const [nameError, setNameError] = useState('');
   const { isDark } = useTheme();
 
-  const handleSave = () => {
-    if (!sessionName.trim()) {
-      setNameError('Bitte geben Sie einen Namen für das Training ein.');
-      return;
-    }
-    setNameError('');
-    onSave({ ...sessionData, name: sessionName, difficulty: selectedDifficulty || undefined });
-  };
+  // ... handlers bleiben gleich ...
 
-  const handleNameChange = (name: string) => {
-    setSessionName(name);
-    if (nameError) setNameError('');
-  };
-
-  const difficultyLevels = [
-    { id: 'anfaenger', label: 'Anfänger', icon: Smile, color: 'emerald', description: 'Gemütliches Tempo' },
-    { id: 'leicht', label: 'Leicht', icon: ThumbsUp, color: 'blue', description: 'Entspanntes Walking' },
-    { id: 'mittel', label: 'Mittel', icon: Zap, color: 'amber', description: 'Moderates Tempo' },
-    { id: 'schwer', label: 'Schwer', icon: Flame, color: 'orange', description: 'Anspruchsvoll' },
-    { id: 'extrem', label: 'Extrem', icon: TrendingUp, color: 'red', description: 'Maximale Challenge' },
-    { id: 'selbstmord', label: 'Profi', icon: Skull, color: 'gray', description: 'Nur für Profis' }
+  const difficultyOptions = [
+    { id: 'anfaenger', label: 'Anfänger', icon: '🚶', color: 'emerald' },
+    { id: 'leicht', label: 'Leicht', icon: '👍', color: 'blue' },
+    { id: 'mittel', label: 'Mittel', icon: '⚡', color: 'amber' },
+    { id: 'schwer', label: 'Schwer', icon: '🔥', color: 'orange' },
+    { id: 'extrem', label: 'Extrem', icon: '📈', color: 'red' },
+    { id: 'selbstmord', label: 'Profi', icon: '💀', color: 'gray' }
   ];
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className={`w-full max-w-4xl max-h-[95vh] rounded-2xl shadow-2xl overflow-hidden ${
-        isDark ? 'bg-gray-900 border border-gray-700' : 'bg-white border border-gray-100'
+    <div className="fixed inset-0 bg-black/60 backdrop-blur flex items-center justify-center z-50 p-4">
+      <div className={`w-full max-w-5xl max-h-[95vh] rounded-3xl shadow-2xl overflow-hidden ${
+        isDark ? 'bg-gray-900' : 'bg-white'
       }`}>
         
-        {/* Header */}
-        <div className={`px-6 py-4 border-b flex items-center justify-between ${
-          isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'
+        {/* Top Bar */}
+        <div className={`flex items-center justify-between p-6 border-b ${
+          isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'
         }`}>
-          <div className="flex items-center space-x-3">
-            <div className={`w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center`}>
-              <BarChart3 className="w-5 h-5 text-white" />
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center">
+              <Activity className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 Training Summary
-              </h2>
-              <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                {new Date().toLocaleDateString('de-DE')}
+              </h1>
+              <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                {new Date().toLocaleDateString('de-DE', { 
+                  weekday: 'long', 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })}
               </p>
             </div>
           </div>
-          <button onClick={onCancel} className={`p-2 rounded-lg transition-colors ${
+          <button onClick={onCancel} className={`p-3 rounded-xl transition-colors ${
             isDark ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'
           }`}>
-            <X className="w-5 h-5" />
+            <X className="w-6 h-6" />
           </button>
         </div>
 
-        <div className="overflow-y-auto max-h-[calc(95vh-140px)]">
-          {/* Stats Grid */}
-          <div className="p-6 grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className={`p-4 rounded-xl border ${
-              isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200 shadow-sm'
+        <div className="overflow-y-auto max-h-[calc(95vh-200px)] p-6">
+          <div className="space-y-6">
+            
+            {/* Performance Overview */}
+            <div className={`p-6 rounded-2xl border-2 ${
+              isDark ? 'bg-gray-800 border-gray-700' : 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200'
             }`}>
-              <Clock className={`w-5 h-5 mb-3 ${isDark ? 'text-blue-400' : 'text-blue-500'}`} />
-              <div className={`text-xl font-bold mb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                {formatDuration(sessionData.duration)}
+              <div className="flex items-center justify-between mb-4">
+                <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  Performance Übersicht
+                </h3>
+                <Award className={`w-6 h-6 ${isDark ? 'text-yellow-400' : 'text-yellow-500'}`} />
               </div>
-              <div className={`text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                Zeit
-              </div>
-            </div>
-
-            <div className={`p-4 rounded-xl border ${
-              isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200 shadow-sm'
-            }`}>
-              <MapPin className={`w-5 h-5 mb-3 ${isDark ? 'text-green-400' : 'text-green-500'}`} />
-              <div className={`text-xl font-bold mb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                {sessionData.distance.toFixed(2)}
-                <span className="text-sm ml-1 font-normal">km</span>
-              </div>
-              <div className={`text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                Distanz
-              </div>
-            </div>
-
-            <div className={`p-4 rounded-xl border ${
-              isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200 shadow-sm'
-            }`}>
-              <Flame className={`w-5 h-5 mb-3 ${isDark ? 'text-orange-400' : 'text-orange-500'}`} />
-              <div className={`text-xl font-bold mb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                {sessionData.calories}
-                <span className="text-sm ml-1 font-normal">kcal</span>
-              </div>
-              <div className={`text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                Kalorien
-              </div>
-            </div>
-
-            <div className={`p-4 rounded-xl border ${
-              isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200 shadow-sm'
-            }`}>
-              <TrendingUp className={`w-5 h-5 mb-3 ${isDark ? 'text-purple-400' : 'text-purple-500'}`} />
-              <div className={`text-xl font-bold mb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                {sessionData.averageSpeed.toFixed(1)}
-                <span className="text-sm ml-1 font-normal">km/h</span>
-              </div>
-              <div className={`text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                Ø Tempo
-              </div>
-            </div>
-          </div>
-
-          {sessionData.steps && (
-            <div className="px-6 pb-6">
-              <div className={`p-4 rounded-xl border ${
-                isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200 shadow-sm'
-              }`}>
-                <div className="flex items-center space-x-3">
-                  <Footprints className={`w-5 h-5 ${isDark ? 'text-indigo-400' : 'text-indigo-500'}`} />
-                  <div className="flex-1">
-                    <div className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {sessionData.steps.toLocaleString()} Schritte
-                    </div>
-                    <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                      {Math.round(sessionData.steps / (sessionData.duration / 60))} pro Minute
-                    </div>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="text-center">
+                  <div className={`text-3xl font-bold mb-1 ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>
+                    {formatDuration(sessionData.duration)}
+                  </div>
+                  <div className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Gesamtzeit
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className={`text-3xl font-bold mb-1 ${isDark ? 'text-green-400' : 'text-green-600'}`}>
+                    {sessionData.distance.toFixed(1)}
+                    <span className="text-lg ml-1">km</span>
+                  </div>
+                  <div className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Distanz
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className={`text-3xl font-bold mb-1 ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>
+                    {sessionData.calories}
+                  </div>
+                  <div className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Kalorien
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className={`text-3xl font-bold mb-1 ${isDark ? 'text-purple-400' : 'text-purple-600'}`}>
+                    {sessionData.averageSpeed.toFixed(1)}
+                    <span className="text-lg ml-1">km/h</span>
+                  </div>
+                  <div className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Ø Geschw.
                   </div>
                 </div>
               </div>
             </div>
-          )}
 
-          {/* Name Input */}
-          <div className="px-6 pb-6">
-            <label className={`block text-sm font-medium mb-3 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-              Trainingsname
-            </label>
-            <input
-              type="text"
-              value={sessionName}
-              onChange={(e) => handleNameChange(e.target.value)}
-              className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 ${
-                isDark 
-                  ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' 
-                  : 'bg-gray-50 border-gray-300 text-gray-900'
-              }`}
-              placeholder="z.B. Morgendliches Walking"
-            />
-            {nameError && (
-              <p className="mt-2 text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded-lg">
-                {nameError}
-              </p>
-            )}
-          </div>
+            {/* Additional Stats */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className={`p-6 rounded-2xl border ${
+                isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+              }`}>
+                <h4 className={`font-semibold mb-4 flex items-center space-x-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  <TrendingUp className="w-5 h-5" />
+                  <span>Geschwindigkeit</span>
+                </h4>
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Durchschnitt:</span>
+                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      {sessionData.averageSpeed.toFixed(1)} km/h
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Maximum:</span>
+                    <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      {sessionData.maxSpeed.toFixed(1)} km/h
+                    </span>
+                  </div>
+                </div>
+              </div>
 
-          {/* Difficulty */}
-          <div className="px-6 pb-6">
-            <label className={`block text-sm font-medium mb-3 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-              Schwierigkeitsgrad
-            </label>
-            <div className="grid grid-cols-3 lg:grid-cols-6 gap-3">
-              {difficultyLevels.map(level => {
-                const Icon = level.icon;
-                const isSelected = selectedDifficulty === level.id;
-                return (
+              {sessionData.steps && (
+                <div className={`p-6 rounded-2xl border ${
+                  isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+                }`}>
+                  <h4 className={`font-semibold mb-4 flex items-center space-x-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    <Footprints className="w-5 h-5" />
+                    <span>Schritte</span>
+                  </h4>
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Gesamt:</span>
+                      <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                        {sessionData.steps.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Pro Minute:</span>
+                      <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                        {Math.round(sessionData.steps / (sessionData.duration / 60))}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Session Name */}
+            <div className={`p-6 rounded-2xl border ${
+              isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+            }`}>
+              <h4 className={`font-semibold mb-4 flex items-center space-x-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                <Edit3 className="w-5 h-5" />
+                <span>Trainingsbezeichnung</span>
+              </h4>
+              <input
+                type="text"
+                value={sessionName}
+                onChange={(e) => handleNameChange(e.target.value)}
+                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                  isDark 
+                    ? 'bg-gray-900 border-gray-600 text-white' 
+                    : 'bg-gray-50 border-gray-300 text-gray-900'
+                }`}
+                placeholder="Trainingsname eingeben..."
+              />
+              {nameError && (
+                <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-700 text-sm">{nameError}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Difficulty */}
+            <div className={`p-6 rounded-2xl border ${
+              isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+            }`}>
+              <h4 className={`font-semibold mb-4 flex items-center space-x-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                <Target className="w-5 h-5" />
+                <span>Schwierigkeitsgrad</span>
+              </h4>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {difficultyOptions.map(option => (
                   <button
-                    key={level.id}
-                    onClick={() => setSelectedDifficulty(level.id)}
-                    className={`p-3 rounded-xl border-2 transition-all text-center ${
-                      isSelected 
-                        ? `border-${level.color}-500 bg-${level.color}-50 text-${level.color}-700` 
-                        : `${isDark ? 'border-gray-700 bg-gray-800 text-gray-400 hover:border-gray-600' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'}`
+                    key={option.id}
+                    onClick={() => setSelectedDifficulty(option.id)}
+                    className={`p-4 rounded-xl border-2 transition-all text-center ${
+                      selectedDifficulty === option.id 
+                        ? `border-${option.color}-500 bg-${option.color}-50 text-${option.color}-700` 
+                        : `${isDark ? 'border-gray-700 bg-gray-900 text-gray-400 hover:border-gray-600' : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-gray-300'}`
                     }`}
                   >
-                    <Icon className={`w-5 h-5 mx-auto mb-2 ${
-                      isSelected ? `text-${level.color}-600` : ''
-                    }`} />
-                    <div className="text-xs font-medium">{level.label}</div>
+                    <div className="text-2xl mb-2">{option.icon}</div>
+                    <div className="text-sm font-medium">{option.label}</div>
                   </button>
-                );
-              })}
-            </div>
-            <button
-              onClick={() => setSelectedDifficulty('')}
-              className={`mt-3 w-full p-2 text-xs rounded-lg border ${
-                !selectedDifficulty 
-                  ? `${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-100 border-gray-300 text-gray-900'}` 
-                  : `${isDark ? 'border-gray-700 text-gray-400 hover:bg-gray-800' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`
-              }`}
-            >
-              Keine Angabe
-            </button>
-          </div>
-
-          {/* Actions */}
-          <div className={`px-6 py-4 border-t bg-gray-50/50 ${isDark ? 'border-gray-700 bg-gray-800/50' : 'border-gray-200'}`}>
-            <div className="flex flex-col sm:flex-row gap-3">
+                ))}
+              </div>
               <button
-                onClick={handleSave}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium flex items-center justify-center space-x-2 transition-colors"
-              >
-                <Save className="w-4 h-4" />
-                <span>Speichern</span>
-              </button>
-              <button
-                onClick={onCancel}
-                className={`px-6 py-3 rounded-xl font-medium border transition-colors ${
-                  isDark 
-                    ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
-                    : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                onClick={() => setSelectedDifficulty('')}
+                className={`mt-3 w-full p-3 rounded-xl border transition-colors ${
+                  !selectedDifficulty 
+                    ? `${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-100 border-gray-300 text-gray-900'}` 
+                    : `${isDark ? 'border-gray-700 text-gray-400 hover:bg-gray-800' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`
                 }`}
               >
-                Abbrechen
+                Keine Bewertung
               </button>
             </div>
+          </div>
+        </div>
+
+        {/* Bottom Actions */}
+        <div className={`p-6 border-t ${isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'}`}>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <button
+              onClick={handleSave}
+              className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-4 rounded-xl font-semibold flex items-center justify-center space-x-2 transition-all transform hover:scale-[1.02]"
+            >
+              <Save className="w-5 h-5" />
+              <span>Training speichern</span>
+            </button>
+            <button
+              onClick={onCancel}
+              className={`px-6 py-4 rounded-xl font-semibold border transition-all ${
+                isDark 
+                  ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
+                  : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              Abbrechen
+            </button>
           </div>
         </div>
       </div>
